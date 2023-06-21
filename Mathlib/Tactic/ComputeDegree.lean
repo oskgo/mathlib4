@@ -50,14 +50,16 @@ regardless of whether the base-ring is `nontrivial` or not.
 Everything that is not obtained as an iterated sum, product or `Nat`-power of `C`onstants, `Nat`s,
 `X`s, `monomials` gets its guess to the `natDegree` outsourced to the function `alt`.
 
-Chances are that `alt` is the constant function that guesses `mkNatLit 0` for every `Expr`.
+Chances are that `alt` is the constant function that, for an expression `f`, guesses the
+`Expr`ession representing `natDegree f`.
 -/
 partial
 def toNatDegree (alt : Expr → MetaM Expr) (pol : Expr) : MetaM Expr :=
 match pol.getAppFnArgs with
   --  we assign a `natDegree` to the `Nat`s, the `C`onstants and `X`
   | (``OfNat.ofNat, _) => return mkNatLit 0
-  | (``Polynomial.C, _) => return mkNatLit 0
+  | (``Nat.cast, _) => return mkNatLit 0
+  | (``Int.cast, _) => return mkNatLit 0
   | (``Polynomial.X, _) => return mkNatLit 1
   --  we assign a `natDegree` to the powers: `natDegree (a ^ b) = b * natDegree a`
   --  with special support for `b ∈ {0, 1}`
@@ -79,9 +81,426 @@ match pol.getAppFnArgs with
   | (``FunLike.coe, #[_, _, _, _, n, _]) =>
     match n.getAppFnArgs with
       | (``monomial, #[_, _, n]) => return n
+      | (``C, _) => return mkNatLit 0
       | _ => alt pol
   --  everything else falls back to `alt pol`.
   | (_name, _args) => alt pol
+
+def isDegLE (e : Expr) : CoreM (Bool × Expr × Expr) := do
+  match e.consumeMData.getAppFnArgs with
+    -- check that the target is an inequality `≤`...
+    | (``LE.le, #[_, _, lhs, rhs]) => match lhs.getAppFnArgs with
+      -- and that the LHS is `natDegree ...` or `degree ...`
+      | (``degree, #[_, _, pol])    => return (false, pol, rhs)
+      | (``natDegree, #[_, _, pol]) => return (true, pol, rhs)
+      | (na, _) => throwError (f!"Expected an inequality of the form\n\n  'f.natDegree ≤ d'  or  'f.degree ≤ d'," ++
+        f!"\n\ninstead, {na} appears on the LHS")
+    | _ => throwError m!"Expected an inequality instead of '{e.getAppFnArgs.1}'"
+
+def mkNatDegreeLE (f : Expr) : MetaM Expr := do
+  let guessDegree := ← toNatDegree (fun p => dbg_trace p.getAppFnArgs; mkAppM ``natDegree #[p] <|> return mkNatLit 0) f
+  let ndf := ← mkAppM ``natDegree #[f]
+  let ndfLE := ← mkAppM ``LE.le #[ndf, guessDegree]
+  pure ndfLE
+#check focus
+partial
+def CDL1 (pol : Expr) : TacticM Unit := do
+-- we recurse into the shape of the polynomial, using the appropriate theorems in each case
+let newPols := ← do match pol.getAppFnArgs with
+  | (``HAdd.hAdd, #[_, _, _, _, f, g])  =>
+    let fStx := ← f.toSyntax
+    let gStx := ← g.toSyntax
+    evalTactic (← `(tactic| refine (natDegree_add_le $fStx $gStx).trans ?_))
+    evalTactic (← `(tactic| refine max_le_max ?_ ?_))
+    --let gs := ← getGoals
+    --let _ ← setGoals [gs[0]!]
+    pure [f, g]
+--    focus (CDL1 f)
+--    focus (CDL1 g)
+
+--    pure [f, g]
+  | (``Neg.neg, #[R, _, f])  =>
+    let RStx := ← R.toSyntax
+    let fStx := ← f.toSyntax
+    evalTactic (← `(tactic| refine (natDegree_neg ($fStx : $RStx)).le.trans ?_))
+    pure [f]
+--    CDL1 f
+  | (``HSub.hSub, #[_, _, _, _, f, g])  =>
+    let fStx := ← f.toSyntax
+    let gStx := ← g.toSyntax
+    evalTactic (← `(tactic| refine (natDegree_sub_le $fStx $gStx).trans ?_))
+    evalTactic (← `(tactic| refine max_le_max ?_ ?_))
+
+    pure [f, g]
+
+  | (``HMul.hMul, #[_, _, _, _, f, g])  =>
+    evalTactic (← `(tactic| refine natDegree_mul_le.trans ?_))
+    evalTactic (← `(tactic| refine add_le_add ?_ ?_))
+
+    pure [f, g]
+--    focus (CDL1 f)
+--    focus (CDL1 g)
+
+  -- this covers the two cases `natDegree ↑(C c)` and `natDegree (↑(monomial c) _)`
+  | (``FunLike.coe, #[_, _, _, _, polFun, c])  =>
+    let cStx := ← c.toSyntax
+    if polFun.isAppOf ``Polynomial.C then
+      evalTactic (← `(tactic| refine (natDegree_C $cStx).le))
+      pure []
+    else if polFun.isAppOf ``Polynomial.monomial then
+      evalTactic (← `(tactic| exact natDegree_monomial_le $cStx))
+      pure []
+    else throwError m!"'compute_degree_le' is not implemented for {polFun}"
+  | (``Polynomial.X, _)  =>
+    evalTactic (← `(tactic| exact natDegree_X_le))
+    pure []
+  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, f, _]) => do
+    evalTactic (← `(tactic| refine natDegree_pow_le.trans ?_))
+    evalTactic (← `(tactic| refine Nat.mul_le_mul rfl.le ?_))
+
+    pure [f]
+--    focus (CDL1 f)
+
+  -- deal with `natDegree (n : Nat)`
+  | (``Nat.cast, #[_, _, n]) =>
+    let nStx := ← n.toSyntax
+    evalTactic (← `(tactic| exact (natDegree_nat_cast $nStx).le))
+
+    pure []
+  -- deal with `natDegree (n : Int)`
+  | (``Int.cast, #[_, _, n]) =>
+    let nStx := ← n.toSyntax
+    evalTactic (← `(tactic| exact (natDegree_int_cast $nStx).le))
+    pure []
+  -- deal with `natDegree 0, 1, (n : Nat)`.
+  -- I am not sure why I had to split `n = 0, 1, generic`.
+  | (``OfNat.ofNat, #[_, n, _]) =>
+    let nStx := ← n.toSyntax
+    evalTactic (← `(tactic| exact natDegree_zero.le)) <|>
+      evalTactic (← `(tactic| exact natDegree_one.le)) <|>
+      evalTactic (← `(tactic| exact (natDegree_nat_cast $nStx).le))
+    pure []
+  | (na, _) => throwError m!"'compute_degree_le' is not implemented for '{na}'"
+let _ := ← newPols.mapM fun x => focus (CDL1 x)
+
+#check apply
+#check refineCore
+variable (b : Nat)
+#check Syntax
+--#check mkSyntax
+#check setMVarType
+#check haveLetCore
+#norm_num max 0 (2 * (max (max 1 0) 3 + b * 1))
+#check natDegree_nat_cast
+#check LE.le.trans
+#check instantiateMVars
+#check mkFreshUserName
+example (a : Int) (b : Nat) (hb : b ≤ 2) : natDegree (((3 * a : Int) : Int[X]) + ((X + C a * X + monomial 3 9) * X ^ b) ^ 2) ≤ 10 := by
+  run_tac do
+    let g ← getMainTarget
+    let (is_natDeg, pol, d) := ← isDegLE g
+--    logInfo m!"{(is_natDeg, pol, d)}"
+    let nEQ := ← mkNatDegreeLE pol
+--    logInfo m!"{nEQ}"
+--    let mv := ← mkFreshMVarId
+--    let sideGoal := ← mkFreshMVarId
+    let _ := ← instantiateMVars nEQ
+    let nEQS := ← nEQ.toSyntax
+--    let nam := ← mkFreshUserName `myEq
+    let ns : TSyntax `Mathlib.Tactic.optBinderIdent := { raw := mkAtom "" }
+    let dcls := (←getLCtx).decls
+--    dbg_trace dcls.toList.reduceOption.map (LocalDecl.userName ·)
+    let (mv1, mv2) := ← haveLetCore (← getMainGoal) ns #[] (some nEQS) true
+    setGoals [mv1]
+    --evalTactic (← `(tactic| have : $nEQS))
+    focusAndDone <| CDL1 pol
+    setGoals [mv2]
+    withMainContext do
+    let dcls1 := (←getLCtx).decls
+--    dbg_trace dcls.toList.reduceOption.map (LocalDecl.userName ·)
+--    dbg_trace dcls1.toList.reduceOption.map (LocalDecl.userName ·)
+--    dbg_trace dcls.size
+--    dbg_trace dcls1.size
+    let d := dcls1.toList.reduceOption.find? fun x =>
+      ! ((dcls.toList.reduceOption.map (LocalDecl.toExpr ·)).contains x.toExpr)
+    dbg_trace d.get!.userName
+    let guessDegree := ← toNatDegree (fun p => dbg_trace p.getAppFnArgs; mkAppM ``natDegree #[p] <|> return mkNatLit 0) pol
+    let gds := ← guessDegree.toSyntax
+    let _ := ← evalTactic (← `(tactic| refine LE.le.trans (b := $gds) ?_ ?_))
+    (← getMainGoal).assumption
+    let newGoal := ← (← getMainGoal).clear d.get!.fvarId
+    setGoals [newGoal]
+
+    --let gs := ← mv2.apply d.get!.toExpr
+
+--    let lem := ← mkAppM ``LE.le.trans #[d.get!.toExpr]
+--    let _ := ← refineCore (← lem.toSyntax) `ciao true
+--    dbg_trace dcls1.size == dcls.size
+--    let hyp := ← getFVarLocalDecl nEQ
+--    dbg_trace f!"{hyp.type}"
+  --assumption
+  --refine this.trans ?_
+  --clear this
+  --linarith [hb]
+  show _ ≤ 2 * (3 + 2)
+  simp
+  assumption
+  --mono
+  --norm_num [hb]
+#check assumption
+#exit
+
+
+  have nThis : max 0 (2 * (max (max 1 (0 + 1)) 3 + b * 1)) ≤ 10 := sorry
+  simp
+  apply Nat.le_trans (m := max 0 (2 * (max (max 1 (0 + 1)) 3 + b * 1))) this nThis
+
+
+--  refine LE.le.trans (?_ : _ ≤ max 0 (2 * (max (max 1 (0 + 1)) 3 + b * 1))) ?_
+
+
+
+--    let _ := (← getMainGoal).assert `ciao sideGoal nEQ
+    withMainContext do
+    let _ := ← mv.setType nEQ
+    let ppmv := ← ppExpr (← mv.getType)
+    logInfo mv
+  --  let _ := ← setGoals [mv]
+
+  sorry
+  rename_i hh
+  refine hh.trans ?_
+  show _ ≤ 2 * (3 + 2)
+  simp
+  norm_num
+elab "compute_degree_le" _x:term :max : tactic => return ()
+
+elab "compute_degree_le" x:term :max " + " y:term : tactic => focus do
+  evalTactic (← `(tactic| refine (natDegree_add_le $x $y).trans ?_))
+  evalTactic (← `(tactic| refine (max_le_max ?_ ?_)))
+
+/-
+
+def f (n : Nat) : dNat  := n
+#check natDegree_add_le
+#check natDegree_mul_le
+#check @add_le_add
+#check max_le_max
+-/
+
+elab "compute_degree_le" x:term :max : tactic =>
+  evalTactic `(tactic| compute_degree_le refine (natDegree_add_le $x $y).trans ?_)
+
+--elab "compute_degree_le" `(Polynomial.X):term => return ()
+
+elab "compute_degree_le" x:term :max " + " y:term : tactic => focus do
+  evalTactic (← `(tactic| refine (natDegree_add_le $x $y).trans ?_))
+  evalTactic (← `(tactic| refine (max_le_max ?_ ?_)))
+--  elab "compute_degree_le" elabTail:x:term => compute_degree_le $x
+
+elab "compute_degree_le" x:term :max " * " y:term : tactic => focus do
+  evalTactic (← `(tactic| refine (natDegree_mul_le (p := $x) (q := $y)).trans ?_))
+  evalTactic (← `(tactic| refine add_le_add ?_ ?_))
+  evalTactic (← `(tactic| compute_degree_le $x))
+  evalTactic (← `(tactic| compute_degree_le $y))
+
+example : natDegree (((X : Int[X]) + X) * C 8) ≤ max 1 1 + 0 := by
+  compute_degree_le (X + X) * C 8
+  compute_degree_le X + X
+
+
+/--  `massageNatDegree` assumes that the target is of the form `f.natDegree ≤ d` or `f.degree ≤ d`,
+failing otherwise.  If the goal has the required shape, then `massageNatDegree` produces two goals
+* `natDegree f ≤ adaptedDegree`, where `adaptedDegree` represents a `Nat` "built like `f`";
+* `adaptedDegree ≤ d`, an inequality that hopefully some combination of `norm_num` and `assumption`
+  can discharge -- the tactic takes a step to informally verify that the inequality holds.
+
+The tactic returns `[(some f, mv1), (none, mv2)]`, where `mv1` is the metavariable of the goal
+`natDegree f ≤ adaptedDegree` and `mv2` is the metavariable of the goal `adaptedDegree ≤ d`.
+-/
+def massageNatDegree : TacticM (List (Option Expr × MVarId) ) := focus do
+  -- if the goal is `degree f ≤ d`, then reduce to `natDegree f ≤ d`.
+  evalTactic (← `(tactic| refine degree_le_natDegree.trans ?_; refine Nat.cast_le.mpr ?_)) <|>
+    pure ()
+  let tgt := ← getMainTarget
+  match tgt.consumeMData.getAppFnArgs with
+    -- check that the target is an inequality `≤`...
+    | (``LE.le, #[_, _, lhs, rhs]) => match lhs.getAppFnArgs with
+      -- and that the LHS is `natDegree ...`
+      | (``Polynomial.natDegree, #[_, _, pol]) =>
+        -- compute the expected degree, guessing `0` whenever there is a doubt
+        let guessDeg := ← toNatDegree (fun p => mkAppM ``natDegree #[p] <|> return mkNatLit 0) pol
+        let gdgNat := ← if guessDeg.hasAnyFVar fun _ => true
+          then pure 0 else unsafe evalExpr Nat (.const `Nat []) guessDeg
+        let rhsNat := ← if rhs.hasAnyFVar fun _ => true
+          then pure 0 else unsafe evalExpr Nat (.const `Nat []) rhs
+        -- check that the guessed degree really is at most the given degree
+        let _ := ← (guard <| gdgNat ≤ rhsNat) <|>
+          throwError m!"Should the degree be '{gdgNat}' instead of '{rhsNat}'?"
+        let gDstx := ← guessDeg.toSyntax
+        -- we begin by replacing the initial inequality with the possibly sharper
+        -- `natDegree f ≤ guessDeg`.  This helps, since the shape of `guessDeg` is already
+        -- tailored to the expressions that we will find along the way
+        evalTactic (← `(tactic| refine le_trans ?_ (?_ : $gDstx ≤ _)))
+        return [some pol, none].zip (← getGoals)
+--        pure [(some pol, gs[0]!), (none, gs[1]!)]
+      | _ => throwError "Expected an inequality of the form 'f.natDegree ≤ d' or 'f.degree ≤ d'"
+    | _ => throwError m!"Expected an inequality instead of '{tgt.getAppFnArgs.1}'"
+#check Polynomial.X
+#check mkAppOptM
+example (a : R) [Semiring R] : natDegree (Polynomial.X + X : Int[X]) ≤ max (natDegree (X : Int[X])) (natDegree (X : Int[X])) := by
+  run_tac do
+    let mv := ← getMainGoal
+    let al := ← getLocalDeclFromUserName `a
+    let R := ← inferType al.toExpr
+
+--    let polX := ← mkAppM `Polynomial.X #[]
+    let polX := ← mkAppOptM `Polynomial.X #[some (mkConst `Int), none]
+    let lis := ← mv.apply (← mkAppM `Polynomial.natDegree_add_le #[polX, polX])
+  refine Polynomial.natDegree_add_le X X
+
+#check Lean.MVarId.apply
+#check refineCore
+#eval show MetaM _ from return ppExpr (← inferType (← mkConst' `Polynomial.natDegree_add_le))
+#exit
+def CDL1 (pmv : Option Expr × MVarId) : TacticM (List (Option Expr × MVarId)) := do
+-- we recurse into the shape of the polynomial, using the appropriate theorems in each case
+if let (some pol, mv) := pmv then
+match pol.getAppFnArgs with
+  | (``HAdd.hAdd, #[_, _, _, _, f, g])  =>
+    let lis := ← mv.apply (← mkAppM `Polynomial.natDegree_add_le #[f, g])
+    let fStx := ← f.toSyntax
+    let gStx := ← g.toSyntax
+    let lis := ← mv.apply (Expr.const `natDegree_add_le [])
+    evalTactic (← `(tactic| refine (natDegree_add_le $fStx $gStx).trans ?_))
+    evalTactic (← `(tactic| refine max_le_max ?_ ?_))
+    pure [f, g]
+  | (``Neg.neg, #[R, _, f])  =>
+    let RStx := ← R.toSyntax
+    let fStx := ← f.toSyntax
+    evalTactic (← `(tactic| refine (natDegree_neg ($fStx : $RStx)).le.trans ?_))
+    pure [f]
+  | (``HSub.hSub, #[_, _, _, _, f, g])  =>
+    let fStx := ← f.toSyntax
+    let gStx := ← g.toSyntax
+    evalTactic (← `(tactic| refine (natDegree_sub_le $fStx $gStx).trans ?_))
+    evalTactic (← `(tactic| refine max_le_max ?_ ?_))
+    pure [f, g]
+  | (``HMul.hMul, #[_, _, _, _, f, g])  =>
+    evalTactic (← `(tactic| refine natDegree_mul_le.trans ?_))
+    evalTactic (← `(tactic| refine add_le_add ?_ ?_))
+    pure [f, g]
+  -- this covers the two cases `natDegree ↑(C c)` and `natDegree (↑(monomial c) _)`
+  | (``FunLike.coe, #[_, _, _, _, polFun, c])  =>
+    let cStx := ← c.toSyntax
+    if polFun.isAppOf ``Polynomial.C then
+      evalTactic (← `(tactic| refine (natDegree_C $cStx).le))
+    else if polFun.isAppOf ``Polynomial.monomial then
+      evalTactic (← `(tactic| exact natDegree_monomial_le $cStx))
+    else throwError m!"'compute_degree_le' is not implemented for {polFun}"
+    pure [c]
+  | (``Polynomial.X, _)  =>
+    evalTactic (← `(tactic| exact natDegree_X_le))
+    pure []
+  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, f, _]) => do
+    evalTactic (← `(tactic| refine natDegree_pow_le.trans ?_))
+    evalTactic (← `(tactic| refine Nat.mul_le_mul rfl.le ?_))
+    pure [f]
+  -- deal with `natDegree (n : Nat)`
+  | (``Nat.cast, #[_, _, n]) =>
+    let nStx := ← n.toSyntax
+    evalTactic (← `(tactic| exact (natDegree_nat_cast $nStx).le))
+    pure []
+  -- deal with `natDegree (n : Int)`
+  | (``Int.cast, #[_, _, n]) =>
+    let nStx := ← n.toSyntax
+    evalTactic (← `(tactic| exact (natDegree_int_cast $nStx).le))
+    pure []
+  -- deal with `natDegree 0, 1, (n : Nat)`.
+  -- I am not sure why I had to split `n = 0, 1, generic`.
+  | (``OfNat.ofNat, #[_, n, _]) =>
+    let nStx := ← n.toSyntax
+    evalTactic (← `(tactic| exact natDegree_zero.le)) <|>
+      evalTactic (← `(tactic| exact natDegree_one.le)) <|>
+      evalTactic (← `(tactic| exact (natDegree_nat_cast $nStx).le))
+    pure []
+  | (na, _) => throwError m!"'compute_degree_le' is not implemented for '{na}'"
+else
+pure [pmv]
+
+#check apply
+example {K} [Field K] : natDegree ((X : K[X]) ^ 5 + 7 + Polynomial.X + C 0) ≤ 5 := by
+  run_tac do
+    let polMV := ← massageNatDegree
+    let (pols, mvs) := polMV.unzip
+    dbg_trace f!"{← pols.reduceOption.mapM (ppExpr ·)}"
+    logInfo m!"{mvs}"
+  sorry
+  norm_num
+#check Environment
+
+#exit
+partial
+def CDL1 (pol : Expr) : TacticM (List Expr) := do
+-- we recurse into the shape of the polynomial, using the appropriate theorems in each case
+match pol.getAppFnArgs with
+  | (``HAdd.hAdd, #[_, _, _, _, f, g])  =>
+    let fStx := ← f.toSyntax
+    let gStx := ← g.toSyntax
+    evalTactic (← `(tactic| refine (natDegree_add_le $fStx $gStx).trans ?_))
+    evalTactic (← `(tactic| refine max_le_max ?_ ?_))
+    pure [f, g]
+  | (``Neg.neg, #[R, _, f])  =>
+    let RStx := ← R.toSyntax
+    let fStx := ← f.toSyntax
+    evalTactic (← `(tactic| refine (natDegree_neg ($fStx : $RStx)).le.trans ?_))
+    pure [f]
+  | (``HSub.hSub, #[_, _, _, _, f, g])  =>
+    let fStx := ← f.toSyntax
+    let gStx := ← g.toSyntax
+    evalTactic (← `(tactic| refine (natDegree_sub_le $fStx $gStx).trans ?_))
+    evalTactic (← `(tactic| refine max_le_max ?_ ?_))
+    pure [f, g]
+  | (``HMul.hMul, #[_, _, _, _, f, g])  =>
+    evalTactic (← `(tactic| refine natDegree_mul_le.trans ?_))
+    evalTactic (← `(tactic| refine add_le_add ?_ ?_))
+    pure [f, g]
+  -- this covers the two cases `natDegree ↑(C c)` and `natDegree (↑(monomial c) _)`
+  | (``FunLike.coe, #[_, _, _, _, polFun, c])  =>
+    let cStx := ← c.toSyntax
+    if polFun.isAppOf ``Polynomial.C then
+      evalTactic (← `(tactic| refine (natDegree_C $cStx).le))
+    else if polFun.isAppOf ``Polynomial.monomial then
+      evalTactic (← `(tactic| exact natDegree_monomial_le $cStx))
+    else throwError m!"'compute_degree_le' is not implemented for {polFun}"
+    pure [c]
+  | (``Polynomial.X, _)  =>
+    evalTactic (← `(tactic| exact natDegree_X_le))
+    pure []
+  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, f, _]) => do
+    evalTactic (← `(tactic| refine natDegree_pow_le.trans ?_))
+    evalTactic (← `(tactic| refine Nat.mul_le_mul rfl.le ?_))
+    pure [f]
+  -- deal with `natDegree (n : Nat)`
+  | (``Nat.cast, #[_, _, n]) =>
+    let nStx := ← n.toSyntax
+    evalTactic (← `(tactic| exact (natDegree_nat_cast $nStx).le))
+    pure []
+  -- deal with `natDegree (n : Int)`
+  | (``Int.cast, #[_, _, n]) =>
+    let nStx := ← n.toSyntax
+    evalTactic (← `(tactic| exact (natDegree_int_cast $nStx).le))
+    pure []
+  -- deal with `natDegree 0, 1, (n : Nat)`.
+  -- I am not sure why I had to split `n = 0, 1, generic`.
+  | (``OfNat.ofNat, #[_, n, _]) =>
+    let nStx := ← n.toSyntax
+    evalTactic (← `(tactic| exact natDegree_zero.le)) <|>
+      evalTactic (← `(tactic| exact natDegree_one.le)) <|>
+      evalTactic (← `(tactic| exact (natDegree_nat_cast $nStx).le))
+    pure []
+  | (na, _) => throwError m!"'compute_degree_le' is not implemented for '{na}'"
+
 
 /--
 `CDL` inspects the goal and checks that it is of the form `natDegree f ≤ d` or `degree f ≤ d`,
