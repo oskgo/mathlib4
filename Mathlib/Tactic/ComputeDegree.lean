@@ -86,6 +86,7 @@ match pol.getAppFnArgs with
   --  everything else falls back to `alt pol`.
   | (_name, _args) => alt pol
 
+--  TODO: is it useful to return the last `Expr`, namely `rhs`, representing the target degree?
 def isDegLE (e : Expr) : CoreM (Bool × Expr × Expr) := do
   match e.consumeMData.getAppFnArgs with
     -- check that the target is an inequality `≤`...
@@ -97,9 +98,17 @@ def isDegLE (e : Expr) : CoreM (Bool × Expr × Expr) := do
         f!"  'f.natDegree ≤ d'  or  'f.degree ≤ d',\n\ninstead, {na} appears on the LHS")
     | _ => throwError m!"Expected an inequality instead of '{e.getAppFnArgs.1}'"
 
-def mkNatDegreeLE (f : Expr) : MetaM Expr := do
+--#check degree (X : Nat[X]) ≤ (1 : Nat)
+--#check WithBot
+
+def mkNatDegreeLE (f : Expr) (is_natDeg? : Bool) : MetaM Expr := do
   let guessDegree := ← toNatDegree (fun p => dbg_trace p.getAppFnArgs; mkAppM ``natDegree #[p] <|> return mkNatLit 0) f
-  let ndf := ← mkAppM ``natDegree #[f]
+  let guessDegree := ← if is_natDeg? then
+    return guessDegree
+  else
+    let wBotN := Expr.app (Expr.const `WithBot [Level.zero]) (Expr.const `Nat [])
+    mkAppOptM ``Nat.cast #[some wBotN, none, some guessDegree]
+  let ndf := ← mkAppM (if is_natDeg? then ``natDegree else ``degree) #[f]
   let ndfLE := ← mkAppM ``LE.le #[ndf, guessDegree]
   pure ndfLE
 
@@ -190,26 +199,33 @@ let newPols := ← do match pol.getAppFnArgs with
   | (na, _) => throwError m!"'compute_degree_le' is not implemented for '{na}'"
 let _ := ← newPols.mapM fun x => focus (CDL x)
 
-def addNatDegreeDecl (stx : TSyntax `Mathlib.Tactic.optBinderIdent) (pol : Expr) : TacticM Unit :=
+def addNatDegreeDecl (stx : TSyntax `Mathlib.Tactic.optBinderIdent) (pol : Expr) (is_natDeg? : Bool) : TacticM Unit :=
 focus do
-  let nEQ := ← mkNatDegreeLE pol
+  let nEQ := ← mkNatDegreeLE pol is_natDeg?
   let nEQS := ← nEQ.toSyntax
 --  let ns : TSyntax `Mathlib.Tactic.optBinderIdent := { raw := mkAtom "" }
   let (mv1, mv2) := ← haveLetCore (← getMainGoal) stx #[] (some nEQS) true
   setGoals [mv1, mv2]
+  if ! is_natDeg? then
+    evalTactic (← `(tactic| refine degree_le_natDegree.trans ?_; refine Nat.cast_le.mpr ?_))
   focusAndDone $ CDL pol
 
 
-theorem what : natDegree (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10)) ≤ 10 := by
+theorem what : degree (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10)) ≤ 10 := by
   run_tac do
     let g ← getMainTarget
     let (is_natDeg, pol, d) := ← isDegLE g
-    let dcls := (←getLCtx).decls
-    addNatDegreeDecl { raw := mkAtom "oy" } pol
+    let nextp := ← ppExpr (← mkNatDegreeLE pol false)
+    logInfo nextp
+--    let dcls := (←getLCtx).decls
+    addNatDegreeDecl { raw := mkAtom "oy" } pol is_natDeg
+    let _ := ← evalTactic (← `(tactic| refine LE.le.trans ‹_› ?_))
+
+#exit
     withMainContext do
-    let dcls1 := (←getLCtx).decls
-    let d := dcls1.toList.reduceOption.find? fun x =>
-      ! ((dcls.toList.reduceOption.map (LocalDecl.toExpr ·)).contains x.toExpr)
+--    let dcls1 := (←getLCtx).decls
+--    let d := dcls1.toList.reduceOption.find? fun x =>
+--      ! ((dcls.toList.reduceOption.map (LocalDecl.toExpr ·)).contains x.toExpr)
     --dbg_trace d.get!.userName
     let guessDegree := ← toNatDegree (fun p => dbg_trace p.getAppFnArgs; mkAppM ``natDegree #[p] <|>
       return mkNatLit 0) pol
@@ -242,8 +258,8 @@ theorem what : natDegree (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X 
 example (a : Int) (b : Nat) (hb : b ≤ 2) : natDegree (((3 * a : Int) : Int[X]) + ((X + C a * X + monomial 3 9) * X ^ b) ^ 2) ≤ 10 := by
   run_tac do
     let g ← getMainTarget
-    let (is_natDeg, pol, d) := ← isDegLE g
-    let nEQ := ← mkNatDegreeLE pol
+    let (is_natDeg, pol, _) := ← isDegLE g
+    let nEQ := ← mkNatDegreeLE pol is_natDeg
     let _ := ← instantiateMVars nEQ
     let nEQS := ← nEQ.toSyntax
     let ns : TSyntax `Mathlib.Tactic.optBinderIdent := { raw := mkAtom "" }
