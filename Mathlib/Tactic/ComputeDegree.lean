@@ -103,124 +103,6 @@ def mkNatDegreeLE (f : Expr) : MetaM Expr := do
   let ndfLE := ← mkAppM ``LE.le #[ndf, guessDegree]
   pure ndfLE
 
-partial
-def CDL1 (pol : Expr) : TacticM Unit := do
--- we recurse into the shape of the polynomial, using the appropriate theorems in each case
-let newPols := ← do match pol.getAppFnArgs with
-  | (``HAdd.hAdd, #[_, _, _, _, f, g])  =>
---    let lis := ← (← getMainGoal).apply (← mkAppM `Polynomial.natDegree_add_le #[f, g])
---    setGoals lis
-    let fStx := ← f.toSyntax
-    let gStx := ← g.toSyntax
-    evalTactic (← `(tactic| refine (natDegree_add_le $fStx $gStx).trans ?_))
-    evalTactic (← `(tactic| refine max_le_max ?_ ?_))
-    pure [f, g]
-  | (``Neg.neg, #[_, _, f])  =>
-    let fStx := ← f.toSyntax
-    evalTactic (← `(tactic| refine (natDegree_neg $fStx).le.trans ?_))
-    pure [f]
-  | (``HSub.hSub, #[_, _, _, _, f, g])  =>
-    let fStx := ← f.toSyntax
-    let gStx := ← g.toSyntax
-    evalTactic (← `(tactic| refine (natDegree_sub_le $fStx $gStx).trans ?_))
-    evalTactic (← `(tactic| refine max_le_max ?_ ?_))
-    pure [f, g]
-  | (``HMul.hMul, #[_, _, _, _, f, g])  =>
-    evalTactic (← `(tactic| refine natDegree_mul_le.trans ?_))
-    evalTactic (← `(tactic| refine add_le_add ?_ ?_))
-    pure [f, g]
-  -- this covers the two cases `natDegree ↑(C c)` and `natDegree (↑(monomial c) _)`
-  | (``FunLike.coe, #[_, _, _, _, polFun, c])  =>
-    let cStx := ← c.toSyntax
-    if polFun.isAppOf ``Polynomial.C then
-      evalTactic (← `(tactic| refine (natDegree_C $cStx).le))
-      pure []
-    else if polFun.isAppOf ``Polynomial.monomial then
-      evalTactic (← `(tactic| exact natDegree_monomial_le $cStx))
-      pure []
-    else throwError m!"'compute_degree_le' is not implemented for {polFun}"
-  | (``Polynomial.X, _)  =>
-    evalTactic (← `(tactic| exact natDegree_X_le))
-    pure []
-  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, f, _]) => do
-    evalTactic (← `(tactic| refine natDegree_pow_le.trans ?_))
-    evalTactic (← `(tactic| refine Nat.mul_le_mul rfl.le ?_))
-    pure [f]
-  -- deal with `natDegree (n : Nat)`
-  | (``Nat.cast, #[_, _, n]) =>
-    let nStx := ← n.toSyntax
-    evalTactic (← `(tactic| exact (natDegree_nat_cast $nStx).le))
-    pure []
-  -- deal with `natDegree (n : Int)`
-  | (``Int.cast, #[_, _, n]) =>
-    let nStx := ← n.toSyntax
-    evalTactic (← `(tactic| exact (natDegree_int_cast $nStx).le))
-    pure []
-  -- deal with `natDegree 0, 1, (n : Nat)`.
-  -- I am not sure why I had to split `n = 0, 1, generic`.
-  | (``OfNat.ofNat, #[_, n, _]) =>
-    let nStx := ← n.toSyntax
-    evalTactic (← `(tactic| exact natDegree_zero.le)) <|>
-      evalTactic (← `(tactic| exact natDegree_one.le)) <|>
-      evalTactic (← `(tactic| exact (natDegree_nat_cast $nStx).le))
-    pure []
-  | (na, _) => throwError m!"'compute_degree_le' is not implemented for '{na}'"
-let _ := ← newPols.mapM fun x => focus (CDL1 x)
-
-example (a : Int) (b : Nat) (hb : b ≤ 2) : natDegree (((3 * a : Int) : Int[X]) + ((X + C a * X + monomial 3 9) * X ^ b) ^ 2) ≤ 10 := by
-  run_tac do
-    let g ← getMainTarget
-    let (is_natDeg, pol, d) := ← isDegLE g
---    logInfo m!"{(is_natDeg, pol, d)}"
-    let nEQ := ← mkNatDegreeLE pol
---    logInfo m!"{nEQ}"
---    let mv := ← mkFreshMVarId
---    let sideGoal := ← mkFreshMVarId
-    let _ := ← instantiateMVars nEQ
-    let nEQS := ← nEQ.toSyntax
---    let nam := ← mkFreshUserName `myEq
-    let ns : TSyntax `Mathlib.Tactic.optBinderIdent := { raw := mkAtom "" }
-    let dcls := (←getLCtx).decls
---    dbg_trace dcls.toList.reduceOption.map (LocalDecl.userName ·)
-    let (mv1, mv2) := ← haveLetCore (← getMainGoal) ns #[] (some nEQS) true
-    setGoals [mv1]
-    --evalTactic (← `(tactic| have : $nEQS))
-    focusAndDone <| CDL1 pol
-    setGoals [mv2]
-    withMainContext do
-    let dcls1 := (←getLCtx).decls
---    dbg_trace dcls.toList.reduceOption.map (LocalDecl.userName ·)
---    dbg_trace dcls1.toList.reduceOption.map (LocalDecl.userName ·)
---    dbg_trace dcls.size
---    dbg_trace dcls1.size
-    let d := dcls1.toList.reduceOption.find? fun x =>
-      ! ((dcls.toList.reduceOption.map (LocalDecl.toExpr ·)).contains x.toExpr)
-    dbg_trace d.get!.userName
-    let guessDegree := ← toNatDegree (fun p => dbg_trace p.getAppFnArgs; mkAppM ``natDegree #[p] <|> return mkNatLit 0) pol
-    let gds := ← guessDegree.toSyntax
-    let _ := ← evalTactic (← `(tactic| refine LE.le.trans (b := $gds) ?_ ?_))
-    (← getMainGoal).assumption
-    let newGoal := ← (← getMainGoal).clear d.get!.fvarId
-    setGoals [newGoal]
-
-    --let gs := ← mv2.apply d.get!.toExpr
-
---    let lem := ← mkAppM ``LE.le.trans #[d.get!.toExpr]
---    let _ := ← refineCore (← lem.toSyntax) `ciao true
---    dbg_trace dcls1.size == dcls.size
---    let hyp := ← getFVarLocalDecl nEQ
---    dbg_trace f!"{hyp.type}"
-  --assumption
-  --refine this.trans ?_
-  --clear this
-  --linarith [hb]
-  show _ ≤ 2 * (3 + 2)
-  simp
-  assumption
-  --mono
-  --norm_num [hb]
-#check assumption
-
 section mylemmas
 
 variable {R : Type _}
@@ -306,7 +188,7 @@ let newPols := ← do match pol.getAppFnArgs with
       evalTactic (← `(tactic| exact (natDegree_nat_cast $nStx).le))
     pure []
   | (na, _) => throwError m!"'compute_degree_le' is not implemented for '{na}'"
-let _ := ← newPols.mapM fun x => focus (CDL1 x)
+let _ := ← newPols.mapM fun x => focus (CDL x)
 
 def addNatDegreeDecl (stx : TSyntax `Mathlib.Tactic.optBinderIdent) (pol : Expr) : TacticM Unit :=
 focus do
@@ -318,30 +200,12 @@ focus do
   focusAndDone $ CDL pol
 
 
-theorem what : degree (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10)) ≤ 10 := by
+theorem what : natDegree (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10)) ≤ 10 := by
   run_tac do
     let g ← getMainTarget
     let (is_natDeg, pol, d) := ← isDegLE g
---    logInfo m!"{(is_natDeg, pol, d)}"
---    let nEQ := ← mkNatDegreeLE pol
---    logInfo m!"{nEQ}"
---    let mv := ← mkFreshMVarId
---    let sideGoal := ← mkFreshMVarId
---    let _ := ← instantiateMVars nEQ
---    let nEQS := ← nEQ.toSyntax
---    let nam := ← mkFreshUserName `myEq
---    let ns : TSyntax `Mathlib.Tactic.optBinderIdent := { raw := mkAtom "" }
     let dcls := (←getLCtx).decls
     addNatDegreeDecl { raw := mkAtom "oy" } pol
---    dbg_trace dcls.toList.reduceOption.map (LocalDecl.userName ·)
---    let (mv1, mv2) := ← haveLetCore (← getMainGoal) ns #[] (some nEQS) true
---    setGoals [mv1, mv2]
---    focusAndDone $ CDL pol
-    --evalTactic (← `(tactic| have : $nEQS))
-    --let (_, mvs) := (← CDL mv1 pol).unzip
---    setGoals (mvs ++ [mv2])
---    setGoals [mv2]
-/-
     withMainContext do
     let dcls1 := (←getLCtx).decls
     let d := dcls1.toList.reduceOption.find? fun x =>
@@ -352,6 +216,7 @@ theorem what : degree (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C
     let gds := ← guessDegree.toSyntax
     let _ := ← evalTactic (← `(tactic| refine LE.le.trans (b := $gds) ?_ ?_))
     focusAndDone (← getMainGoal).assumption
+/-
 
     let newGoal := ← (← getMainGoal).clear d.get!.fvarId
 --    setGoals (← getGoals)
@@ -360,7 +225,7 @@ theorem what : degree (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C
   --evalTactic (← `(tactic| refine degree_le_natDegree.trans ?_; refine Nat.cast_le.mpr ?_)) <|>
   --  pure ()
   have := degree_le_natDegree.trans (Nat.cast_le.mpr this)
-  refine this.trans ?_
+  --refine this.trans ?_
   norm_num
     --let gs := ← mv2.apply d.get!.toExpr
   --norm_num
@@ -372,122 +237,43 @@ theorem what : degree (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C
   --assumption
   --refine this.trans ?_
   --clear this
-  --linarith [hb]
 
-  --exact natDegree_X_le
-  --exact natDegree_X_le
+
+example (a : Int) (b : Nat) (hb : b ≤ 2) : natDegree (((3 * a : Int) : Int[X]) + ((X + C a * X + monomial 3 9) * X ^ b) ^ 2) ≤ 10 := by
+  run_tac do
+    let g ← getMainTarget
+    let (is_natDeg, pol, d) := ← isDegLE g
+    let nEQ := ← mkNatDegreeLE pol
+    let _ := ← instantiateMVars nEQ
+    let nEQS := ← nEQ.toSyntax
+    let ns : TSyntax `Mathlib.Tactic.optBinderIdent := { raw := mkAtom "" }
+    let dcls := (←getLCtx).decls
+    let (mv1, mv2) := ← haveLetCore (← getMainGoal) ns #[] (some nEQS) true
+    setGoals [mv1]
+    focusAndDone <| CDL pol
+    setGoals [mv2]
+    withMainContext do
+    let dcls1 := (←getLCtx).decls
+    let d := dcls1.toList.reduceOption.find? fun x =>
+      ! ((dcls.toList.reduceOption.map (LocalDecl.toExpr ·)).contains x.toExpr)
+    dbg_trace d.get!.userName
+    let guessDegree := ← toNatDegree (fun p => dbg_trace p.getAppFnArgs; mkAppM ``natDegree #[p] <|> return mkNatLit 0) pol
+    let gds := ← guessDegree.toSyntax
+    let _ := ← evalTactic (← `(tactic| refine LE.le.trans (b := $gds) ‹_› ?_))
+    let newGoal := ← (← getMainGoal).clear d.get!.fvarId
+    setGoals [newGoal]
+  --assumption
   --refine this.trans ?_
-  --simp
+  --clear this
+  --linarith [hb]
+  show _ ≤ 2 * (3 + 2)
+  simp
+  assumption
 
-/- unworking
-
-partial
-def CDL (mv : MVarId) (pol : Expr) : TacticM Unit := do
--- we recurse into the shape of the polynomial, using the appropriate theorems in each case
---let mv := ← getMainGoal
-setGoals [mv]
-let mis := ← match pol.getAppFnArgs with
-  | (``HAdd.hAdd, #[_, _, _, _, f, g])  => do
-    evalTactic (← `(tactic| refine add ?_ ?_))
---    let Rxargs := Rx.getAppArgs
---    dbg_trace Rxargs
---    let R := Rxargs[0]!
---    let lvl := R.constLevels!
---    dbg_trace f!"levels: {lvl}"
-----    let lis := ← mv.apply (← mkConstWithFreshMVarLevels ``add)
---    --let att := ← mkConstWithFreshMVarLevels ``add
---    let att := mkConst ``add [Level.zero] --lvl
---    dbg_trace "before"
---    let _ := ← mv.withContext do
---      dbg_trace ← ppExpr (← getMainTarget)
---      dbg_trace ← isDefEq (← getMainTarget) (← mkConstWithFreshMVarLevels ``add)
---      --let att := ← mkAppM' att #[f, g]
---      dbg_trace "after"
---      dbg_trace ← ppExpr att
-    return [f, g].zip (← getGoals)--(← mv.apply (← mkConstWithFreshMVarLevels ``add))
-  | (``Neg.neg, #[_, _, f])  =>
---    let lis := ← mv.apply (← mkConstWithFreshMVarLevels ``neg)
-    return [f].zip (← getGoals) --(← mv.apply (← mkConstWithFreshMVarLevels ``neg))
-  | (``HSub.hSub, #[_, _, _, _, f, g])  =>
---    let lis := ← mv.apply (← mkConstWithFreshMVarLevels ``sub)
-    return [f, g].zip (← mv.apply (← mkConstWithFreshMVarLevels ``sub))
-  | (``HMul.hMul, #[_, _, _, _, f, g])  =>
---    let lis := ← mv.apply (← mkConstWithFreshMVarLevels ``sub)
-    return [f, g].zip (← mv.apply (← mkConstWithFreshMVarLevels ``mul))
-  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, f, _]) => do
-    evalTactic (← `(tactic| refine natDegree_pow_le.trans ?_))
-    evalTactic (← `(tactic| refine Nat.mul_le_mul rfl.le ?_))
-    pure [(f, ← getMainGoal)]
---    return [f].zip (← mv.apply (← mkConstWithFreshMVarLevels ``pow))
-  -- this covers the two cases `natDegree ↑(C c)` and `natDegree (↑(monomial c) _)`
-  | (``FunLike.coe, #[_, _, _, _, polFun, c])  => do
-    let cStx := ← c.toSyntax
-    if polFun.isAppOf ``Polynomial.C then
-      evalTactic (← `(tactic| refine (natDegree_C $cStx).le))
-      pure []
-    else if polFun.isAppOf ``Polynomial.monomial then
-      evalTactic (← `(tactic| exact natDegree_monomial_le $cStx))
-      pure []
-    else throwError m!"'compute_degree_le' is not implemented for {polFun}"
-  | (``Polynomial.X, _)  => do
-    dbg_trace "passo da qui"
-    evalTactic (← `(tactic| exact natDegree_X_le))
-    pure []
-  -- deal with `natDegree (n : Nat)`
-  | (``Nat.cast, #[_, _, n]) => do
-    let nStx := ← n.toSyntax
-    evalTactic (← `(tactic| exact (natDegree_nat_cast $nStx).le))
-    pure []
-  -- deal with `natDegree (n : Int)`
-  | (``Int.cast, #[_, _, n]) => do
-    let nStx := ← n.toSyntax
-    evalTactic (← `(tactic| exact (natDegree_int_cast $nStx).le))
-    pure []
-  -- deal with `natDegree 0, 1, (n : Nat)`.
-  -- I am not sure why I had to split `n = 0, 1, generic`.
-  | (``OfNat.ofNat, #[_, n, _]) => do
-    let nStx := ← n.toSyntax
-    evalTactic (← `(tactic| exact natDegree_zero.le)) <|>
-      evalTactic (← `(tactic| exact natDegree_one.le)) <|>
-      evalTactic (← `(tactic| exact (natDegree_nat_cast $nStx).le))
-    pure []
-  | (na, _) => throwError m!"'compute_degree_le' is not implemented for '{na}'"
-let _ := mis.mapM fun x => focusAndDone (CDL x.2 x.1)
---let _ := ← newPols.mapM fun x => focus (CDL1 x)
-
--/
-#print
-
-  apply mine
-  apply @mine Nat _ _ _ X X
-  refine (Polynomial.natDegree_add_le (X : Nat[X]) (X : Nat[X])).trans ?_
 
 
 #exit
 
-
-  have nThis : max 0 (2 * (max (max 1 (0 + 1)) 3 + b * 1)) ≤ 10 := sorry
-  simp
-  apply Nat.le_trans (m := max 0 (2 * (max (max 1 (0 + 1)) 3 + b * 1))) this nThis
-
-
---  refine LE.le.trans (?_ : _ ≤ max 0 (2 * (max (max 1 (0 + 1)) 3 + b * 1))) ?_
-
-
-
---    let _ := (← getMainGoal).assert `ciao sideGoal nEQ
-    withMainContext do
-    let _ := ← mv.setType nEQ
-    let ppmv := ← ppExpr (← mv.getType)
-    logInfo mv
-  --  let _ := ← setGoals [mv]
-
-  sorry
-  rename_i hh
-  refine hh.trans ?_
-  show _ ≤ 2 * (3 + 2)
-  simp
-  norm_num
 elab "compute_degree_le" _x:term :max : tactic => return ()
 
 elab "compute_degree_le" x:term :max " + " y:term : tactic => focus do
