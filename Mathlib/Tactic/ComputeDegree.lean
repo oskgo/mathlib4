@@ -87,13 +87,13 @@ match pol.getAppFnArgs with
   | (_name, _args) => alt pol
 
 --  TODO: is it useful to return the last `Expr`, namely `rhs`, representing the target degree?
-def isDegLE (e : Expr) : CoreM (Bool × Expr × Expr) := do
+def isDegLE (e : Expr) : CoreM (Bool × Expr) := do
   match e.consumeMData.getAppFnArgs with
     -- check that the target is an inequality `≤`...
-    | (``LE.le, #[_, _, lhs, rhs]) => match lhs.getAppFnArgs with
+    | (``LE.le, #[_, _, lhs, _rhs]) => match lhs.getAppFnArgs with
       -- and that the LHS is `natDegree ...` or `degree ...`
-      | (``degree, #[_, _, pol])    => return (false, pol, rhs)
-      | (``natDegree, #[_, _, pol]) => return (true, pol, rhs)
+      | (``degree, #[_, _, pol])    => return (false, pol)
+      | (``natDegree, #[_, _, pol]) => return (true, pol)
       | (na, _) => throwError (f!"Expected an inequality of the form\n\n" ++
         f!"  'f.natDegree ≤ d'  or  'f.degree ≤ d',\n\ninstead, {na} appears on the LHS")
     | _ => throwError m!"Expected an inequality instead of '{e.getAppFnArgs.1}'"
@@ -210,17 +210,30 @@ focus do
     evalTactic (← `(tactic| refine degree_le_natDegree.trans ?_; refine Nat.cast_le.mpr ?_))
   focusAndDone $ CDL pol
 
-
+#check assumption
+#check clear
 theorem what : degree (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10)) ≤ 10 := by
   run_tac do
     let g ← getMainTarget
-    let (is_natDeg, pol, d) := ← isDegLE g
+    let (is_natDeg, pol) := ← isDegLE g
     let nextp := ← ppExpr (← mkNatDegreeLE pol false)
     logInfo nextp
 --    let dcls := (←getLCtx).decls
     addNatDegreeDecl { raw := mkAtom "oy" } pol is_natDeg
     let _ := ← evalTactic (← `(tactic| refine LE.le.trans ‹_› ?_))
+    withMainContext do
+      let last := (← getLCtx).lastDecl
+--      dbg_trace last.get!.userName
+--      let pp := (← getLCtx).pop
 
+      --dbg_trace (← getLCtx).decls.toList.reduceOption.map (LocalDecl.userName ·)
+      --dbg_trace last.get!.userName
+      --dbg_trace pp.decls.toList.reduceOption.map (LocalDecl.userName ·)
+      let new := ← (← getMainGoal).clear last.get!.fvarId
+--      let j := ← getUnsolvedGoals
+      setGoals [new]
+  norm_num
+  --clear this
 #exit
     withMainContext do
 --    let dcls1 := (←getLCtx).decls
