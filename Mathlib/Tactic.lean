@@ -61,6 +61,7 @@ import Mathlib.Tactic.LabelAttr
 import Mathlib.Tactic.LeftRight
 import Mathlib.Tactic.LibrarySearch
 import Mathlib.Tactic.Lift
+import Mathlib.Tactic.LiftLets
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Linarith.Datatypes
 import Mathlib.Tactic.Linarith.Elimination
@@ -105,6 +106,7 @@ import Mathlib.Tactic.PushNeg
 import Mathlib.Tactic.Qify
 import Mathlib.Tactic.Qify.Attr
 import Mathlib.Tactic.RSuffices
+import Mathlib.Tactic.Recall
 import Mathlib.Tactic.Recover
 import Mathlib.Tactic.Relation.Rfl
 import Mathlib.Tactic.Relation.Symm
@@ -143,6 +145,7 @@ import Mathlib.Tactic.TryThis
 import Mathlib.Tactic.TypeCheck
 import Mathlib.Tactic.UnsetOption
 import Mathlib.Tactic.Use
+import Mathlib.Tactic.Variable
 import Mathlib.Tactic.WLOG
 import Mathlib.Tactic.Widget.CommDiag
 import Mathlib.Tactic.Zify
