@@ -210,9 +210,50 @@ focus do
     evalTactic (← `(tactic| refine degree_le_natDegree.trans ?_; refine Nat.cast_le.mpr ?_))
   focusAndDone $ CDL pol
 
+open Elab Term in
+def fAdd (is_natDeg? : Bool) (n : TSyntax `Mathlib.Tactic.optBinderIdent) (t : TSyntax `term) :
+    TacticM Unit := do
+  let te := ← withRef t do
+    let e ← Term.elabTerm t none
+    Term.synthesizeSyntheticMVars false
+    instantiateMVars e
+  addNatDegreeDecl n te is_natDeg?
+  let ni : TSyntax `ident :=
+    if n.raw[0].isIdent then ⟨n.raw[0]⟩ else HygieneInfo.mkIdent ⟨n.raw[0]⟩ `this
+  --let n := n.raw[0].getId --optBinderIdent.name n
+  evalTactic (← `(tactic| conv_rhs at $ni => { norm_num }))
+
+syntax "natDeg" haveIdLhs' : tactic
+syntax "deg" haveIdLhs' : tactic
+
+open Elab Term in
+elab_rules : tactic
+| `(tactic| natDeg $n:optBinderIdent : $t:term) => do
+  fAdd false n t
+--  let te := ← withRef t do
+--    let e ← Term.elabTerm t none
+--    Term.synthesizeSyntheticMVars false
+--    instantiateMVars e
+--  addNatDegreeDecl n te true
+--  let ni : TSyntax `ident :=
+--    if n.raw[0].isIdent then ⟨n.raw[0]⟩ else HygieneInfo.mkIdent ⟨n.raw[0]⟩ `this
+--  --let n := n.raw[0].getId --optBinderIdent.name n
+--  evalTactic (← `(tactic| conv_rhs at $ni => { norm_num }))
+/-
+elab_rules : tactic
+| `(tactic| natDeg $n:optBinderIdent $bs* $[: $t:term]?) => do
+  let (goal1, goal2) ← haveLetCore (← getMainGoal) n bs t false
+  replaceMainGoal [goal1, goal2]
+-/
+
 #check assumption
 #check clear
 theorem what : degree (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10)) ≤ 10 := by
+  natDeg df : (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10))
+  --conv_rhs at df => { norm_num }
+  assumption
+
+#exit
   run_tac do
     let g ← getMainTarget
     let (is_natDeg, pol) := ← isDegLE g
