@@ -229,6 +229,8 @@ syntax "deg" haveIdLhs' : tactic
 open Elab Term in
 elab_rules : tactic
 | `(tactic| natDeg $n:optBinderIdent : $t:term) => do
+  fAdd true n t
+| `(tactic| deg $n:optBinderIdent : $t:term) => do
   fAdd false n t
 --  let te := ← withRef t do
 --    let e ← Term.elabTerm t none
@@ -249,7 +251,8 @@ elab_rules : tactic
 #check assumption
 #check clear
 theorem what : degree (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10)) ≤ 10 := by
-  natDeg df : (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10))
+  natDeg ndf : (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10))
+  deg df : (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10))
   --conv_rhs at df => { norm_num }
   assumption
 
