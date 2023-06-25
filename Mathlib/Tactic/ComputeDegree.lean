@@ -50,21 +50,21 @@ regardless of whether the base-ring is `nontrivial` or not.
 Everything that is not obtained as an iterated sum, product or `Nat`-power of `C`onstants, `Nat`s,
 `X`s, `monomials` gets its guess to the `natDegree` outsourced to the function `alt`.
 
-Chances are that `alt` is the constant function that, for an expression `f`, guesses the
-`Expr`ession representing `natDegree f`.
+Chances are that `alt` is the function that, for an expression `f`, guesses the `Expr`ession
+representing `natDegree f`.
+
+(Another possible choice would be `mkNatLit 0`, though this is not what `compute_degree_le` does.)
 -/
 partial
 def toNatDegree (alt : Expr → MetaM Expr) (pol : Expr) : MetaM Expr :=
 match pol.getAppFnArgs with
-  --  we assign a `natDegree` to the `Nat`s, the `C`onstants and `X`
-  | (``OfNat.ofNat, _) => return mkNatLit 0
-  | (``Nat.cast, _) => return mkNatLit 0
-  | (``Int.cast, _) => return mkNatLit 0
+  --  we assign a `natDegree` to the `Nat`s, the `Int`s, the `C`onstants and `X`
+  | (``OfNat.ofNat, _) =>  return mkNatLit 0
+  | (``Nat.cast, _) =>     return mkNatLit 0
+  | (``Int.cast, _) =>     return mkNatLit 0
   | (``Polynomial.X, _) => return mkNatLit 1
+  | (``Neg.neg, #[_, _, a]) =>    toNatDegree alt a
   --  we assign a `natDegree` to the powers: `natDegree (a ^ b) = b * natDegree a`
-  --  with special support for `b ∈ {0, 1}`
-  | (``Neg.neg, #[_, _, a]) => do
-    toNatDegree alt a
   | (``HPow.hPow, #[_, (.const ``Nat []), _, _, a, b]) => do
     mkMul b (← toNatDegree alt a)
   --  we assign a `natDegree` to a `mul`: `natDegree (a * b) = natDegree a + natDegree b`
@@ -76,13 +76,13 @@ match pol.getAppFnArgs with
   --  we assign a `natDegree` to a `sub`: `natDegree (a - b) = max (natDegree a) (natDegree b)`
   | (``HSub.hSub, #[_, _, _, _, a, b]) => do
     mkMax (← toNatDegree alt a) (← toNatDegree alt b)
-  --  we assign a `natDegree` to an `↑(monomial n) _`: `natDegree (↑(monomial n) _) = n`
-  --  falling back to `alt pol`, if the `FunLike.coe` was not a `monomial`.
-  | (``FunLike.coe, #[_, _, _, _, n, _]) =>
-    match n.getAppFnArgs with
-      | (``monomial, #[_, _, n]) => return n
-      | (``C, _) => return mkNatLit 0
-      | _ => alt pol
+  --  we assign `natDegree` `n` to `↑(monomial n) _`;
+  --  we assign `natDegree` `0` to `C n`;
+  --  falling back to `alt pol`, if the `FunLike.coe` was not `monomial` or `C`
+  | (``FunLike.coe, #[_, _, _, _, fn, _]) => match fn.getAppFnArgs with
+    | (``monomial, #[_, _, n]) => return n
+    | (``C, _) =>                 return mkNatLit 0
+    | _ => alt pol
   --  everything else falls back to `alt pol`.
   | (_name, _args) => alt pol
 
@@ -250,11 +250,110 @@ elab_rules : tactic
 
 #check assumption
 #check clear
-theorem what : degree (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10)) ≤ 10 := by
+theorem what :
+    let pol : Int[X] :=(X + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10)
+    degree pol ≤ 10 ∧ natDegree pol ≤ 10 := by
+  stop
   natDeg ndf : (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10))
   deg df : (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10))
   --conv_rhs at df => { norm_num }
-  assumption
+  exact ⟨df, ndf⟩
+
+#eval 0
+
+open Expr in
+variable (e : Expr) in
+def myfind : Expr → MetaM (List Expr)
+  | tot@(.app fn arg) => do
+    let tail := (← myfind fn) ++ (← myfind arg)
+    let head := if ← isDefEq e fn then [fn] else []
+    let head := head ++ if ← isDefEq e arg then [tot] else []
+    return head ++ tail
+  | f => do if ← isDefEq e f then pure [f] else pure []
+
+#check elabTerm
+#check instToExprSyntax
+def ff (t : Expr) /-(stx : TSyntax `term)-/ (pot : List Expr) : MetaM (List Expr) := do
+  pot.filterM fun d => do
+--    dbg_trace ← ppExpr (ToExpr.toExpr (stx : Syntax))
+--    isDefEq (ToExpr.toExpr (stx : Syntax)) d
+    isDefEq t d
+
+partial
+def findPol (ini : Expr) : MetaM (List Expr) := do
+let tName : Name := `Polynomial
+--dbg_trace ((← inferType ini).getAppFnArgs.1, (← inferType ini).ctorName)
+let res := if (← inferType ini).isAppOf tName then [ini] else []
+match ini with
+  | .app fn arg => do
+    return res ++ (← findPol fn) ++ (← findPol arg)
+--    dbg_trace f!"app of '{nam}'"
+--    dbg_trace (← inferType tot)
+    --let tail := (← myfind fn) ++ (← myfind arg)
+    --let head := if ← isDefEq e fn then [fn] else []
+    --let head := head ++ if ← isDefEq e arg then [tot] else []
+--    return res
+  | f => do
+--    dbg_trace (f); --if ← isDefEq e f then pure [f] else
+--    dbg_trace (f).ctorName; --if ← isDefEq e f then pure [f] else
+    pure res
+
+example (f g : Nat[X])
+--  (h : f + f = 0)
+--  (i : 0 * f + (f + 8) = 0)
+--  (j : 0 * f + (f + 8) = 0)
+--  (k : monomial 4 (5) + f = 0)
+  (h : f + g = monomial 4 5)
+     : f + g = monomial 4 5 := by
+  run_tac do
+    let goal := ← getMainTarget
+    if let some (_, lhs, rhs) := goal.eq? then
+
+      dbg_trace (rhs)
+      dbg_trace ((← inferType rhs).getAppFnArgs.1, (← inferType rhs).ctorName)
+      let ctx  := (← getMainDecl).lctx
+      let dcls := ctx.decls.toList.reduceOption
+      let ct   := ← getLocalHyps
+      let ct := ← ct.mapM (inferType ·)
+--      dbg_trace ← ct.mapM (ppExpr ·)
+--      dbg_trace ← cttypes.mapM (ppExpr ·)
+--      dbg_trace f!"ct.findPol:    {← ct.mapM (findPol ·)}"
+      let founds := (← ct.mapM (findPol ·)).toList.join
+--      dbg_trace f!"types.findPol: {← founds.mapM (ppExpr ·)}"
+
+
+syntax "mtc" term : tactic
+#check forallTelescope
+open Elab Term in
+elab_rules : tactic
+| `(tactic| mtc $stx:term) => withMainContext do
+  let estx := ← Term.elabTerm stx none
+  let ctx  := (← getMainDecl).lctx
+  let dcls := ctx.decls.toList.reduceOption
+  let ct   := ← getLocalHyps
+  dbg_trace f!"hyps:   {← ct.mapM (ppExpr ·)}"
+  dbg_trace f!"hyps:   {← ct.mapM fun d => do let dt := ← inferType d; (ppExpr dt)}"
+  let hypsTypes := ← ct.mapM (inferType ·)
+  dbg_trace f!"hypsF:  {← hypsTypes.mapM (ppExpr ·)}"
+  let found := ← hypsTypes.mapM (myfind estx ·)
+  dbg_trace f!"found: {← found.toList.join.mapM (ppExpr ·)}"
+  dbg_trace ← (dcls.mapM fun d => ppExpr d.type)
+  let decs := ← forallTelescope (← getMainDecl).type (fun arr _k => pure arr)
+  dbg_trace (← getMainDecl).type
+  dbg_trace f!"decs: {decs}"
+  let cands := ← ff estx ct.toList --(dcls.map (LocalDecl.type ·))
+  dbg_trace ← cands.mapM (ppExpr ·)
+#check SubExpr
+#check Lean.Meta.find
+
+theorem hi (a b : Nat) (h₁ : a + b = 5) (h₂ : a + b + 4 = 5) : True := by
+  intros
+  mtc a + _
+  run_tac do
+    let ctx := ← getLCtx
+    let dcls := ctx.decls.toList.reduceOption
+
+
 
 #exit
   run_tac do
