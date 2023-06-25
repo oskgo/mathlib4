@@ -279,47 +279,184 @@ def ff (t : Expr) /-(stx : TSyntax `term)-/ (pot : List Expr) : MetaM (List Expr
 --    isDefEq (ToExpr.toExpr (stx : Syntax)) d
     isDefEq t d
 
+#eval show MetaM Unit from do
+  let bv := Expr.bvar 0
+  dbg_trace  s!"{bv.isAppOf `Nat}"
+  dbg_trace  s!"dbg_trace  {bv}"
+  logInfo    s!"logInfo    {bv}"
+  IO.println s!"IO.println {bv}"
+--  let wf := ← whnf bv
+
 partial
 def findPol (ini : Expr) : MetaM (List Expr) := do
 let tName : Name := `Polynomial
+--if ini.binderInfo != .default then dbg_trace f!"++++++++++++++** ini:   {ini.ctorName} + {← ppExpr ini} + {ini.binderInfo == .default}"
+let wini := ← if (ini.ctorName == `forallE || ini.ctorName == `bvar) then pure ini else whnf ini
+let res := if wini.isAppOf tName then [wini] else []
+dbg_trace f!"** wini: {wini.ctorName} + {wini}"
+dbg_trace f!"***** {← ppExpr wini}"
+match ← inferType wini with
+  | .app fn arg    => return res ++ (← findPol fn) ++ (← findPol arg)
+  | .lam _ bt bd _ => return res ++ (← findPol bt) ++ (← findPol bd)
+  | _              => return res
+
+#check Environment
+irreducible_def st {R : Type _} [Ring R] (_f : R[X]) : Bool := true
+
+example [Semiring R] [Subsingleton R] {a b : R} {f g : R[X]} :
+  (f + g = g) --∧ (∀ y : R[X], (X : R[X]) = y)
+   := by
+  run_tac do
+    let goal := ← getMainTarget
+    dbg_trace (← whnfR goal).ctorName
+    dbg_trace ← ppExpr goal
+    dbg_trace "***  here  ***"
+    let founds := ← findPol (goal)
+    let ppfounds := ← founds.mapM (ppExpr ·)
+    dbg_trace ppfounds.length
+    dbg_trace f!"**  types.findPol:\n{ppfounds}"
+
+  intros
+  refine ((subsingleton_iff_forall_eq _).mp ?_ ?_).symm
+  exact Iff.mpr subsingleton_iff_subsingleton ‹_›
+
+#exit
+
+partial
+def findPol (ini : Expr) : MetaM (List Expr) := do
+let tName : Name := `Polynomial
+dbg_trace "begin with {ini.ctorName}"
 --dbg_trace ((← inferType ini).getAppFnArgs.1, (← inferType ini).ctorName)
-let res := if (← inferType ini).isAppOf tName then [ini] else []
-match ini with
+let wini := ← if ini.ctorName == `bvar then pure ini else inferType (← whnfR ini)
+--dbg_trace "about to compute int"
+--let int := if ini.ctorName == `bvar then ini else ← whnf ini
+dbg_trace "about to compute res {ini}, {wini}"
+if ini.ctorName == `bvar then dbg_trace "went here"
+let res := if ini.ctorName == `bvar then dbg_trace "went here"; [wini] else (
+  if wini.isAppOf tName then [wini] else []) --| pure []
+--let res := ← if (← inferType wini).isAppOf tName then pure [wini] else pure [] --| pure []
+dbg_trace "computed res"
+--dbg_trace res
+match wini with
   | .app fn arg => do
+    dbg_trace "app passage"
+    dbg_trace "the body: {fn}"
+--    have : sizeOf fn < sizeOf ini := sorry
+--    have : sizeOf arg < sizeOf ini := sorry
     return res ++ (← findPol fn) ++ (← findPol arg)
+  | .lam _na bt body _bi => do
+    dbg_trace "am I ever through here now?"
+--    dbg_trace f!"**  through here  **\n  '{bt} + {← ppExpr ini}'"
+--    dbg_trace f!"**  through here  **\n  '{body}'"
+--    have : sizeOf bt < sizeOf ini := sorry
+--    have : sizeOf body < sizeOf ini := sorry
+    dbg_trace f!"doing: {bt.ctorName} {body.ctorName}"
+    return res ++ (← findPol bt) ++ (← findPol body)
 --    dbg_trace f!"app of '{nam}'"
 --    dbg_trace (← inferType tot)
     --let tail := (← myfind fn) ++ (← myfind arg)
     --let head := if ← isDefEq e fn then [fn] else []
     --let head := head ++ if ← isDefEq e arg then [tot] else []
 --    return res
+  | .forallE _na bt bdy _bi => do
+    dbg_trace "forall passage"
+--    have : sizeOf bt < sizeOf ini := sorry
+--    have : sizeOf bdy < sizeOf ini := sorry
+    dbg_trace f!"doing bt: {bt.ctorName}"
+    let btRes := ← findPol bt
+    dbg_trace f!"btRes fatto: {btRes}"
+--    dbg_trace f!"{bdy.ctorName} + {← ppExpr (← inferType bdy)}"
+    dbg_trace f!"doing bdy: {bdy.ctorName}"
+    let bodyRes := ← findPol bdy
+    dbg_trace f!"bodyRes fatto: {bodyRes}"
+
+    let final := res ++ btRes ++ bodyRes
+    dbg_trace "i go through here"
+    return final
   | f => do
+    dbg_trace "rest passage"
+--    if (! f.ctorName == `const && (! f.ctorName == `fvar) then
+--      dbg_trace (f.ctorName, ← ppExpr f, ← ppExpr (← inferType f), ← ppExpr ini)
 --    dbg_trace (f); --if ← isDefEq e f then pure [f] else
 --    dbg_trace (f).ctorName; --if ← isDefEq e f then pure [f] else
     pure res
 
-example (f g : Nat[X])
+
+irreducible_def st {R : Type _} [Ring R] (_f : R[X]) : Bool := true
+
+example [Ring R] [Subsingleton R] : ∀ y : R[X], (X : R[X]) = y := by
+  run_tac do
+    let goal := ← getMainTarget
+    dbg_trace (← whnfR goal).ctorName
+    dbg_trace ← ppExpr goal
+      dbg_trace "***  here  ***"
+      let founds := ← findPol goal
+      let ppfounds := ← founds.mapM (ppExpr ·)
+      dbg_trace ppfounds.length
+      dbg_trace f!"**  types.findPol:\n{ppfounds}"
+
+  intros
+  have : Subsingleton R[X] := Iff.mpr subsingleton_iff_subsingleton ‹_›
+  have : ∀ {a b : R[X]}, a = b := by rwa [← subsingleton_iff]
+  apply this
+
+#exit
+
+  run_tac do
+    let goal := ← getMainTarget
+    dbg_trace (← whnfR goal).ctorName
+    dbg_trace ← ppExpr goal
+      dbg_trace "***  here  ***"
+      let founds := ← findPol goal
+      let ppfounds := ← founds.mapM (ppExpr ·)
+      dbg_trace ppfounds.length
+      dbg_trace f!"**  types.findPol:\n{ppfounds}"
+
+
+
+
+
+
+
+
+
+#check st 0
+
+example [Ring R] (n : R) (f g : Int[X])
 --  (h : f + f = 0)
 --  (i : 0 * f + (f + 8) = 0)
 --  (j : 0 * f + (f + 8) = 0)
 --  (k : monomial 4 (5) + f = 0)
-  (h : f + g = monomial 4 5)
-     : f + g = monomial 4 5 := by
+  (h : f + g = monomial 4 5 + 7)
+     : ∀ y : R, if (st (monomial 10 x * (- C y) : R[X]) && st (monomial 5 (n + y))) then st (X : R[X]) else false := by
   run_tac do
     let goal := ← getMainTarget
-    if let some (_, lhs, rhs) := goal.eq? then
-
-      dbg_trace (rhs)
-      dbg_trace ((← inferType rhs).getAppFnArgs.1, (← inferType rhs).ctorName)
-      let ctx  := (← getMainDecl).lctx
-      let dcls := ctx.decls.toList.reduceOption
-      let ct   := ← getLocalHyps
-      let ct := ← ct.mapM (inferType ·)
+    dbg_trace (← whnfR goal).ctorName
+    dbg_trace ← ppExpr goal
+--    if let some (_, lhs, rhs) := goal.eq? then
+--      let pplhs := ← ppExpr lhs
+--      let pptlhs := ← ppExpr (← whnf (← inferType lhs))
+--      let pprhs := ← ppExpr rhs
+--      let pptrhs := ← ppExpr (← inferType rhs)
+--      logInfo f!"raw lhs: {pplhs}"
+--      logInfo f!"typ lhs: {pptlhs}"
+--      logInfo f!"raw rhs: {pprhs}"
+--      logInfo f!"typ rhs: {pptrhs}"
+--      dbg_trace ((← inferType rhs).getAppFnArgs.1, (← inferType rhs).ctorName)
+--      let ctx  := (← getMainDecl).lctx
+--      let dcls := ctx.decls.toList.reduceOption
+--      let ct := ← ct.mapM (inferType ·)
+--      let ct   := ← getLocalHyps
 --      dbg_trace ← ct.mapM (ppExpr ·)
 --      dbg_trace ← cttypes.mapM (ppExpr ·)
 --      dbg_trace f!"ct.findPol:    {← ct.mapM (findPol ·)}"
-      let founds := (← ct.mapM (findPol ·)).toList.join
---      dbg_trace f!"types.findPol: {← founds.mapM (ppExpr ·)}"
+--      let founds := (← ct.mapM (findPol ·)).toList.join
+      dbg_trace "***  here  ***"
+      let founds := ← findPol goal
+      let ppfounds := ← founds.mapM (ppExpr ·)
+      dbg_trace ppfounds.length
+      dbg_trace f!"**  types.findPol:\n{ppfounds}"
+--      let x := 0
 
 
 syntax "mtc" term : tactic
