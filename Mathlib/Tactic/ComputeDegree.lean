@@ -279,6 +279,14 @@ def ff (t : Expr) /-(stx : TSyntax `term)-/ (pot : List Expr) : MetaM (List Expr
 --    isDefEq (ToExpr.toExpr (stx : Syntax)) d
     isDefEq t d
 
+macro "foo" n:num a:term:arg : term =>
+  `(show $(Lean.quote (n.getNat+1)) ≤ $a ∨ $a ≤ $n from Nat.lt_or_ge ..)
+
+example (a : Nat) : True := by
+  have := foo 37 a -- infoview shows `this: 38 ≤ a ∨ a ≤ 37`
+  sorry
+
+
 #eval show MetaM Unit from do
   let bv := Expr.bvar 0
   dbg_trace  s!"{bv.isAppOf `Nat}"
@@ -291,29 +299,44 @@ partial
 def findPol (ini : Expr) : MetaM (List Expr) := do
 let tName : Name := `Polynomial
 --if ini.binderInfo != .default then dbg_trace f!"++++++++++++++** ini:   {ini.ctorName} + {← ppExpr ini} + {ini.binderInfo == .default}"
+dbg_trace f!"more {ini}"
+if (ini.ctorName == `forallE || ini.ctorName == `bvar) then
+  return [ini]
+else
+let tin := ← inferType ini
+dbg_trace f!"this is tin: {← ppExpr tin}"
 let wini := ← if (ini.ctorName == `forallE || ini.ctorName == `bvar) then pure ini else whnf ini
-let res := if wini.isAppOf tName then [wini] else []
+let res := if tin.isAppOf tName then [ini] else []
 dbg_trace f!"** wini: {wini.ctorName} + {wini}"
-dbg_trace f!"***** {← ppExpr wini}"
-match ← inferType wini with
-  | .app fn arg    => return res ++ (← findPol fn) ++ (← findPol arg)
-  | .lam _ bt bd _ => return res ++ (← findPol bt) ++ (← findPol bd)
+dbg_trace f!"***** match on '{← ppExpr wini}'"
+match wini with
+--  | `(OfNat.ofNat ..) => return res
+  | .app fn arg    => dbg_trace f!"       fn is {fn}     arg is {arg}";return res ++ (← findPol fn) ++ (← findPol arg)
+--  | .lam _ bt bd _ => return res ++ (← findPol bt) ++ (← findPol bd)
   | _              => return res
 
 #check Environment
 irreducible_def st {R : Type _} [Ring R] (_f : R[X]) : Bool := true
 
-example [Semiring R] [Subsingleton R] {a b : R} {f g : R[X]} :
-  (f + g = g) --∧ (∀ y : R[X], (X : R[X]) = y)
+#eval show MetaM Unit from do
+  let cst := (Expr.const `ciao [])
+  let wc := ← whnf cst
+  dbg_trace cst
+  dbg_trace ← ppExpr wc
+
+def _root_.st1 (_p : Nat[X]) : Prop := true
+variable (f : Nat[X])
+example : --[Semiring R] [Subsingleton R] {a b : R} {f g : R[X]} :
+  f = f --∧ (∀ y : R[X], (X : R[X]) = y)
    := by
   run_tac do
     let goal := ← getMainTarget
-    dbg_trace (← whnfR goal).ctorName
-    dbg_trace ← ppExpr goal
-    dbg_trace "***  here  ***"
+    --dbg_trace (← whnfR goal).ctorName
+    --dbg_trace ← ppExpr goal
+    --dbg_trace "***  here  ***"
     let founds := ← findPol (goal)
     let ppfounds := ← founds.mapM (ppExpr ·)
-    dbg_trace ppfounds.length
+    dbg_trace f!"Length of the list: {ppfounds.length}"
     dbg_trace f!"**  types.findPol:\n{ppfounds}"
 
   intros
