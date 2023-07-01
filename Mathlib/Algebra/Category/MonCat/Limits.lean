@@ -8,6 +8,7 @@ Authors: Scott Morrison
 ! Please do not edit these lines, except to modify the commit id
 ! if you have ported upstream changes.
 -/
+import Mathlib.Logic.Small.Group
 import Mathlib.Algebra.Category.MonCat.Basic
 import Mathlib.Algebra.Group.Pi
 import Mathlib.CategoryTheory.Limits.Creates
@@ -43,29 +44,36 @@ namespace MonCat
 variable {J : Type v} [SmallCategory J]
 
 @[to_additive]
-instance monoidObj (F : J ⥤ MonCatMax.{u,v} ) (j) : Monoid ((F ⋙ forget MonCat).obj j) := by
+instance monoidObj (F : J ⥤ MonCat.{u}) (j) : Monoid ((F ⋙ forget MonCat).obj j) := by
   change Monoid (F.obj j)
   infer_instance
 #align Mon.monoid_obj MonCat.monoidObj
 #align AddMon.add_monoid_obj AddMonCat.addMonoidObj
 
+variable [UnivLE.{v, u}]
+
+-- FIXME remove if https://github.com/leanprover-community/mathlib4/pull/5644 is merged.
+attribute [simp 1001] Set.mem_image_equiv
+
 /-- The flat sections of a functor into `MonCat` form a submonoid of all sections.
 -/
 @[to_additive
       "The flat sections of a functor into `AddMonCat` form an additive submonoid of all sections."]
-def sectionsSubmonoid (F : J ⥤ MonCatMax.{u,v}) : Submonoid (∀ j, F.obj j) where
-  carrier := (F ⋙ forget MonCat).sections
-  one_mem' {j} {j'} f := by simp
-  mul_mem' {a} {b} ah bh {j} {j'} f := by
+def sectionsSubmonoid (F : J ⥤ MonCat.{u}) : Submonoid (Shrink.{u} (∀ j, F.obj j)) where
+  carrier := equivShrink _ '' (F ⋙ forget MonCat).sections
+  one_mem' := by simp only [Set.mem_image_equiv, equivShrink_symm_one]; intro j j' f; simp
+  mul_mem' {a} {b} ah bh := by
+    simp only [Set.mem_image_equiv, equivShrink_symm_mul]
+    intro j j' f
     simp only [Functor.comp_map, MonoidHom.map_mul, Pi.mul_apply]
-    dsimp [Functor.sections] at ah bh
+    simp [Functor.sections] at ah bh
     rw [← ah f, ← bh f, forget_map, map_mul]
 #align Mon.sections_submonoid MonCat.sectionsSubmonoid
 #align AddMon.sections_add_submonoid AddMonCat.sectionsAddSubmonoid
 
 @[to_additive]
-instance limitMonoid (F : J ⥤ MonCatMax.{u,v}) :
-    Monoid (Types.TypeMax.limitCone.{v, u} (F ⋙ forget MonCatMax.{u,v})).pt :=
+instance limitMonoid (F : J ⥤ MonCat.{u}) :
+    Monoid (Types.UnivLE.limitCone.{v, u} (F ⋙ forget MonCat.{u})).pt :=
   (sectionsSubmonoid.{v, u} F).toMonoid
 #align Mon.limit_monoid MonCat.limitMonoid
 #align AddMon.limit_add_monoid AddMonCat.limitAddMonoid
