@@ -52,9 +52,6 @@ instance monoidObj (F : J ⥤ MonCat.{u}) (j) : Monoid ((F ⋙ forget MonCat).ob
 
 variable [UnivLE.{v, u}]
 
--- FIXME remove if https://github.com/leanprover-community/mathlib4/pull/5644 is merged.
-attribute [simp 1001] Set.mem_image_equiv
-
 /-- The flat sections of a functor into `MonCat` form a submonoid of all sections.
 -/
 @[to_additive
