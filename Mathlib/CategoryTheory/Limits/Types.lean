@@ -69,8 +69,6 @@ lemma limitCone_pt_ext (F : J ⥤ Type u) {x y : (limitCone F).pt}
     (w : (equivShrink _).symm x = (equivShrink _).symm y) : x = y := by
   aesop
 
---attribute [local elab_without_expected_type] congr_fun
-
 /-- (internal implementation) the fact that the proposed limit cone is the limit -/
 @[simps]
 noncomputable def limitConeIsLimit (F : J ⥤ Type u) : IsLimit (limitCone.{v, u} F) where
@@ -83,7 +81,9 @@ noncomputable def limitConeIsLimit (F : J ⥤ Type u) : IsLimit (limitCone.{v, u
 
 end UnivLE
 
-namespace TypeMax
+-- TODO: If `UnivLE` works out well, we will eventually want to deprecate these
+-- definitions, and probably as a first step put them in namespace or otherwise rename them.
+section TypeMax
 
 /-- (internal implementation) the limit cone of a functor,
 implemented as flat sections of a pi type
@@ -96,9 +96,7 @@ noncomputable def limitCone (F : J ⥤ TypeMax.{v, u}) : Cone F where
       naturality := fun j j' f => by
         funext x
         simp }
-#align category_theory.limits.types.limit_cone CategoryTheory.Limits.Types.TypeMax.limitCone
-
---attribute [local elab_without_expected_type] congr_fun
+#align category_theory.limits.types.limit_cone CategoryTheory.Limits.Types.limitCone
 
 /-- (internal implementation) the fact that the proposed limit cone is the limit -/
 @[simps]
@@ -111,7 +109,7 @@ noncomputable def limitConeIsLimit (F : J ⥤ TypeMax.{v, u}) : IsLimit (limitCo
     apply Subtype.ext
     funext j
     exact congr_fun (w j) x
-#align category_theory.limits.types.limit_cone_is_limit CategoryTheory.Limits.Types.TypeMax.limitConeIsLimit
+#align category_theory.limits.types.limit_cone_is_limit CategoryTheory.Limits.Types.limitConeIsLimit
 
 end TypeMax
 
@@ -132,7 +130,8 @@ sections of `F`.
 -/
 noncomputable def isLimitEquivSections {F : J ⥤ Type u} {c : Cone F} (t : IsLimit c) :
     c.pt ≃ F.sections :=
-  (IsLimit.conePointUniqueUpToIso t (limitConeIsLimit.{v, u} F)).toEquiv.trans (equivShrink _).symm
+  (IsLimit.conePointUniqueUpToIso t (UnivLE.limitConeIsLimit.{v, u} F)).toEquiv.trans
+    (equivShrink _).symm
 #align category_theory.limits.types.is_limit_equiv_sections CategoryTheory.Limits.Types.isLimitEquivSections
 
 @[simp]
@@ -160,8 +159,8 @@ instance (priority := 1300) hasLimitsOfSize : HasLimitsOfSize.{v} (Type u) where
   has_limits_of_shape _ :=
     { has_limit := fun F =>
         HasLimit.mk
-          { cone := limitCone.{v, u} F
-            isLimit := limitConeIsLimit F } }
+          { cone := UnivLE.limitCone.{v, u} F
+            isLimit := UnivLE.limitConeIsLimit F } }
 #align category_theory.limits.types.has_limits_of_size CategoryTheory.Limits.Types.hasLimitsOfSize
 
 instance hasLimit (F : J ⥤ Type u) : HasLimit F :=
