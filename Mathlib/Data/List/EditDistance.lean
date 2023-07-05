@@ -1,10 +1,11 @@
 import Mathlib.Order.CompleteLattice
 import Mathlib.Order.ConditionallyCompleteLattice.Basic
 import Mathlib.Data.Nat.Lattice
-import Mathlib.Tactic.Linarith
-import Mathlib.Combinatorics.Quiver.Path
-import Mathlib.CategoryTheory.PathCategory
-import Mathlib.Data.FinEnum
+import Mathlib.Data.List.MinMax
+-- import Mathlib.Tactic.Linarith
+-- import Mathlib.Combinatorics.Quiver.Path
+-- import Mathlib.CategoryTheory.PathCategory
+-- import Mathlib.Data.FinEnum
 
 
 -- @[simp] theorem Array.size_append (x y : Array α) : (x ++ y).size = x.size + y.size := sorry
@@ -151,6 +152,29 @@ def levenshteinSuffixDistances_impl (insert delete : α → β) (substitute : α
     (fun ⟨x, d₀, d₁⟩ ⟨r, w⟩ =>
       ⟨min (delete x + r[0]) (min (insert y + d₀) (substitute x y + d₁)) :: r, by simp⟩)
 
+-- Note this lemma generates the side condition `w'` when rewriting.
+theorem levenshteinSuffixDistances_impl_cons {insert delete : α → β} {substitute : α → α → β}
+    (x) (xs) (y) (d) (ds) (w) (w') :
+    levenshteinSuffixDistances_impl insert delete substitute (x :: xs) y ⟨d :: ds, w⟩ =
+      let ⟨r, w⟩ := levenshteinSuffixDistances_impl insert delete substitute xs y ⟨ds, w'⟩
+      ⟨min (delete x + r[0]) (min (insert y + d) (substitute x y + ds[0])) :: r, by simp⟩ :=
+  match ds, w' with | _ :: _, _ => rfl
+
+theorem levenshteinSuffixDistances_impl_length {insert delete : α → β} {substitute : α → α → β}
+    (xs) (y) (d) (w : d.1.length = xs.length + 1) :
+    (levenshteinSuffixDistances_impl insert delete substitute xs y d).1.length =
+      xs.length + 1 := by
+  induction xs generalizing d
+  · case nil =>
+    rfl
+  · case cons x xs ih =>
+    dsimp [levenshteinSuffixDistances_impl]
+    match d, w with
+    | ⟨d₁ :: d₂ :: ds, _⟩, w =>
+      dsimp
+      congr 1
+      refine ih ⟨d₂ :: ds, (by simp)⟩ (by simpa using w)
+
 /--
 `levenshteinSuffixDistances insert delete substitute x y` computes the Levenshtein distance
 (using the cost functions `insert delete α → β` and `substitute : α → α → β`)
@@ -175,6 +199,21 @@ def levenshteinSuffixDistances (insert delete : α → β) (substitute : α → 
     (levenshteinSuffixDistances_impl insert delete substitute xs)
     (xs.foldr (init := ⟨[0], by simp⟩) (fun a ⟨r, w⟩ => ⟨(delete a + r[0]) :: r, by simp⟩))
 
+theorem levenshteinSuffixDistances_length {insert delete : α → β} {substitute : α → α → β}
+    (xs ys : List α) :
+    (levenshteinSuffixDistances insert delete substitute xs ys).1.length = xs.length + 1 := by
+  induction ys
+  · case nil =>
+    dsimp [levenshteinSuffixDistances]
+    induction xs
+    · case nil => rfl
+    · case cons _ xs ih =>
+      simp_all
+  · case cons y ys ih =>
+    dsimp [levenshteinSuffixDistances]
+    rw [levenshteinSuffixDistances_impl_length]
+    exact ih
+
 /--
 `levenshteinDistance insert delete substitute x y` computes the Levenshtein distance
 (using the cost functions `insert delete α → β` and `substitute : α → α → β`)
@@ -190,6 +229,114 @@ geodesic distance on the edit graph.
 def levenshteinDistance (insert delete : α → β) (substitute : α → α → β) (x y : List α) : β :=
   let ⟨r, w⟩ := levenshteinSuffixDistances insert delete substitute x y
   r[0]
+
+theorem levenshteinSuffixDistances_nil_nil (insert delete : α → β) (substitute : α → α → β) :
+    (levenshteinSuffixDistances insert delete substitute [] []).1 = [0] := by
+  rfl
+
+-- theorem levenshteinSuffixDistances_nil_cons (insert delete : α → β) (substitute : α → α → β)
+--     (y) (ys):
+--     (levenshteinSuffixDistances insert delete substitute [] (y :: ys)).1 =
+--        (levenshteinSuffixDistances insert delete substitute [] ys).1.map
+--          fun d => insert y + d := by
+--   sorry
+
+-- FIXME, find home
+theorem List.eq_of_length_one (x : List α) (w : x.length = 1) :
+    have : 0 < x.length := (lt_of_lt_of_eq zero_lt_one w.symm)
+    x = [x[0]] := by
+  match x, w with
+  | [r], _ => rfl
+
+theorem levenshteinSuffixDistances_nil'
+    {insert delete : α → β} {substitute : α → α → β} (ys) :
+    (levenshteinSuffixDistances insert delete substitute [] ys).1 =
+      [levenshteinDistance insert delete substitute [] ys] :=
+  List.eq_of_length_one _ (levenshteinSuffixDistances_length [] _)
+
+theorem levenshteinSuffixDistances_cons₂
+    {insert delete : α → β} {substitute : α → α → β} (xs) (y) (ys) :
+    levenshteinSuffixDistances insert delete substitute xs (y :: ys) =
+      levenshteinSuffixDistances_impl insert delete substitute xs y
+        (levenshteinSuffixDistances insert delete substitute xs ys) :=
+  rfl
+
+theorem ext_helper {x y : Σ' (r : List β), 0 < r.length}
+    (w₀ : x.1[0]'x.2 = y.1[0]'y.2) (w : x.1.tail = y.1.tail) : x = y := by
+  match x, y with
+  | ⟨hx :: tx, _⟩, ⟨hy :: ty, _⟩ => simp_all
+
+theorem levenshteinSuffixDistances_cons₁
+    {insert delete : α → β} {substitute : α → α → β} (x) (xs ys) :
+    levenshteinSuffixDistances insert delete substitute (x :: xs) ys =
+      ⟨levenshteinDistance insert delete substitute (x :: xs) ys ::
+        (levenshteinSuffixDistances insert delete substitute xs ys).1, by simp⟩ := by
+  induction ys
+  · case nil =>
+    dsimp [levenshteinDistance, levenshteinSuffixDistances]
+  · case cons y ys ih =>
+    apply ext_helper
+    · rfl
+    · rw [levenshteinSuffixDistances_cons₂ (x :: xs), ih, levenshteinSuffixDistances_impl_cons]
+      · rfl
+      · simp [levenshteinSuffixDistances_length]
+
+theorem levenshteinSuffixDistances_eq
+    {insert delete : α → β} {substitute : α → α → β} (xs ys) :
+    (levenshteinSuffixDistances insert delete substitute xs ys).1 =
+      xs.tails.map fun xs' => levenshteinDistance insert delete substitute xs' ys := by
+  induction xs
+  · case nil =>
+    simp only [List.map, levenshteinSuffixDistances_nil']
+  · case cons x xs ih =>
+    simp only [List.map, levenshteinSuffixDistances_cons₁, ih]
+
+theorem levenshteinDistance_nil_nil {insert delete : α → β} {substitute : α → α → β} :
+    levenshteinDistance insert delete substitute [] [] = 0 := by
+  simp [levenshteinDistance]
+
+theorem levenshteinDistance_nil_cons {insert delete : α → β} {substitute : α → α → β}
+    (y : α) (ys : List α) :
+    levenshteinDistance insert delete substitute [] (y :: ys) =
+      insert y + levenshteinDistance insert delete substitute [] ys := by
+  sorry
+
+theorem levenshteinDistance_cons_nil {insert delete : α → β} {substitute : α → α → β}
+    (x : α) (xs : List α) :
+    levenshteinDistance insert delete substitute (x :: xs) [] =
+      delete x + levenshteinDistance insert delete substitute xs [] :=
+  sorry
+
+theorem levenshteinDistance_cons_cons {insert delete : α → β} {substitute : α → α → β}
+    (x : α) (xs : List α) (y : α) (ys : List α) :
+    levenshteinDistance insert delete substitute (x :: xs) (y :: ys) =
+      min (delete x + levenshteinDistance insert delete substitute xs (y :: ys))
+        (min (insert y + levenshteinDistance insert delete substitute (x :: xs) ys)
+          (substitute x y + levenshteinDistance insert delete substitute xs ys)) :=
+  sorry
+
+theorem levenshteinSuffixDistance_impl_minimum_le [LinearOrder β]
+    (insert delete : α → β) (substitute : α → α → β) (xs y d) :
+    d.1.minimum ≤
+      (levenshteinSuffixDistances_impl insert delete substitute xs y d).1.minimum :=
+  sorry
+
+variable [LinearOrder β]
+
+theorem levenshteinSuffixDistances_minimum_monotone (insert delete : α → β) (substitute : α → α → β)
+    (xs : List α) (y : α) (ys : List α) :
+    (levenshteinSuffixDistances insert delete substitute xs ys).1.minimum ≤
+      (levenshteinSuffixDistances insert delete substitute xs (y :: ys)).1.minimum := by
+  dsimp [levenshteinSuffixDistances]
+  generalize List.foldr _ _ _ = L
+  apply levenshteinSuffixDistance_impl_minimum_le
+
+theorem levenshteinSuffixDistances_minimum_le (insert delete : α → β) (substitute : α → α → β) (xs ys zs : List α) :
+    (levenshteinSuffixDistances insert delete substitute xs zs).1.minimum ≤
+      levenshteinDistance insert delete substitute xs (ys ++ zs) :=
+  sorry
+
+
 
 #eval levenshteinSuffixDistances (fun _ => 1) (fun _ => 1) (fun a b => if a = b then 0 else 1) "kitten".toList "".toList |>.1
 #eval levenshteinSuffixDistances (fun _ => 1) (fun _ => 1) (fun a b => if a = b then 0 else 1) "kitten".toList "g".toList |>.1
