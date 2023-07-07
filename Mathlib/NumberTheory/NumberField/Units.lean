@@ -58,7 +58,7 @@ theorem isUnit_iff_norm [NumberField K] (x : 𝓞 K) :
 
 end IsUnit
 
-namespace NumberField.units
+namespace NumberField.Units
 
 section coe
 
@@ -72,8 +72,10 @@ theorem coe_to_field_injective : Function.Injective (coe_to_field K) :=
 useful to also have a direct one from `(𝓞 K)ˣ` to `K`. -/
 instance : Coe (𝓞 K)ˣ K := ⟨coe_to_field K⟩
 
-@[ext]
-theorem ext {x y : (𝓞 K)ˣ} (h : (x : K) = y) : x = y := (coe_to_field_injective K).eq_iff.mp h
+theorem ext {x y : (𝓞 K)ˣ} : x = y ↔ (x : K) = (y : K) := (coe_to_field_injective K).eq_iff.symm
+
+theorem ne_zero (x : (𝓞 K)ˣ) : (x : K) ≠ 0 :=
+  Subtype.coe_injective.ne_iff.mpr (_root_.Units.ne_zero x)
 
 end coe
 
@@ -91,7 +93,7 @@ theorem mem_torsion {x : (𝓞 K)ˣ} [NumberField K] :
   · refine norm_map_one_of_pow_eq_one φ.toMonoidHom (k := ⟨n, h_pos⟩) ?_
     rw [PNat.mk_coe, ← map_pow, h_eq, map_one]
   · obtain ⟨n, hn, hx⟩ := Embeddings.pow_eq_one_of_norm_eq_one K ℂ x.val.prop h
-    exact ⟨n, hn, by ext; rwa [map_pow, map_one]⟩
+    exact ⟨n, hn, by rwa [ext, map_pow, map_one]⟩
 end torsion
 
 instance : Nonempty (torsion K) := ⟨1⟩
@@ -113,4 +115,61 @@ instance [NumberField K] : IsCyclic (torsion K) := subgroup_units_cyclic _
 /-- The order of the torsion subgroup as positive integer. -/
 def torsion_order [NumberField K] : ℕ+ := ⟨Fintype.card (torsion K), Fintype.card_pos⟩
 
-end NumberField.units
+namespace dirichlet
+
+open scoped Classical BigOperators
+
+variable [NumberField K]
+
+variable {K}
+
+/-- A distinguished infinite place. -/
+def w₀ : InfinitePlace K := (inferInstance : Nonempty (InfinitePlace K)).some
+
+variable (K)
+
+/-- The logarithmic embedding of the units. -/
+def log_embedding (x : (𝓞 K)ˣ) : {w : InfinitePlace K // w ≠ w₀} → ℝ :=
+  fun w => mult K w * Real.log (w.val x)
+
+@[simp]
+theorem log_embedding_component (x : (𝓞 K)ˣ) (w : {w : InfinitePlace K // w ≠ w₀}) :
+    (log_embedding K x) w = mult K w * Real.log (w.val x) := rfl
+
+theorem log_embedding_sum_component (x : (𝓞 K)ˣ) :
+    ∑ w, log_embedding K x w = - mult K w₀ * Real.log (w₀ (x : K)) := by
+  have hyp := congrArg Real.log (prod_mult_eq_abs_norm K x)
+  have : |(Algebra.norm ℚ) (x : K)| = 1 := sorry
+  rw [this] at hyp
+  rw [Rat.cast_one, Real.log_one, Real.log_prod] at hyp
+  simp_rw [Real.log_pow] at hyp
+  sorry
+  sorry
+
+theorem mult_log_place_eq_zero {x : (𝓞 K)ˣ} {w : InfinitePlace K} :
+    mult K w * Real.log (w x) = 0 ↔ w.val x = 1 := by
+  rw [mul_eq_zero, or_iff_right, Real.log_eq_zero, or_iff_right, or_iff_left]
+  · have : 0 ≤ w.val x := AbsoluteValue.nonneg _ _
+    linarith
+  · simp only [ne_eq, map_eq_zero, ne_zero K x]
+  · exact (ne_of_gt (mult_pos K w))
+
+theorem log_embedding.eq_zero_iff (x : (𝓞 K)ˣ) :
+    log_embedding K x = 0 ↔ x ∈ torsion K := by
+  rw [mem_torsion]
+  refine ⟨fun h w => ?_, fun h => ?_⟩
+  · have main : ∀ w : InfinitePlace K, w ≠ w₀ → w x = 1 :=
+      fun w hw => (mult_log_place_eq_zero K).mp (congrFun h ⟨w, hw⟩)
+    by_cases hw : w = w₀
+    ·
+      sorry
+    · exact main w hw
+  · ext w
+    rw [log_embedding_component, h w.val, Real.log_one, mul_zero, Pi.zero_apply]
+
+
+
+
+end dirichlet
+
+end NumberField.Units
