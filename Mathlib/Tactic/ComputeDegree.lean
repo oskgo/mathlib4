@@ -217,8 +217,10 @@ let newPols := ← do match pol.getAppFnArgs with
   | (na, _) => throwError m!"'compute_degree_le' is not implemented for '{na}'"
 let _ := ← newPols.mapM fun x => focus (CDL x)
 
-def addNatDegreeDecl (stx : TSyntax `Mathlib.Tactic.optBinderIdent)
-    (pol : Expr) (is_natDeg? : Bool) : TacticM Unit := focus do
+section withStx
+variable (stx : TSyntax `Mathlib.Tactic.optBinderIdent)
+
+def addNatDegreeDecl (pol : Expr) (is_natDeg? : Bool) : TacticM Unit := focus do
   let nEQ := ← mkNatDegreeLE pol is_natDeg?
   let nEQS := ← nEQ.toSyntax
 --  let ns : TSyntax `Mathlib.Tactic.optBinderIdent := { raw := mkAtom "" }
@@ -229,17 +231,18 @@ def addNatDegreeDecl (stx : TSyntax `Mathlib.Tactic.optBinderIdent)
   focusAndDone $ CDL pol
 
 open Elab Term in
-def fAdd (is_natDeg? : Bool) (n : TSyntax `Mathlib.Tactic.optBinderIdent) (t : TSyntax `term) :
-    TacticM Unit := do
+def fAdd (is_natDeg? : Bool) (t : TSyntax `term) : TacticM Unit := do
   let te := ← withRef t do
     let e ← Term.elabTerm t none
     Term.synthesizeSyntheticMVars false
     instantiateMVars e
-  addNatDegreeDecl n te is_natDeg?
+  addNatDegreeDecl stx te is_natDeg?
   let ni : TSyntax `ident :=
-    if n.raw[0].isIdent then ⟨n.raw[0]⟩ else HygieneInfo.mkIdent ⟨n.raw[0]⟩ `this
-  --let n := n.raw[0].getId --optBinderIdent.name n
+    if stx.raw[0].isIdent then ⟨stx.raw[0]⟩ else HygieneInfo.mkIdent ⟨stx.raw[0]⟩ `this
+  --let n := stx.raw[0].getId --optBinderIdent.name n
   evalTactic (← `(tactic| conv_rhs at $ni => { norm_num }))
+
+end withStx
 
 syntax "natDeg" haveIdLhs' : tactic
 syntax "deg" haveIdLhs' : tactic
@@ -247,9 +250,9 @@ syntax "deg" haveIdLhs' : tactic
 open Elab Term in
 elab_rules : tactic
 | `(tactic| natDeg $n:optBinderIdent : $t:term) => do
-  fAdd true n t
+  fAdd n true t
 | `(tactic| deg $n:optBinderIdent : $t:term) => do
-  fAdd false n t
+  fAdd n false t
 --  let te := ← withRef t do
 --    let e ← Term.elabTerm t none
 --    Term.synthesizeSyntheticMVars false
