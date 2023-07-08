@@ -200,23 +200,55 @@ noncomputable def UnitLattice : AddSubgroup ({w : InfinitePlace K // w ≠ w₀}
     rintro _ ⟨x, rfl⟩
     exact ⟨x⁻¹, log_embedding_inv K x⟩ }
 
-theorem log_le_of_log_embedding_le' {r : ℝ} {x : (𝓞 K)ˣ} (hr : 0 ≤ r) (h : ‖log_embedding K x‖ ≤ r)
-    (w : {w : InfinitePlace K // w ≠ w₀}) : |Real.log (w.val x)| ≤ r := by
+theorem log_embedding_component_le {r : ℝ} {x : (𝓞 K)ˣ} (hr : 0 ≤ r) (h : ‖log_embedding K x‖ ≤ r)
+    (w : {w : InfinitePlace K // w ≠ w₀}) : |log_embedding K x w| ≤ r := by
   lift r to NNReal using hr
-  rw [Pi.norm_def] at h
-  simp only [ne_eq, log_embedding_component, nnnorm_mul, Real.nnnorm_coe_nat, NNReal.coe_le_coe,
-    Finset.sup_le_iff, Finset.mem_univ, forall_true_left, Subtype.forall] at h
-  specialize h w.val w.prop
-  rw [← mul_le_mul_left (mult_pos K w)]
-  rw [← NNReal.coe_le_coe] at h
-  have t1 : (r : ℝ) ≤ (mult K w) * r := sorry
-  have t2 := h.trans t1
-  exact t2
+  simp_rw [Pi.norm_def, NNReal.coe_le_coe, Finset.sup_le_iff, ← NNReal.coe_le_coe] at h
+  exact h w (Finset.mem_univ _)
+
+-- theorem log_le_of_log_embedding_le' {r : ℝ} {x : (𝓞 K)ˣ} (hr : 0 ≤ r) (h : ‖log_embedding K x‖ ≤ r)
+--     (w : {w : InfinitePlace K // w ≠ w₀}) : |Real.log (w.val x)| ≤ r := by
+--   lift r to NNReal using hr
+--   rw [← mul_le_mul_left (mult_pos K w)]
+--   simp_rw [Pi.norm_def, log_embedding_component, nnnorm_mul, Real.nnnorm_coe_nat,
+--     NNReal.coe_le_coe, Finset.sup_le_iff, ← NNReal.coe_le_coe] at h
+--   refine (h w (Finset.mem_univ _)).trans ?_
+--   nth_rw 1 [← one_mul r, NNReal.coe_mul]
+--   refine mul_le_mul ?_ (le_of_eq rfl) r.prop (le_of_lt (mult_pos K w))
+--   rw [mult]
+--   split_ifs <;> norm_num
 
 theorem log_le_of_log_embedding_le {r : ℝ} {x : (𝓞 K)ˣ} (hr : 0 ≤ r) (h : ‖log_embedding K x‖ ≤ r)
     (w : InfinitePlace K) : |Real.log (w x)| ≤ (Fintype.card (InfinitePlace K)) * r := by
-  sorry
+  by_cases hw : w = w₀
+  · rw [hw]
+    have t1 := congrArg (‖·‖) (log_embedding_sum_component K x).symm
+    dsimp only at t1
+    replace t1 := (le_of_eq t1).trans (norm_sum_le _ _)
+    
 
+
+    sorry
+  · have hyp := log_embedding_component_le K hr h ⟨w, hw⟩
+    rw [log_embedding_component, abs_mul, Nat.abs_cast] at hyp
+    refine (le_trans ?_ hyp).trans ?_
+    · nth_rw 1 [← one_mul |_|]
+      refine mul_le_mul ?_ ?_ ?_ ?_
+      · have := mult_pos K w
+        simp only [Nat.cast_pos] at this
+        exact Iff.mpr Nat.one_le_cast this
+      · exact (le_of_eq rfl)
+      · exact abs_nonneg _
+      · exact le_of_lt (mult_pos K w)
+    · nth_rw 1 [← one_mul r]
+      exact mul_le_mul (Nat.one_le_cast.mpr Fintype.card_pos) (le_of_eq rfl) hr (Nat.cast_nonneg _)
+
+#exit
+
+    nth_rw 1 [← one_mul r]
+    exact mul_le_mul (Nat.one_le_cast.mpr Fintype.card_pos) (le_of_eq rfl) hr (Nat.cast_nonneg _)
+
+#exit
 
 theorem unitLattice_inter_ball_finite (r : ℝ) :
     ((UnitLattice K : Set ({ w : InfinitePlace K // w ≠ w₀} → ℝ)) ∩
