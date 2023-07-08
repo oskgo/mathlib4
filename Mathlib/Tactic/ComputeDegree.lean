@@ -107,7 +107,7 @@ def mkNatDegreeLE (f : Expr) (is_natDeg? : Bool) : MetaM Expr := do
   let guessDegree := ← if is_natDeg? then
     return guessDegree
   else
-    let wBotN := Expr.app (Expr.const `WithBot [Level.zero]) (Expr.const `Nat [])
+    let wBotN := Expr.app (Expr.const ``WithBot [Level.zero]) (Expr.const ``Nat [])
     mkAppOptM ``Nat.cast #[some wBotN, none, some guessDegree]
   let ndf := ← mkAppM (if is_natDeg? then ``natDegree else ``degree) #[f]
   let ndfLE := ← mkAppM ``LE.le #[ndf, guessDegree]
