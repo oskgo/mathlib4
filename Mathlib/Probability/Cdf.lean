@@ -51,6 +51,7 @@ noncomputable
 def cdf (μ : Measure ℝ) : StieltjesFunction :=
   condCdf ((Measure.dirac Unit.unit).prod μ) Unit.unit
 
+section
 variable (μ : Measure ℝ)
 
 /-- The cdf is non-negative. -/
@@ -86,6 +87,16 @@ lemma measure_cdf [IsProbabilityMeasure μ] : (cdf μ).measure = μ := by
   refine Measure.ext_of_Iic (cdf μ).measure μ (fun a ↦ ?_)
   rw [StieltjesFunction.measure_Iic _ (tendsto_cdf_atBot μ), sub_zero, ofReal_cdf]
 
+end
+
+lemma cdf_measure (f : StieltjesFunction) (hf0 : Tendsto f atBot (𝓝 0))
+    (hf1 : Tendsto f atTop (𝓝 1)) :
+    cdf f.measure = f := by
+  refine (cdf f.measure).eq_of_measure_of_tendsto_atBot f ?_ (tendsto_cdf_atBot _) hf0
+  have h_prob : IsProbabilityMeasure f.measure :=
+    ⟨by rw [f.measure_univ hf0 hf1, sub_zero, ENNReal.ofReal_one]⟩
+  exact measure_cdf f.measure
+
 end ProbabilityTheory
 
 open ProbabilityTheory
@@ -94,3 +105,8 @@ open ProbabilityTheory
 lemma MeasureTheory.Measure.ext_of_cdf (μ ν : Measure ℝ) [IsProbabilityMeasure μ]
     [IsProbabilityMeasure ν] (h : cdf μ = cdf ν) : μ = ν := by
   rw [← measure_cdf μ, ← measure_cdf ν, h]
+
+lemma MeasureTheory.Measure.ext_iff_cdf (μ ν : Measure ℝ) [IsProbabilityMeasure μ]
+    [IsProbabilityMeasure ν] :
+    μ = ν ↔ cdf μ = cdf ν :=
+⟨fun h ↦ by rw [h], MeasureTheory.Measure.ext_of_cdf μ ν⟩
