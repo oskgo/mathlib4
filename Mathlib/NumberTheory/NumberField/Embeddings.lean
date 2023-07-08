@@ -522,12 +522,10 @@ theorem mult_eq (w : InfinitePlace K) :
     rw [← mkComplex.filter_card K ⟨w, hw⟩]
     refine Finset.card_congr (fun φ _ => φ.val) (fun φ hφ => ?_) (fun _ _ _ _ h => SetCoe.ext h)
       (fun φ hφ => ⟨⟨φ, ?_⟩, ⟨?_, rfl⟩⟩)
-    · simp only [Finset.mem_univ, forall_true_left, Finset.mem_filter, true_and]
+    · simp only [Finset.mem_univ, forall_true_left, Finset.mem_filter, true_and, ← mkComplex_coe]
       simp only [Finset.mem_univ, forall_true_left, Subtype.forall, Finset.mem_filter, true_and]
         at hφ
-      have := congrArg Subtype.val hφ
-      rw [mkComplex_coe] at this
-      exact this
+      exact congrArg Subtype.val hφ
     · simp at hφ
       rw [← hφ] at hw
       rw [← ComplexEmbedding.not_isReal_mk_iff] at hw
