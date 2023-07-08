@@ -102,17 +102,30 @@ def isDegLE (e : Expr) : CoreM (Bool × Expr) := do
 --#check degree (X : Nat[X]) ≤ (1 : Nat)
 --#check WithBot
 
+/-- Returns `natDegree pol`. -/
+def mkNatDegree (pol : Expr) : MetaM Expr := mkAppM ``natDegree #[pol]
+/-- Returns `degree pol`. -/
+def mkDegree (pol : Expr) : MetaM Expr := mkAppM ``degree #[pol]
+
+/-- `mkNatDegreeLE f is_natDeg?` is an expression representing eith `natDegree f ≤ guessDegree f`
+or `degree f ≤ guessDegree f`, depending on whether `is_natDeg?` is `true` or `false`. -/
 def mkNatDegreeLE (f : Expr) (is_natDeg? : Bool) : MetaM Expr := do
-  let guessDegree := ← toNatDegree (fun p => dbg_trace p.getAppFnArgs; mkAppM ``natDegree #[p] <|> return mkNatLit 0) f
+  let guessDegree := ← toNatDegree (fun p => dbg_trace p.getAppFnArgs; mkNatDegree p <|>
+    return mkNatLit 0) f
   let guessDegree := ← if is_natDeg? then
     return guessDegree
   else
     let wBotN := Expr.app (Expr.const ``WithBot [Level.zero]) (Expr.const ``Nat [])
     mkAppOptM ``Nat.cast #[some wBotN, none, some guessDegree]
-  let ndf := ← mkAppM (if is_natDeg? then ``natDegree else ``degree) #[f]
+  let ndf := ← if is_natDeg? then mkNatDegree f else mkDegree f
   let ndfLE := ← mkAppM ``LE.le #[ndf, guessDegree]
   pure ndfLE
 
+/-!
+The lemmas in the next sections prove an inequality of the form `natDegree f ≤ d` and use
+assumptions of the same shape.  This allows a recursive application of the `compute_degree_le`
+tactic, on a goal and on all the resulting subgoals.
+-/
 section mylemmas
 
 variable {R : Type _}
@@ -148,6 +161,10 @@ end ring
 
 end mylemmas
 
+/-- `CDL pol` assumes that `pol` is the `Expr`ession representing a polynomial and that
+the current goal is `natDegree pol ≤ d`, where `d` is the result of `toNatDegree pol`.
+It recursed into the shape of the `Expr`ession `pol` and applies the appropriate lemmas to
+make as much progress as possible. -/
 partial
 def CDL (pol : Expr) : TacticM Unit := do
 -- we recurse into the shape of the polynomial, using the appropriate theorems in each case
@@ -200,8 +217,8 @@ let newPols := ← do match pol.getAppFnArgs with
   | (na, _) => throwError m!"'compute_degree_le' is not implemented for '{na}'"
 let _ := ← newPols.mapM fun x => focus (CDL x)
 
-def addNatDegreeDecl (stx : TSyntax `Mathlib.Tactic.optBinderIdent) (pol : Expr) (is_natDeg? : Bool) : TacticM Unit :=
-focus do
+def addNatDegreeDecl (stx : TSyntax `Mathlib.Tactic.optBinderIdent)
+    (pol : Expr) (is_natDeg? : Bool) : TacticM Unit := focus do
   let nEQ := ← mkNatDegreeLE pol is_natDeg?
   let nEQS := ← nEQ.toSyntax
 --  let ns : TSyntax `Mathlib.Tactic.optBinderIdent := { raw := mkAtom "" }
@@ -254,11 +271,11 @@ elab_rules : tactic
 theorem what :
     let pol : Int[X] :=(X + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10)
     degree pol ≤ 10 ∧ natDegree pol ≤ 10 := by
-  stop
   natDeg ndf : (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10))
   deg df : (((X : Int[X]) + (- X)) ^ 2 - monomial 5 8 * X ^ 4 * X + C 5 - 7 + (-10))
   --conv_rhs at df => { norm_num }
   exact ⟨df, ndf⟩
+  --stop
 
 #eval 0
 
