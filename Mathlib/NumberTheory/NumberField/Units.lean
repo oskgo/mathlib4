@@ -206,7 +206,12 @@ theorem log_le_of_log_embedding_le' {r : ℝ} {x : (𝓞 K)ˣ} (hr : 0 ≤ r) (h
   rw [Pi.norm_def] at h
   simp only [ne_eq, log_embedding_component, nnnorm_mul, Real.nnnorm_coe_nat, NNReal.coe_le_coe,
     Finset.sup_le_iff, Finset.mem_univ, forall_true_left, Subtype.forall] at h
-  sorry
+  specialize h w.val w.prop
+  rw [← mul_le_mul_left (mult_pos K w)]
+  rw [← NNReal.coe_le_coe] at h
+  have t1 : (r : ℝ) ≤ (mult K w) * r := sorry
+  have t2 := h.trans t1
+  exact t2
 
 theorem log_le_of_log_embedding_le {r : ℝ} {x : (𝓞 K)ˣ} (hr : 0 ≤ r) (h : ‖log_embedding K x‖ ≤ r)
     (w : InfinitePlace K) : |Real.log (w x)| ≤ (Fintype.card (InfinitePlace K)) * r := by
