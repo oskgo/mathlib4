@@ -45,10 +45,11 @@ def mkPow (a b : Expr) : MetaM Expr := mkAppM ``HPow.hPow #[a, b]
 
 /-- `toNatDegree alt pol` takes a function `alt : Expr → MetaM Expr` and `pol : Expr` as inputs.
 It assumes that `pol` represents a polynomial and guesses an `Expr` for its `natDegree`.
-It errs on the side of assuming that there are no zeros, e.g. `natDegree X = 1`,
-regardless of whether the base-ring is `nontrivial` or not.
+It errs on the side of assuming "no cancellation/generic nontriviality", e.g. it guesses
+`natDegree (0 * X) = 1` and `natDegree X = 1`, regardless of whether the base-ring is `nontrivial`
+or not.
 Everything that is not obtained as an iterated sum, product or `Nat`-power of `C`onstants, `Nat`s,
-`X`s, `monomials` gets its guess to the `natDegree` outsourced to the function `alt`.
+`X`s, `monomials` is outsourced to the function `alt`.
 
 Chances are that `alt` is the function that, for an expression `f`, guesses the `Expr`ession
 representing `natDegree f`.
