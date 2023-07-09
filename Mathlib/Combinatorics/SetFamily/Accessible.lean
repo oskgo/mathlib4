@@ -11,7 +11,7 @@ import Mathlib.LinearAlgebra.LinearIndependent
 import Mathlib.Tactic.TFAE
 import Mathlib.Tactic.WLOG
 
--- Notes: Should rename `SetSystem` to `SetFamily`?
+-- Notes: Should rename `SetSystem` to `SetFamily` if needed
 
 /-- Accessible set systems are defined as an associated set system of hereditary language;
     here we only pick its properties. -/

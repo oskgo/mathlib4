@@ -29,3 +29,9 @@ instance {α : Type _} [DecidableEq α] :
     ∃ x, x ∈ s₁ \ s₂ ∧ s₂ ∪ {x} ∈ Sys
   then isTrue (by intro s₁ hs₁ s₂ hs₂ hs; simp at h; simp; exact h hs₁ hs₂ hs)
   else isFalse (by intro h'; apply h; clear h; simp [exchangeAxiom] at h'; simp; apply h')
+
+section ExchangeAxioms
+
+open Nat List Finset
+
+end ExchangeAxioms
