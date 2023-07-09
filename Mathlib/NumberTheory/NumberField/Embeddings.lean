@@ -362,9 +362,9 @@ theorem _root_.NumberField.ComplexEmbedding.IsReal.embedding_mk {φ : K →+* �
 #align number_field.complex_embeddings.is_real.embedding_mk NumberField.ComplexEmbedding.IsReal.embedding_mk
 
 @[simp]
- theorem _root_.NumberField.ComplexEmbedding.embedding_mk (φ : K →+* ℂ) :
-     embedding (mk φ) = φ ∨ embedding (mk φ) = ComplexEmbedding.conjugate φ := by
-   rw [@eq_comm _ _ φ, @eq_comm _ _ (ComplexEmbedding.conjugate φ), ← mk_eq_iff, mk_embedding]
+theorem _root_.NumberField.ComplexEmbeddings.embedding_mk (φ : K →+* ℂ) :
+    embedding (mk φ) = φ ∨ embedding (mk φ) = ComplexEmbedding.conjugate φ := by
+  rw [@eq_comm _ _ φ, @eq_comm _ _ (ComplexEmbedding.conjugate φ), ← mk_eq_iff, mk_embedding]
 
 theorem isReal_iff {w : InfinitePlace K} : IsReal w ↔ ComplexEmbedding.IsReal (embedding w) := by
   constructor
