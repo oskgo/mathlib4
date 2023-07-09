@@ -175,7 +175,8 @@ theorem mult_log_place_eq_zero {x : (𝓞 K)ˣ} {w : InfinitePlace K} :
   · have : 0 ≤ w.val x := AbsoluteValue.nonneg _ _
     linarith
   · simp only [ne_eq, map_eq_zero, ne_zero K x]
-  · exact (ne_of_gt (mult_pos K w))
+  · refine (ne_of_gt ?_)
+    rw [mult]; split_ifs <;> norm_num
 
 theorem log_embedding_eq_zero_iff (x : (𝓞 K)ˣ) :
     log_embedding K x = 0 ↔ x ∈ torsion K := by
@@ -206,49 +207,30 @@ theorem log_embedding_component_le {r : ℝ} {x : (𝓞 K)ˣ} (hr : 0 ≤ r) (h 
   simp_rw [Pi.norm_def, NNReal.coe_le_coe, Finset.sup_le_iff, ← NNReal.coe_le_coe] at h
   exact h w (Finset.mem_univ _)
 
--- theorem log_le_of_log_embedding_le' {r : ℝ} {x : (𝓞 K)ˣ} (hr : 0 ≤ r) (h : ‖log_embedding K x‖ ≤ r)
---     (w : {w : InfinitePlace K // w ≠ w₀}) : |Real.log (w.val x)| ≤ r := by
---   lift r to NNReal using hr
---   rw [← mul_le_mul_left (mult_pos K w)]
---   simp_rw [Pi.norm_def, log_embedding_component, nnnorm_mul, Real.nnnorm_coe_nat,
---     NNReal.coe_le_coe, Finset.sup_le_iff, ← NNReal.coe_le_coe] at h
---   refine (h w (Finset.mem_univ _)).trans ?_
---   nth_rw 1 [← one_mul r, NNReal.coe_mul]
---   refine mul_le_mul ?_ (le_of_eq rfl) r.prop (le_of_lt (mult_pos K w))
---   rw [mult]
---   split_ifs <;> norm_num
-
 theorem log_le_of_log_embedding_le {r : ℝ} {x : (𝓞 K)ˣ} (hr : 0 ≤ r) (h : ‖log_embedding K x‖ ≤ r)
     (w : InfinitePlace K) : |Real.log (w x)| ≤ (Fintype.card (InfinitePlace K)) * r := by
+  have tool : ∀ x : ℝ, 0 ≤ x → x ≤ mult K w * x := fun x hx => by
+      nth_rw 1 [← one_mul x]
+      refine mul_le_mul ?_ le_rfl hx ?_
+      all_goals { rw [mult]; split_ifs <;> norm_num }
   by_cases hw : w = w₀
-  · rw [hw]
-    have t1 := congrArg (‖·‖) (log_embedding_sum_component K x).symm
-    dsimp only at t1
-    replace t1 := (le_of_eq t1).trans (norm_sum_le _ _)
-    
-
-
-    sorry
+  · have hyp := congrArg (‖·‖) (log_embedding_sum_component K x).symm
+    replace hyp := (le_of_eq hyp).trans (norm_sum_le _ _)
+    simp_rw [norm_mul, norm_neg, Real.norm_eq_abs, Nat.abs_cast] at hyp
+    refine (le_trans ?_ hyp).trans ?_
+    · rw [← hw]
+      exact tool _ (abs_nonneg _)
+    · refine (Finset.sum_le_card_nsmul Finset.univ _  _
+        (fun w _ => log_embedding_component_le K hr h w)).trans ?_
+      rw [nsmul_eq_mul]
+      refine mul_le_mul ?_ le_rfl hr (Fintype.card (InfinitePlace K)).cast_nonneg
+      simp [Finset.card_univ]
   · have hyp := log_embedding_component_le K hr h ⟨w, hw⟩
     rw [log_embedding_component, abs_mul, Nat.abs_cast] at hyp
     refine (le_trans ?_ hyp).trans ?_
-    · nth_rw 1 [← one_mul |_|]
-      refine mul_le_mul ?_ ?_ ?_ ?_
-      · have := mult_pos K w
-        simp only [Nat.cast_pos] at this
-        exact Iff.mpr Nat.one_le_cast this
-      · exact (le_of_eq rfl)
-      · exact abs_nonneg _
-      · exact le_of_lt (mult_pos K w)
+    · exact tool _ (abs_nonneg _)
     · nth_rw 1 [← one_mul r]
       exact mul_le_mul (Nat.one_le_cast.mpr Fintype.card_pos) (le_of_eq rfl) hr (Nat.cast_nonneg _)
-
-#exit
-
-    nth_rw 1 [← one_mul r]
-    exact mul_le_mul (Nat.one_le_cast.mpr Fintype.card_pos) (le_of_eq rfl) hr (Nat.cast_nonneg _)
-
-#exit
 
 theorem unitLattice_inter_ball_finite (r : ℝ) :
     ((UnitLattice K : Set ({ w : InfinitePlace K // w ≠ w₀} → ℝ)) ∩
@@ -258,18 +240,29 @@ theorem unitLattice_inter_ball_finite (r : ℝ) :
     rw [Metric.closedBall_eq_empty.mpr hr]
     exact Set.inter_empty _
   · suffices Set.Finite {x : (𝓞 K)ˣ | IsIntegral ℤ (x : K) ∧
-      ∀ (φ : K →+* ℂ), ‖φ x‖ ≤ Real.exp ((Fintype.card (InfinitePlace K)) * r)} by
+        ∀ (φ : K →+* ℂ), ‖φ x‖ ≤ Real.exp ((Fintype.card (InfinitePlace K)) * r)} by
       refine (Set.Finite.image (log_embedding K) this).subset ?_
       rintro _ ⟨⟨x, rfl⟩, hx⟩
-      refine ⟨x, ⟨x.val.prop, ?_⟩, rfl⟩
-      rw [← le_iff_le]
-      intro w
-      by_cases hw : w = w₀
-      · rw [← Real.log_le_iff_le_exp]
+      refine ⟨x, ⟨x.val.prop, (le_iff_le _ _).mp (fun w => (Real.log_le_iff_le_exp ?_).mp ?_)⟩, rfl⟩
+      · exact pos_iff.mpr (ne_zero K x)
+      · rw [mem_closedBall_zero_iff] at hx
+        exact (le_abs_self _).trans (log_le_of_log_embedding_le K hr hx w)
+    refine Set.Finite.of_finite_image ?_ ((coe_to_field_injective K).injOn _)
+    refine (Embeddings.finite_of_norm_le K ℂ
+        (Real.exp ((Fintype.card (InfinitePlace K)) * r))).subset ?_
+    rintro _ ⟨x, ⟨⟨h_int, h_le⟩, rfl⟩⟩
+    exact ⟨h_int, h_le⟩
 
-        sorry
-      · sorry
-    sorry
+/-- The unit rank of the number field `K`, that is `card (InfinitePlace K) - 1`. -/
+def unit_rank : ℕ := Fintype.card (InfinitePlace K) - 1
+
+open FiniteDimensional
+
+theorem rank_space :
+    finrank ℝ ({w : InfinitePlace K // w ≠ w₀} → ℝ) = unit_rank K := by
+  simp only [finrank_fintype_fun_eq_card, Fintype.card_subtype_compl,
+    Fintype.card_ofSubsingleton, unit_rank]
+
 
 end dirichlet
 

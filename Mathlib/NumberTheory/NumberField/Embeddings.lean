@@ -436,9 +436,6 @@ variable (K)
 defines it, see ` mult_eq`. -/
 noncomputable def mult (w : InfinitePlace K) : ℕ := if (IsReal w) then 1 else 2
 
-theorem mult_pos (w : InfinitePlace K) : 0 < (mult K w : ℝ) := by
-  rw [mult]; split_ifs <;> norm_num
-
 variable {K}
 
 /-- The map from real embeddings to real infinite places as an equiv -/
@@ -506,6 +503,7 @@ theorem mkComplex.filter_card (w : { w : InfinitePlace K // w.IsComplex }) :
         ne_comm.1 <| ComplexEmbedding.isReal_iff.not.1 <| isComplex_iff.1 w.2)
 #align number_field.infinite_place.mk_complex.filter_card NumberField.InfinitePlace.mkComplex.filter_card
 
+-- TODO. clean this proof
 theorem mult_eq (w : InfinitePlace K) :
     mult K w = (Finset.univ.filter fun φ => mk φ = w).card := by
   rw [mult]
