@@ -362,7 +362,7 @@ theorem _root_.NumberField.ComplexEmbedding.IsReal.embedding_mk {φ : K →+* �
 #align number_field.complex_embeddings.is_real.embedding_mk NumberField.ComplexEmbedding.IsReal.embedding_mk
 
 @[simp]
-theorem _root_.NumberField.ComplexEmbeddings.embedding_mk (φ : K →+* ℂ) :
+theorem _root_.NumberField.ComplexEmbedding.embedding_mk (φ : K →+* ℂ) :
     embedding (mk φ) = φ ∨ embedding (mk φ) = ComplexEmbedding.conjugate φ := by
   rw [@eq_comm _ _ φ, @eq_comm _ _ (ComplexEmbedding.conjugate φ), ← mk_eq_iff, mk_embedding]
 
@@ -503,7 +503,7 @@ theorem mkComplex.filter_card (w : { w : InfinitePlace K // w.IsComplex }) :
         ne_comm.1 <| ComplexEmbedding.isReal_iff.not.1 <| isComplex_iff.1 w.2)
 #align number_field.infinite_place.mk_complex.filter_card NumberField.InfinitePlace.mkComplex.filter_card
 
--- TODO. clean this proof
+-- TODO. clean up this proof
 theorem mult_eq (w : InfinitePlace K) :
     mult K w = (Finset.univ.filter fun φ => mk φ = w).card := by
   rw [mult]

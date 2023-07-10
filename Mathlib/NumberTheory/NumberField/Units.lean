@@ -9,7 +9,7 @@ Authors: Xavier Roblot
 ! if you have ported upstream changes.
 -/
 import Mathlib.GroupTheory.Torsion
-import Mathlib.NumberTheory.NumberField.Embeddings
+import Mathlib.NumberTheory.NumberField.CanonicalEmbedding
 import Mathlib.NumberTheory.NumberField.Norm
 import Mathlib.RingTheory.RootsOfUnity.Basic
 
@@ -256,13 +256,28 @@ theorem unitLattice_inter_ball_finite (r : ℝ) :
 /-- The unit rank of the number field `K`, that is `card (InfinitePlace K) - 1`. -/
 def unit_rank : ℕ := Fintype.card (InfinitePlace K) - 1
 
-open FiniteDimensional
+open FiniteDimensional NumberField.mixedEmbedding NNReal
 
 theorem rank_space :
     finrank ℝ ({w : InfinitePlace K // w ≠ w₀} → ℝ) = unit_rank K := by
   simp only [finrank_fintype_fun_eq_card, Fintype.card_subtype_compl,
     Fintype.card_ofSubsingleton, unit_rank]
 
+variable {w₁ : InfinitePlace K} {B : ℕ} (hb : minkowski_bound K < (constant_factor K) * B)
+
+theorem seq.next {x : 𝓞 K} (hx : x ≠ 0) :
+    ∃ y : 𝓞 K, y ≠ 0 ∧ (∀ w, w ≠ w₁ → w y < (w x) / 2) ∧ |Algebra.norm ℚ (y : K)| ≤ B := by
+  let f : InfinitePlace K → ℝ≥0 :=
+    fun w => ⟨(w x) / 2, div_nonneg (AbsoluteValue.nonneg _ _) (by norm_num)⟩
+  suffices ∀ w, w ≠ w₁ → f w ≠ 0 by
+    obtain ⟨g, h_geqf, h_gprod⟩ := adjust_f K B this
+    obtain ⟨y, h_ynz, h_yle⟩ := exists_ne_zero_mem_ring_of_integers_lt (f := g)
+      (by rw [convex_body_volume]; convert hb; exact congrArg ((↑): NNReal → ENNReal) h_gprod)
+    refine ⟨y, h_ynz, fun w hw => by convert h_geqf w hw ▸ h_yle w, ?_⟩
+    · rw [← Rat.cast_le (K := ℝ), ← prod_mult_eq_abs_norm]
+--      have := Finset.prod_le_prod (f := fun w => (w y) ^ (mult K w)) ?_  ?_
+      sorry
+  sorry
 
 end dirichlet
 
