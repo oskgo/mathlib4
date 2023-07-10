@@ -33,13 +33,13 @@ theorem base_bases_eq : base Sys = bases Sys Finset.univ := by ext s; simp [base
 
 theorem basis_mem_feasible : b ∈ Sys := by simp only [bases, mem_filter] at hb; exact hb.1
 
-theorem baseis_subseteq : b ⊆ s := by simp only [bases, mem_filter] at hb; exact hb.2.1
+theorem basis_subseteq : b ⊆ s := by simp only [bases, mem_filter] at hb; exact hb.2.1
 
 theorem basis_maximal {a : α} (ha₁ : a ∈ s) (ha₂ : b ∪ {a} ∈ Sys) :
     a ∈ b := by
   simp only [bases, mem_filter] at hb; exact hb.2.2 a ha₁ ha₂
 
-theorem exists_bases_containing_feasible_set {s' : Finset α} (hs'₁ : s' ∈ Sys) (hs'₂ : s' ⊆ s) :
+theorem exists_basis_containing_feasible_set {s' : Finset α} (hs'₁ : s' ∈ Sys) (hs'₂ : s' ⊆ s) :
     ∃ b ∈ bases Sys s, s' ⊆ b := by
   by_cases h : ∀ x ∈ s, s' ∪ {x} ∈ Sys → x ∈ s'
   . exists s'
@@ -47,7 +47,7 @@ theorem exists_bases_containing_feasible_set {s' : Finset α} (hs'₁ : s' ∈ S
     exact h
   . simp only [not_forall, exists_prop, exists_and_left] at h
     have ⟨x, hx₁, hx₂, _⟩ := h
-    have ⟨b, hb₁, hb₂⟩ := exists_bases_containing_feasible_set hx₂ (by
+    have ⟨b, hb₁, hb₂⟩ := exists_basis_containing_feasible_set hx₂ (by
       intro y h
       simp only [mem_union, mem_singleton] at h
       exact h.elim (fun h => hs'₂ h) (fun h => h ▸ hx₁))
@@ -55,7 +55,7 @@ theorem exists_bases_containing_feasible_set {s' : Finset α} (hs'₁ : s' ∈ S
     apply And.intro hb₁
     intro y hy
     exact hb₂ (mem_union.mpr (Or.inl hy))
-termination_by exists_bases_containing_feasible_set => s.card - s'.card
+termination_by exists_basis_containing_feasible_set => s.card - s'.card
 decreasing_by
   simp_wf
   have hx₃ := ‹x ∉ s'›
@@ -67,7 +67,7 @@ theorem accessible_bases_nonempty {Sys : Finset (Finset α)} [Accessible Sys] {s
     Nonempty (bases Sys s) := by
   simp only [nonempty_subtype]
   have ⟨b, _⟩ :=
-    exists_bases_containing_feasible_set (@accessible_contains_empty _ _ Sys _) (empty_subset s)
+    exists_basis_containing_feasible_set (@accessible_contains_empty _ _ Sys _) (empty_subset s)
   exists b; tauto
 
 end Bases
