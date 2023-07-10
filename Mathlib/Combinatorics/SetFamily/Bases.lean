@@ -64,7 +64,10 @@ decreasing_by
     (by simp [hx₃])
 
 theorem accessible_bases_nonempty {Sys : Finset (Finset α)} [Accessible Sys] {s : Finset α} :
-    ∃ b, b ∈ bases Sys s := by
-  sorry
+    Nonempty (bases Sys s) := by
+  simp only [nonempty_subtype]
+  have ⟨b, _⟩ :=
+    exists_bases_containing_feasible_set (@accessible_contains_empty _ _ Sys _) (empty_subset s)
+  exists b; tauto
 
 end Bases
