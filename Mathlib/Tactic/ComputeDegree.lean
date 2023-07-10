@@ -168,7 +168,7 @@ end ring
 
 end mylemmas
 
-def dict (pol : Expr) : Option Name × (List Expr) :=
+def assign_lemma_name (pol : Expr) : Option Name × (List Expr) :=
 match pol.getAppFnArgs with
   | (``HAdd.hAdd, #[_, _, _, _, f, g])                 => (``add, [f,g])
   | (``Neg.neg,   #[_, _, f])                          => (``neg, [f])
@@ -178,28 +178,31 @@ match pol.getAppFnArgs with
   | (``Polynomial.X, _)                                => (``natDegree_X_le, [pol])
   | (``Nat.cast, #[_, _, n])                           => (``nat_cast_le, [n])
   | (``Int.cast, #[_, _, n])                           => (``int_cast_le, [n])
-  -- I am not sure why I had to split `n = 0` from generic `n`
+  -- why should I split `n = 0` from generic `n`?
   | (``OfNat.ofNat, #[_, n@(.lit (.natVal 0)), _])     => (``zero_le, [n])
   | (``OfNat.ofNat, #[_, n, _])                        => (``nat_cast_le, [n])
   -- deal with `monomial` and `C`
   | (``FunLike.coe, #[_, _, _, _, polFun, c])  =>
-    if polFun.isAppOf ``Polynomial.C then (``C_le, [c])
-    else if polFun.isAppOf ``Polynomial.monomial then
-      (``natDegree_monomial_le, [c])
-    else (none, [pol]) -- throwError m!"'compute_degree_le' is not implemented for {polFun}"
-  | (_na, _) => dbg_trace _na; (none, [pol])
+    if polFun.isAppOf ``Polynomial.C then                 (``C_le, [c])
+    else if polFun.isAppOf ``Polynomial.monomial then     (``natDegree_monomial_le, [c])
+    -- consider `throwError m!"'compute_degree_le' is not implemented for {polFun}"`
+    else                                                  (none, [pol])
+  -- possibly, all that's left is the case where `pol` is an `fvar` and its `Name` is `.anonymous`
+  | (_na, _) => (none, [pol])
 
-def OSCDL (pol : Expr) (mv : MVarId) : MetaM (List (Bool × Expr × MVarId)) := do
-  let (na, exs) := dict pol
+def one_step_compute_degree_le (pol : Expr) (mv : MVarId) :
+    MetaM (List (Bool × Expr × MVarId)) := do
+  let (na, exs) := assign_lemma_name pol
   let mvs := ← if na.isSome then mv.applyConst na.get! else return [mv]
   return (List.replicate mvs.length na.isSome).zip (exs.zip mvs)
 
 partial
-def ASCDL (l : List (Bool × Expr × MVarId)) : MetaM (List (Expr × MVarId)) := do
+def recurse_compute_degree (l : List (Bool × Expr × MVarId)) : MetaM (List (Expr × MVarId)) := do
   let (bs , rest) := l.unzip
   if true ∈ bs then
-    let news := ← l.mapM fun x@(act?, pol, mv) => if act? then OSCDL pol mv else pure [x]
-    ASCDL news.join
+    let news := ← l.mapM fun x@(act?, pol, mv) =>
+      if act? then one_step_compute_degree_le pol mv else pure [x]
+    recurse_compute_degree news.join
   else
     pure rest
     --ASCDL (← l.mapM fun x@(act?, pol, mv) => if act? then OSCDL pol mv else pure [x])
@@ -207,65 +210,114 @@ def ASCDL (l : List (Bool × Expr × MVarId)) : MetaM (List (Expr × MVarId)) :=
 example : natDegree (↑(0) : Int[X]) ≤ 0 := by
   run_tac do
     let (_, pol) := ←  isDegLE (← getMainTarget)
-    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    let gls := ← recurse_compute_degree [(true, pol, (← getMainGoal))]
     setGoals gls.unzip.2
 
 example : natDegree (0 : Nat[X]) ≤ 0 := by
   run_tac do
     let (_, pol) := ←  isDegLE (← getMainTarget)
-    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    let gls := ← recurse_compute_degree [(true, pol, (← getMainGoal))]
     setGoals gls.unzip.2
 
 example : natDegree (1 : Nat[X]) ≤ 0 := by
   run_tac do
     let (_, pol) := ←  isDegLE (← getMainTarget)
-    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    let gls := ← recurse_compute_degree [(true, pol, (← getMainGoal))]
     setGoals gls.unzip.2
 
 example : natDegree (1 : Int[X]) ≤ 0 := by
   run_tac do
     let (_, pol) := ←  isDegLE (← getMainTarget)
-    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    let gls := ← recurse_compute_degree [(true, pol, (← getMainGoal))]
     setGoals gls.unzip.2
 
 example {n : Nat} : natDegree (n : Nat[X]) ≤ 0 := by
   run_tac do
     let (_, pol) := ←  isDegLE (← getMainTarget)
-    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    let gls := ← recurse_compute_degree [(true, pol, (← getMainGoal))]
     setGoals gls.unzip.2
 
 example {n : Nat} : natDegree (n : Int[X]) ≤ 0 := by
   run_tac do
     let (_, pol) := ←  isDegLE (← getMainTarget)
-    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    let gls := ← recurse_compute_degree [(true, pol, (← getMainGoal))]
     setGoals gls.unzip.2
 
 example {n : Int} : natDegree (↑(n) : Int[X]) ≤ 0 := by
   run_tac do
     let (_, pol) := ←  isDegLE (← getMainTarget)
-    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    let gls := ← recurse_compute_degree [(true, pol, (← getMainGoal))]
     setGoals gls.unzip.2
+
+example {f g : Int[X]} (hf : natDegree f ≤ 1) (hg : natDegree g ≤ 2) :
+    natDegree (- (X ^ 2 * f + (g * g ^ 2)) + ( (↑(-1) : Int[X]) * monomial 3 2)) ≤ 6 := by
+  run_tac do
+    let tgt := ← getMainTarget
+    let goal := ← getMainGoal
+    let (isNatDeg?, pol) := ← isDegLE (← getMainTarget)
+    let x := ← mkNatDegreeLE pol isNatDeg?
+    let stx := ← x.toSyntax
+    evalTactic (← `(tactic| have : $stx))
+    let gls := ← recurse_compute_degree [(true, pol, (← getMainGoal))]
+    let gs := ← getGoals
+    setGoals (goal :: gls.unzip.2 ++ gs)
+  any_goals apply rfl.le
+  rename_i this
+  conv_rhs at this => norm_num
+
+  apply this.trans
+  norm_num
+  constructor <;>
+  try linarith
+
+
 
 
 
 example {f g : Int[X]} (hf : natDegree f ≤ 1) (hg : natDegree g ≤ 2) :
     natDegree (- (X ^ 2 * f + (g * g ^ 2)) + ( (↑(-1) : Int[X]) * monomial 3 2)) ≤ max (max ((2 * 1) + 1) (2 + 2 * 2)) (0 + 3) := by
   run_tac do
-    let (_, pol) := ←  isDegLE (← getMainTarget)
-    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    let tgt := ← getMainTarget
+    let goal := ← getMainGoal
+--    dbg_trace tgt.ctorName
+--    dbg_trace tgt.getAppFnArgs
+    match tgt.getAppFnArgs with
+      | (``LE.le, #[_, _, lhs, rhs]) =>
+        let (isNatDeg?, pol) := ← isDegLE (← getMainTarget)
+        let x := ← mkNatDegreeLE pol isNatDeg?
+        let stx := ← x.toSyntax
+        evalTactic (← `(tactic| have : $stx))
+--        dbg_trace ← isDefEq x rhs
+--    dbg_trace x
+        let gls := ← recurse_compute_degree [(true, pol, (← getMainGoal))]
 --    let gls := ← CDLmv pol (← getMainGoal)
 --    let gls := ← CDLmv gls[0]!.1 gls[0]!.2
+--        let meq := ← mkEq x rhs
+--        dbg_trace "   here"
+--        dbg_trace ← ppExpr x
+        let gs := ← getGoals
+        setGoals (goal :: gls.unzip.2 ++ gs)
+--        setGoals [goal]
+      | _ => pure ()
+--  exact?
+  any_goals apply rfl.le
+  rename_i this
+  conv_rhs at this => norm_num
 
-    setGoals gls.unzip.2
-  any_goals assumption
+  apply this.trans
+  sorry
+--  norm_num
+--  constructor <;>
+--  linarith
 
+--  any_goals assumption
 
 
 example {f g : Int[X]} (hf : natDegree f ≤ 1) (hg : natDegree g ≤ 2) :
     natDegree (- (X ^ 2 * f + (g * g ^ 2)) + ( (↑(-4) : Int[X]) * monomial 3 2)) ≤ max (max ((2 * 1) + 1) (2 + 2 * 2)) (0 + 3) := by
   run_tac do
     let (_, pol) := ←  isDegLE (← getMainTarget)
-    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    let gls := ← recurse_compute_degree [(true, pol, (← getMainGoal))]
 --    let gls := ← CDLmv pol (← getMainGoal)
 --    let gls := ← CDLmv gls[0]!.1 gls[0]!.2
 
@@ -278,7 +330,7 @@ example {f g : Int[X]} (hf : natDegree f ≤ 1) (hg : natDegree g ≤ 2) :
 example [Semiring R] (n : Nat) : natDegree (n : R[X]) ≤ 0 := by
   run_tac do
     let (_, pol) := ←  isDegLE (← getMainTarget)
-    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    let gls := ← recurse_compute_degree [(true, pol, (← getMainGoal))]
     setGoals gls.unzip.2
 
 #exit
