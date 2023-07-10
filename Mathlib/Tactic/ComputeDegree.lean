@@ -145,6 +145,11 @@ theorem pow {a b : Nat} {f : R[X]} (hf : natDegree f ≤ a) :
     natDegree (f ^ b) ≤ b * a :=
 natDegree_pow_le.trans (Nat.mul_le_mul rfl.le ‹_›)
 
+theorem C_le (a : R) : natDegree (C a) ≤ 0 := (natDegree_C a).le
+theorem nat_cast_le (n : Nat) : natDegree (n : R[X]) ≤ 0 := (natDegree_nat_cast _).le
+theorem zero_le : natDegree (↑0 : R[X]) ≤ 0 := natDegree_zero.le
+theorem one_le : natDegree (↑1 : R[X]) ≤ 0 := natDegree_one.le
+
 end semiring
 
 section ring
@@ -157,9 +162,185 @@ theorem sub {a b : Nat} {f g : R[X]} (hf : natDegree f ≤ a) (hg : natDegree g 
     natDegree (f - g) ≤ max a b :=
 (f.natDegree_sub_le g).trans $ max_le_max ‹_› ‹_›
 
+theorem int_cast_le (n : Int) : natDegree (n : R[X]) ≤ 0 := (natDegree_int_cast _).le
+
 end ring
 
 end mylemmas
+
+def dict (pol : Expr) : Option Name × (List Expr) :=
+match pol.getAppFnArgs with
+  | (``HAdd.hAdd, #[_, _, _, _, f, g])                 => (``add, [f,g])
+  | (``Neg.neg,   #[_, _, f])                          => (``neg, [f])
+  | (``HSub.hSub, #[_, _, _, _, f, g])                 => (``sub, [f,g])
+  | (``HMul.hMul, #[_, _, _, _, f, g])                 => (``mul, [f,g])
+  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, f, _]) => (``pow, [f])
+  | (``Polynomial.X, _)                                => (``natDegree_X_le, [pol])
+  | (``Nat.cast, #[_, _, n])                           => (``nat_cast_le, [n])
+  | (``Int.cast, #[_, _, n])                           => (``int_cast_le, [n])
+  -- I am not sure why I had to split `n = 0` from generic `n`
+  | (``OfNat.ofNat, #[_, n@(.lit (.natVal 0)), _])     => (``zero_le, [n])
+  | (``OfNat.ofNat, #[_, n, _])                        => (``nat_cast_le, [n])
+  -- deal with `monomial` and `C`
+  | (``FunLike.coe, #[_, _, _, _, polFun, c])  =>
+    if polFun.isAppOf ``Polynomial.C then (``C_le, [c])
+    else if polFun.isAppOf ``Polynomial.monomial then
+      (``natDegree_monomial_le, [c])
+    else (none, [pol]) -- throwError m!"'compute_degree_le' is not implemented for {polFun}"
+  | (_na, _) => dbg_trace _na; (none, [pol])
+
+def OSCDL (pol : Expr) (mv : MVarId) : MetaM (List (Bool × Expr × MVarId)) := do
+  let (na, exs) := dict pol
+  let mvs := ← if na.isSome then mv.applyConst na.get! else return [mv]
+  return (List.replicate mvs.length na.isSome).zip (exs.zip mvs)
+
+partial
+def ASCDL (l : List (Bool × Expr × MVarId)) : MetaM (List (Expr × MVarId)) := do
+  let (bs , rest) := l.unzip
+  if true ∈ bs then
+    let news := ← l.mapM fun x@(act?, pol, mv) => if act? then OSCDL pol mv else pure [x]
+    ASCDL news.join
+  else
+    pure rest
+    --ASCDL (← l.mapM fun x@(act?, pol, mv) => if act? then OSCDL pol mv else pure [x])
+
+example : natDegree (↑(0) : Int[X]) ≤ 0 := by
+  run_tac do
+    let (_, pol) := ←  isDegLE (← getMainTarget)
+    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    setGoals gls.unzip.2
+
+example : natDegree (0 : Nat[X]) ≤ 0 := by
+  run_tac do
+    let (_, pol) := ←  isDegLE (← getMainTarget)
+    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    setGoals gls.unzip.2
+
+example : natDegree (1 : Nat[X]) ≤ 0 := by
+  run_tac do
+    let (_, pol) := ←  isDegLE (← getMainTarget)
+    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    setGoals gls.unzip.2
+
+example : natDegree (1 : Int[X]) ≤ 0 := by
+  run_tac do
+    let (_, pol) := ←  isDegLE (← getMainTarget)
+    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    setGoals gls.unzip.2
+
+example {n : Nat} : natDegree (n : Nat[X]) ≤ 0 := by
+  run_tac do
+    let (_, pol) := ←  isDegLE (← getMainTarget)
+    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    setGoals gls.unzip.2
+
+example {n : Nat} : natDegree (n : Int[X]) ≤ 0 := by
+  run_tac do
+    let (_, pol) := ←  isDegLE (← getMainTarget)
+    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    setGoals gls.unzip.2
+
+example {n : Int} : natDegree (↑(n) : Int[X]) ≤ 0 := by
+  run_tac do
+    let (_, pol) := ←  isDegLE (← getMainTarget)
+    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    setGoals gls.unzip.2
+
+
+
+example {f g : Int[X]} (hf : natDegree f ≤ 1) (hg : natDegree g ≤ 2) :
+    natDegree (- (X ^ 2 * f + (g * g ^ 2)) + ( (↑(-1) : Int[X]) * monomial 3 2)) ≤ max (max ((2 * 1) + 1) (2 + 2 * 2)) (0 + 3) := by
+  run_tac do
+    let (_, pol) := ←  isDegLE (← getMainTarget)
+    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+--    let gls := ← CDLmv pol (← getMainGoal)
+--    let gls := ← CDLmv gls[0]!.1 gls[0]!.2
+
+    setGoals gls.unzip.2
+  any_goals assumption
+
+
+
+example {f g : Int[X]} (hf : natDegree f ≤ 1) (hg : natDegree g ≤ 2) :
+    natDegree (- (X ^ 2 * f + (g * g ^ 2)) + ( (↑(-4) : Int[X]) * monomial 3 2)) ≤ max (max ((2 * 1) + 1) (2 + 2 * 2)) (0 + 3) := by
+  run_tac do
+    let (_, pol) := ←  isDegLE (← getMainTarget)
+    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+--    let gls := ← CDLmv pol (← getMainGoal)
+--    let gls := ← CDLmv gls[0]!.1 gls[0]!.2
+
+    setGoals gls.unzip.2
+  any_goals assumption
+  --apply (natDegree_nat_cast _).le
+
+
+
+example [Semiring R] (n : Nat) : natDegree (n : R[X]) ≤ 0 := by
+  run_tac do
+    let (_, pol) := ←  isDegLE (← getMainTarget)
+    let gls := ← ASCDL [(true, pol, (← getMainGoal))]
+    setGoals gls.unzip.2
+
+#exit
+#check evalSkip
+#check MVarId.applyConst
+#check LocalContext
+#check Lean.MVarId.apply
+
+#check List.replicate
+
+
+partial
+def CDLmv (pol : Expr) (mv : MVarId) : MetaM (List (Expr × MVarId)) := do
+--if pol.isFVar then pure [(pol, mv)] else
+-- we recurse into the shape of the polynomial, using the appropriate theorems in each case
+let (na, exs) := dict pol
+let oneStep := ← do
+  let mvs := ← if na.isSome then mv.applyConst na.get! else return [mv]
+  return (exs.zip mvs)
+let allSteps := ← oneStep.mapM fun x => match na.isSome, x with
+  | true, (newPol, newMVarId) => CDLmv newPol newMVarId
+  | false, _ => do mv.assumption; pure []
+return allSteps.join
+
+
+/-  was working, no dictionary
+partial
+def CDLmv (pol : Expr) (mv : MVarId) : MetaM (List (Expr × MVarId)) := do
+--if pol.isFVar then pure [(pol, mv)] else
+-- we recurse into the shape of the polynomial, using the appropriate theorems in each case
+let oneStep := ← do match pol.getAppFnArgs with
+  | (``HAdd.hAdd, #[_, _, _, _, f, g])  =>
+--    let mvs := ← mv.applyConst ``add
+    let (na, exs) := dict pol
+    return ([f,g].zip mvs).map (some ·)
+  | (``Neg.neg, #[_, _, f])  =>
+    let mvs := ← mv.applyConst ``neg
+    return [(f, mvs[0]!)]
+  | (``HSub.hSub, #[_, _, _, _, f, g])  =>
+    let mvs := ← mv.applyConst ``sub
+    return [f,g].zip mvs
+  | (``HMul.hMul, #[_, _, _, _, f, g])  =>
+    let mvs := ← mv.applyConst ``mul
+    return [f,g].zip mvs
+  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, f, _]) =>
+    let mvs := ← mv.applyConst ``pow
+    return [(f, mvs[0]!)]
+  | _ => return [none]
+  --throwError f!"'compute_degree' unimplemented for Expr.{pol.ctorName}, ({e.1}, {e.2})"
+let allSteps := ← oneStep.mapM fun x => match x with
+    | some (newPol, newMVarId) => (CDLmv newPol newMVarId) --.join
+    | none => pure [(pol, mv)]
+return allSteps.join
+
+-/
+
+
+#exit
+
+--  consider using this to introduce new hypotheses
+#check Lean.MVarId.assertHypotheses
+
 
 /-- `CDL pol` assumes that `pol` is the `Expr`ession representing a polynomial and that
 the current goal is `natDegree pol ≤ d`, where `d` is the result of `toNatDegree pol`.
