@@ -133,8 +133,11 @@ import Mathlib.Data.List.MinMax
 
 -- #eval (editDistance levenshteinCost "kitten".toList "sitting".toList : WithTop ℕ)
 
+section AddZeroClass
+variable [AddZeroClass β]
 
-variable [Min β] [AddZeroClass β]
+section Min
+variable [Min β]
 
 /--
 (Implementation detail for `levenshteinDistance`)
@@ -331,10 +334,12 @@ theorem levenshteinSuffixDistances_eq
   · case cons x xs ih =>
     simp only [List.map, levenshteinSuffixDistances_cons₁, ih]
 
+@[simp]
 theorem levenshteinDistance_nil_nil {insert delete : α → β} {substitute : α → α → β} :
     levenshteinDistance insert delete substitute [] [] = 0 := by
   simp [levenshteinDistance]
 
+@[simp]
 theorem levenshteinDistance_nil_cons {insert delete : α → β} {substitute : α → α → β}
     (y : α) (ys : List α) :
     levenshteinDistance insert delete substitute [] (y :: ys) =
@@ -350,12 +355,14 @@ theorem levenshteinDistance_nil_cons {insert delete : α → β} {substitute : �
     simp only [List.foldr]
     rw [levenshteinSuffixDistances_impl_length] <;> simp [ih]
 
+@[simp]
 theorem levenshteinDistance_cons_nil {insert delete : α → β} {substitute : α → α → β}
     (x : α) (xs : List α) :
     levenshteinDistance insert delete substitute (x :: xs) [] =
       delete x + levenshteinDistance insert delete substitute xs [] :=
   rfl
 
+@[simp]
 theorem levenshteinDistance_cons_cons {insert delete : α → β} {substitute : α → α → β}
     (x : α) (xs : List α) (y : α) (ys : List α) :
     levenshteinDistance insert delete substitute (x :: xs) (y :: ys) =
@@ -364,10 +371,155 @@ theorem levenshteinDistance_cons_cons {insert delete : α → β} {substitute : 
           (substitute x y + levenshteinDistance insert delete substitute xs ys)) :=
   levenshteinSuffixDistances_cons_cons_fst_get_zero _ _ _ _ _
 
+end Min
+
+end AddZeroClass
+
+theorem levenshteinDistance_nonneg [LinearOrderedAddCommMonoid β]
+    {insert delete : α → β} {substitute : α → α → β}
+    (hinsert : ∀ a, 0 ≤ insert a) (hdelete : ∀ a, 0 ≤ delete a)
+    (hsubstitute₁ : ∀ a b, 0 ≤ substitute a b) (xs ys : List α) :
+    0 ≤ levenshteinDistance insert delete substitute xs ys := by
+  induction xs generalizing ys with
+  | nil =>
+    induction ys with
+    | nil => simp
+    | cons y ys ihy =>
+      simp only [levenshteinDistance_nil_cons]
+      exact add_nonneg (hinsert y) ihy
+  | cons x xs ihx =>
+    induction ys with
+    | nil =>
+      simp only [levenshteinDistance_cons_nil]
+      exact add_nonneg (hdelete x) (ihx [])
+    | cons y ys ihy =>
+      simp only [levenshteinDistance_cons_cons, ge_iff_le, le_min_iff, min_le_iff]
+      refine ⟨?_, ?_, ?_⟩ <;>
+        apply add_nonneg <;>
+          solve_by_elim
+
+theorem levenshteinDistance_refl [LinearOrderedAddCommMonoid β]
+    {insert delete : α → β} {substitute : α → α → β}
+    (hinsert : ∀ a, 0 ≤ insert a) (hdelete : ∀ a, 0 ≤ delete a)
+    (hsubstitute₁ : ∀ a b, 0 ≤ substitute a b) (hsubstitute₂ : ∀ a, substitute a a = 0)
+    (xs : List α) : levenshteinDistance insert delete substitute xs xs = 0 := by
+  induction xs with
+  | nil => simp
+  | cons x xs ih =>
+    simp only [levenshteinDistance_cons_cons, hsubstitute₂, ih]
+    simp only [add_zero]
+    -- TODO we would prefer to rewrite at the second `min`,
+    -- but this is slightly awkward to do as side conditions from rewrites
+    -- block closing `conv` blocks.
+    rw [min_eq_right]
+    · rw [min_eq_right]
+      exact add_nonneg (hinsert _)
+        (levenshteinDistance_nonneg hinsert hdelete hsubstitute₁ (x :: xs) xs)
+    · rw [min_eq_right]
+      · exact add_nonneg (hdelete _)
+          (levenshteinDistance_nonneg hinsert hdelete hsubstitute₁ xs (x :: xs))
+      · exact add_nonneg (hinsert _)
+          (levenshteinDistance_nonneg hinsert hdelete hsubstitute₁ (x :: xs) xs)
+
+theorem levenshteinDistance_eq_of_zero [LinearOrderedAddCommMonoid β]
+    {insert delete : α → β} {substitute : α → α → β}
+    (hinsert : ∀ a, 0 < insert a) (hdelete : ∀ a, 0 < delete a)
+    (hsubstitute₁ : ∀ a b, 0 ≤ substitute a b) (hsubstitute₂ : ∀ a b, substitute a b = 0 ↔ a = b)
+    {xs ys : List α}
+    (w : levenshteinDistance insert delete substitute xs ys = 0) : xs = ys := by
+  -- TODO should be straighforward
+  sorry
+
+theorem levenshteinDistance_symm [AddZeroClass β] [LinearOrder β]
+    {insert delete : α → β} {substitute : α → α → β} (xs ys : List α) :
+    levenshteinDistance insert delete substitute xs ys =
+      levenshteinDistance delete insert (Function.swap substitute) ys xs := by
+  induction xs generalizing ys with
+  | nil =>
+    induction ys with
+    | nil => simp
+    | cons y ys ih => simp [ih]
+  | cons x xs ih₁ =>
+    induction ys with
+    | nil => simp [ih₁]
+    | cons y ys ih₂ =>
+      simp only [levenshteinDistance_cons_cons, ih₁, ih₂]
+      rw [← min_assoc, min_comm (delete x + _), min_assoc]
+
+theorem levenshteinDistance_trans [LinearOrderedAddCommMonoid β]
+    {insert delete : α → β} {substitute : α → α → β}
+    (hinsert : ∀ a, 0 ≤ insert a) (hdelete : ∀ a, 0 ≤ delete a)
+    (hsubstitute₁ : ∀ a b, 0 ≤ substitute a b) (hsubstitute₂ : ∀ a, substitute a a = 0)
+    (hsubstitute₃ : ∀ a b c, substitute a c ≤ substitute a b + substitute b c)
+    (xs ys zs : List α) :
+    levenshteinDistance insert delete substitute xs zs ≤
+      levenshteinDistance insert delete substitute xs ys +
+      levenshteinDistance insert delete substitute ys zs := by
+  induction xs generalizing ys zs with
+  | nil => sorry
+  | cons x xs ihx =>
+    induction zs generalizing ys with
+    | nil => sorry
+    | cons z zs ihz =>
+      induction ys with
+      | nil => sorry
+      | cons y ys ihy =>
+        simp only [levenshteinDistance_cons_cons x xs y ys]
+        rw [←min_add_add_right, ←min_add_add_right]
+        simp only [le_min_iff]
+        refine ⟨?_, ?_, ?_⟩
+        · simp only [levenshteinDistance_cons_cons x xs z zs]
+          apply min_le_of_left_le
+          rw [add_assoc]
+          exact add_le_add_left (ihx (y :: ys) (z :: zs)) (delete x)
+        · simp only [levenshteinDistance_cons_cons y ys z zs]
+          rw [←min_add_add_left, ←min_add_add_left]
+          simp only [le_min_iff]
+          refine ⟨?_, ?_, ?_⟩
+          · sorry -- easy
+          · simp only [levenshteinDistance_cons_cons x xs z zs]
+            apply min_le_of_right_le
+            apply min_le_of_left_le
+            rw [add_left_comm]
+            apply add_le_add_left
+            refine (ihz ys).trans ?_
+            rw [add_comm (insert y), add_assoc]
+            apply add_le_add_left
+            sorry -- doable, maybe warrants a lemma
+          · simp only [levenshteinDistance_cons_cons x xs z zs]
+            apply min_le_of_right_le
+            apply min_le_of_left_le
+            sorry -- easy, although needs another hypothesis!
+        · simp only [levenshteinDistance_cons_cons y ys z zs]
+          rw [←min_add_add_left, ←min_add_add_left]
+          simp only [le_min_iff]
+          refine ⟨?_, ?_, ?_⟩
+          · sorry -- easy
+          · simp only [levenshteinDistance_cons_cons x xs z zs]
+            apply min_le_of_right_le
+            apply min_le_of_left_le
+            rw [add_left_comm]
+            apply add_le_add_left
+            refine (ihz (y :: ys)).trans ?_
+            apply add_le_add_right
+            sorry -- easy
+          · sorry -- easy
+
+
+
+
+theorem List.minimum_le_minimum [LinearOrder α]
+    (L M : List α) (w : ∀ m, m ∈ M → ∃ l, l ∈ L ∧ l ≤ m) :
+    L.minimum ≤ M.minimum :=
+  sorry
+
 theorem levenshteinSuffixDistance_impl_minimum_le [LinearOrder β]
     (insert delete : α → β) (substitute : α → α → β) (xs y d) :
     d.1.minimum ≤
-      (levenshteinSuffixDistances_impl insert delete substitute xs y d).1.minimum :=
+      (levenshteinSuffixDistances_impl insert delete substitute xs y d).1.minimum := by
+  apply List.minimum_le_minimum
+  intro b h
+  -- some work to do here, as we need to follow the minimums!
   sorry
 
 variable [LinearOrder β]
