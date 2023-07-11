@@ -31,7 +31,7 @@ open Nat List Finset
 
 theorem mem_simple_nodup {l : List α} (hl : l ∈ L) : l.Nodup := Simple.nodup hl
 
-theorem simple_finite [Fintype α] : L.Finite := sorry
+theorem simple_fintype_finite [Fintype α] : L.Finite := sorry
 
 end Simple
 
@@ -41,6 +41,17 @@ class Normal {α : Type _} [DecidableEq α] (L : Language α) extends Simple L w
   noLoops : ∀ {a}, ∃ w ∈ L, a ∈ w
 
 section Normal
+
+variable {α : Type _} [DecidableEq α]
+variable {L : Language α} [Normal L]
+
+open Nat List Finset
+
+theorem mem_normal_nodup {l : List α} (hl : l ∈ L) : l.Nodup := Normal.toSimple.nodup hl
+
+theorem mem_normal_noLoops {a : α} : ∃ w ∈ L, a ∈ w := Normal.noLoops
+
+theorem normal_fintype_finite [Fintype α] : L.Finite := simple_fintype_finite
 
 end Normal
 
@@ -52,6 +63,21 @@ class Hereditary {α : Type _} [DecidableEq α] (L : Language α) extends Simple
   containsPrefix : ∀ {w₁ w₂}, w₂ ++ w₁ ∈ L → w₁ ∈ L
 
 section Hereditary
+
+variable {α : Type _} [DecidableEq α]
+variable {L : Language α} [Hereditary L]
+
+open Nat List Finset
+
+theorem mem_hereditary_nodup {l : List α} (hl : l ∈ L) : l.Nodup := Hereditary.toSimple.nodup hl
+
+theorem mem_hereditary_containsEmpty : [] ∈ L := Hereditary.containsEmpty
+
+theorem mem_hereditary_containsPrefix {w₁ w₂ : List α} (hw : w₂ ++ w₁ ∈ L) :
+    w₁ ∈ L :=
+  Hereditary.containsPrefix hw
+
+theorem hereditary_fintype_finite [Fintype α] : L.Finite := simple_fintype_finite
 
 end Hereditary
 
