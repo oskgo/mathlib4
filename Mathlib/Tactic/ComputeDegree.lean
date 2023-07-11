@@ -33,94 +33,9 @@ Recurse into `f` breaking apart sums, products and powers.  Take care of numeral
 
 section Tactic
 
+open Polynomial
+
 namespace Mathlib.Tactic.ComputeDegree
-
-open Lean Meta Elab.Tactic Polynomial
-
-/-- Return `max a b` using `Max.max`. This method assumes `a` and `b` have the same type. -/
-def mkMax (a b : Expr) : MetaM Expr := mkAppM ``Max.max #[a, b]
-
-/-- Return `a ^ b` using `HPow.hPow`. -/
-def mkPow (a b : Expr) : MetaM Expr := mkAppM ``HPow.hPow #[a, b]
-
-/-- `toNatDegree alt pol` takes a function `alt : Expr → MetaM Expr` and `pol : Expr` as inputs.
-It assumes that `pol` represents a polynomial and guesses an `Expr` for its `natDegree`.
-It errs on the side of assuming "no cancellation/generic nontriviality", e.g. it guesses
-`natDegree (0 * X) = 1` and `natDegree X = 1`, regardless of whether the base-ring is `nontrivial`
-or not.
-Everything that is not obtained as an iterated sum, product or `Nat`-power of `C`onstants, `Nat`s,
-`X`s, `monomials` is outsourced to the function `alt`.
-
-Chances are that `alt` is the function that, for an expression `f`, guesses the `Expr`ession
-representing `natDegree f`.
-
-(Another possible choice would be `mkNatLit 0`, though this is not what `compute_degree_le` does.)
--/
-partial
-def toNatDegree (alt : Expr → MetaM Expr) (pol : Expr) : MetaM Expr :=
-match pol.getAppFnArgs with
-  --  we assign a `natDegree` to the `Nat`s, the `Int`s, the `C`onstants and `X`
-  | (``OfNat.ofNat, _) =>  return mkNatLit 0
-  | (``Nat.cast, _) =>     return mkNatLit 0
-  | (``Int.cast, _) =>     return mkNatLit 0
-  | (``Polynomial.X, _) => return mkNatLit 1
-  | (``Neg.neg, #[_, _, a]) =>    toNatDegree alt a
-  --  we assign a `natDegree` to the powers: `natDegree (a ^ b) = b * natDegree a`
-  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, a, b]) => do
-    mkMul b (← toNatDegree alt a)
-  --  we assign a `natDegree` to a `mul`: `natDegree (a * b) = natDegree a + natDegree b`
-  | (``HMul.hMul, #[_, _, _, _, a, b]) => do
-    mkAdd (← toNatDegree alt a) (← toNatDegree alt b)
-  --  we assign a `natDegree` to an `add`: `natDegree (a + b) = max (natDegree a) (natDegree b)`
-  | (``HAdd.hAdd, #[_, _, _, _, a, b]) => do
-    mkMax (← toNatDegree alt a) (← toNatDegree alt b)
-  --  we assign a `natDegree` to a `sub`: `natDegree (a - b) = max (natDegree a) (natDegree b)`
-  | (``HSub.hSub, #[_, _, _, _, a, b]) => do
-    mkMax (← toNatDegree alt a) (← toNatDegree alt b)
-  --  we assign `natDegree` `n` to `↑(monomial n) _`;
-  --  we assign `natDegree` `0` to `C n`;
-  --  falling back to `alt pol`, if the `FunLike.coe` was not `monomial` or `C`
-  | (``FunLike.coe, #[_, _, _, _, fn, _]) => match fn.getAppFnArgs with
-    | (``monomial, #[_, _, n]) => return n
-    | (``C, _) =>                 return mkNatLit 0
-    | _ => alt pol
-  --  everything else falls back to `alt pol`.
-  | (_name, _args) => alt pol
-
---  TODO: is it useful to return the last `Expr`, namely `rhs`, representing the target degree?
-def isDegLE (e : Expr) : CoreM (Bool × Expr) := do
-  match e.consumeMData.getAppFnArgs with
-    -- check that the target is an inequality `≤`...
-    | (``LE.le, #[_, _, lhs, _rhs]) => match lhs.getAppFnArgs with
-      -- and that the LHS is `natDegree ...` or `degree ...`
-      | (``degree, #[_, _, pol])    => return (false, pol)
-      | (``natDegree, #[_, _, pol]) => return (true, pol)
-      | (na, _) => throwError (f!"Expected an inequality of the form\n\n" ++
-        f!"  'f.natDegree ≤ d'  or  'f.degree ≤ d',\n\ninstead, {na} appears on the LHS")
-    | _ => throwError m!"Expected an inequality instead of '{e.getAppFnArgs.1}'"
-
---#check degree (X : Nat[X]) ≤ (1 : Nat)
---#check WithBot
-
-/-- Returns `natDegree pol`. -/
-def mkNatDegree (pol : Expr) : MetaM Expr := mkAppM ``natDegree #[pol]
-/-- Returns `degree pol`. -/
-def mkDegree (pol : Expr) : MetaM Expr := mkAppM ``degree #[pol]
-
-/-- `mkNatDegreeLE f is_natDeg?` is an expression representing eith `natDegree f ≤ guessDegree f`
-or `degree f ≤ guessDegree f`, depending on whether `is_natDeg?` is `true` or `false`. -/
-def mkNatDegreeLE (f : Expr) (is_natDeg? : Bool) : MetaM Expr := do
-  let guessDegree := ← toNatDegree (fun p => dbg_trace p.getAppFnArgs; mkNatDegree p <|>
-    return mkNatLit 0) f
-  let guessDegree := ← if is_natDeg? then
-    return guessDegree
-  else
-    let wBotN := Expr.app (Expr.const ``WithBot [Level.zero]) (Expr.const ``Nat [])
-    mkAppOptM ``Nat.cast #[some wBotN, none, some guessDegree]
-  let ndf := ← if is_natDeg? then mkNatDegree f else mkDegree f
-  let ndfLE := ← mkAppM ``LE.le #[ndf, guessDegree]
-  pure ndfLE
-
 /-!
 The lemmas in the next sections prove an inequality of the form `natDegree f ≤ d` and use
 assumptions of the same shape.  This allows a recursive application of the `compute_degree_le`
@@ -167,6 +82,405 @@ theorem int_cast_le (n : Int) : natDegree (n : R[X]) ≤ 0 := (natDegree_int_cas
 end ring
 
 end mylemmas
+
+open Lean Meta Elab.Tactic
+
+/-- Return `max a b` using `Max.max`. This method assumes `a` and `b` have the same type. -/
+def mkMax (a b : Expr) : MetaM Expr := mkAppM ``Max.max #[a, b]
+
+/-- Return `a ^ b` using `HPow.hPow`. -/
+def mkPow (a b : Expr) : MetaM Expr := mkAppM ``HPow.hPow #[a, b]
+
+/-- Returns `natDegree pol`. -/
+def mkNatDegree (pol : Expr) : MetaM Expr := mkAppM ``natDegree #[pol]
+/-- Returns `degree pol`. -/
+def mkDegree (pol : Expr) : MetaM Expr := mkAppM ``degree #[pol]
+
+def _root_.Lean.SourceInfo.ctorName : Lean.SourceInfo → String
+  | .original .. => "original"
+  | .synthetic _ _ _ => "synthetic"
+  | .none => "none"
+
+def _root_.Lean.Syntax.ctorName : Syntax → String
+  | .missing  => "missing"
+  | .node ..  => "node"
+  | .atom ..  => "atom"
+  | .ident .. => "ident"
+
+def _root_.Lean.Syntax.getIdent : Syntax → Name
+  | .ident _si _rv val _pr =>
+    --dbg_trace f!"si: {si.ctorName}\npreresolved: {pr.length}\nraw value: {rv}"
+    val
+  | _ => .anonymous
+
+def _root_.Lean.Syntax.getString : Syntax → String
+  | .atom _ val => val
+  | _ => ""
+
+def _root_.Lean.Syntax.getVal : Syntax → Name
+  | .ident _ _ val _ => val
+  | _ => .anonymous
+
+--def _root_.Lean.Syntax.getArgs : Syntax → Array Syntax
+--  | .node _ _ arr  => arr
+--  | _ => #[]
+
+def tos (stx : TSyntax `term) (val : String := "") : Bool :=
+if (stx.raw.getArg 0).getVal == `Expr.fvar then true
+else
+  let enter := ((((((((stx.raw.getArg 1).getArg 1).getArg 1).getArg 1).getArg 1).getArg 0).getArg 1).getArg 0).getArg 0
+--    let fin : TSyntax `num := { raw := enter }
+--{b.raw.ctorName}
+--{b.raw.getArgs.map Lean.Syntax.ctorName}
+--{b.raw.getArgs}
+--{enter.map Lean.Syntax.ctorName}
+--enter: {enter.size}
+--fin: {fin.raw}
+--    dbg_trace f!"** {enter} **
+--enterctor: {enter.ctorName}
+--bctor: {b.raw.ctorName}
+--b infoctor: {b.raw.getHeadInfo.ctorName}
+--actor: {a.raw.ctorName}
+--"
+  let astr := enter.getString
+  let n := astr.toNat!
+--    dbg_trace f!"string: {astr}"
+--  let araw := mkAtom astr
+--  let araw := Syntax.atom b.raw.getHeadInfo astr
+--    let araw := b.raw.setArgs #[enter]
+--    let ato : TSyntax `term := ⟨araw⟩
+  dbg_trace (val ++ f!"{n}")
+--    dbg_trace f!"ato: {ato}"
+--    if n < 100 then
+--      `($a ^ $ato)
+--    else
+--      `($a ^ big)
+--  dbg_trace (araw == fin)
+--  `($ato)
+  false
+
+/--
+`DegInfo` is the type containing the part of the syntax tree of a polynomial that currently
+plays a role in the computation of its degree.
+-/
+inductive DegInfo where
+  /-- `.rest pol` is a node where `f` is typically an `fvar`.  It corresponds to `natDegree pol`. -/
+  | rest      : Expr → DegInfo
+  /-- `.X` is a node representing `X`.  It corresponds to `1`. -/
+  | X         : DegInfo
+  /-- `.natCast` is a node representing a `Nat`.  It corresponds to `0`. -/
+  | natCast   : DegInfo
+  /-- `.intCast` is a node representing an `Int`.  It corresponds to `0`. -/
+  | intCast   : DegInfo
+  /-- `.ofNatZero` is a node representing the literal `0`.  It corresponds to `0`. -/
+  | ofNatZero : DegInfo
+  /-- `.ofNat` is a node representing a `OfNat`.  It corresponds to `0`. -/
+  | ofNat     : DegInfo
+  /-- `.C` is a node representing `C x`.  It corresponds to `0`. -/
+  | C         : DegInfo
+  /-- `.monomial n` is a node representing a `↑(monomial n) _`.  It corresponds to `n`. -/
+  | monomial  : Expr → DegInfo
+  /-- `.neg pol` is a node representing `- pol`.  It corresponds to `natDegree pol`. -/
+  | neg       : DegInfo → DegInfo
+  /-- `.add f g` is a node representing `f + g`.
+      It corresponds to `max (natDegree f) (natDegree g)`. -/
+  | add       : DegInfo → DegInfo → DegInfo
+  /-- `.sub f g` is a node representing `f - g`.
+      It corresponds to `max (natDegree f) (natDegree g)`. -/
+  | sub       : DegInfo → DegInfo → DegInfo
+  /-- `.mul f g` is a node representing `f * g`.
+      It corresponds to `(natDegree f) + (natDegree g)`. -/
+  | mul       : DegInfo → DegInfo → DegInfo
+  /-- `.pow f n` is a node representing `f ^ n`.
+      It corresponds to `n * (natDegree f)`. -/
+  | pow       : DegInfo → Expr → DegInfo
+  /-- `.err e` is a node for error-management.
+      The `Expr`ession `e` is data useful to report the error. -/
+  | err       : Expr → DegInfo
+  deriving BEq, Inhabited, ToExpr
+
+@[app_unexpander DegInfo.add] def unexpand_add : Lean.PrettyPrinter.Unexpander
+  | `($_ $a $b) => `($a + $b)
+  | _ => throw ()
+
+@[app_unexpander DegInfo.mul] def unexpand_mul : Lean.PrettyPrinter.Unexpander
+  | `($_ $a $b) => `($a * $b)
+  | _ => throw ()
+
+@[app_unexpander DegInfo.neg] def unexpand_neg : Lean.PrettyPrinter.Unexpander
+  | `($_ $a) => `(- $a)
+  | _ => throw ()
+
+@[app_unexpander DegInfo.sub] def unexpand_sub : Lean.PrettyPrinter.Unexpander
+  | `($_ $a $b) => `($a - $b)
+  | _ => throw ()
+
+@[app_unexpander DegInfo.pow] def unexpand_pow : Lean.PrettyPrinter.Unexpander
+  | `($_ $a $b) => if tos b "exp: " then `($a ^ nnn) else `($a ^ lit)
+  | _ => throw ()
+
+@[app_unexpander DegInfo.C] def unexpand_C : Lean.PrettyPrinter.Unexpander
+  | `($_) => `(‹C›)
+
+@[app_unexpander DegInfo.X] def unexpand_X : Lean.PrettyPrinter.Unexpander
+  | `($_) => `(‹X›)
+
+@[app_unexpander DegInfo.ofNat] def unexpand_ofNat : Lean.PrettyPrinter.Unexpander
+  | `($_) => `(‹ofℕ›)
+
+@[app_unexpander DegInfo.natCast] def unexpand_natCast : Lean.PrettyPrinter.Unexpander
+  | `($_) => `(‹ℕ›)
+
+@[app_unexpander DegInfo.intCast] def unexpand_intCast : Lean.PrettyPrinter.Unexpander
+  | `($_) => `(‹ℤ›)
+
+@[app_unexpander DegInfo.rest] def unexpand_rest : Lean.PrettyPrinter.Unexpander
+  | `($_ $a) => do
+    match a.raw with
+    | .atom ..  => `(‹ato›)
+    | .ident .. => `(‹ide›)
+    | .node ..  => `(‹node›)
+    | _         => `(‹$a›)
+  | _ => throw ()
+
+@[app_unexpander DegInfo.monomial] def unexpand_monomial : Lean.PrettyPrinter.Unexpander
+  | `($_ $a) => if tos a "monomial: " then `(monomial nnn) else `(monomial lit)
+  | _ => throw ()
+
+instance : HAdd DegInfo DegInfo DegInfo where hAdd := .add
+instance : HMul DegInfo DegInfo DegInfo where hMul := .mul
+instance : Neg DegInfo                  where neg := .neg
+instance : HSub DegInfo DegInfo DegInfo where hSub := .sub
+instance : Pow DegInfo Expr             where pow := .pow
+
+/-- `polToDegInfo pol` converts an `Expr`ession `pol` representing a polynomial to the
+corresponding "tree object" of Type `DegInfo`.
+`polToDegInfo` recurses into `pol`, extracting the data it needs to build the associated `DegInfo`.
+-/
+partial
+def polToDegInfo (pol : Expr) : DegInfo :=
+match pol.getAppFnArgs with
+  | (``HAdd.hAdd, #[_, _, _, _, f, g])                 => (polToDegInfo f) + (polToDegInfo g)
+  | (``Neg.neg,   #[_, _, f])                          => - (polToDegInfo f)
+  | (``HSub.hSub, #[_, _, _, _, f, g])                 => (polToDegInfo f) - (polToDegInfo g)
+  | (``HMul.hMul, #[_, _, _, _, f, g])                 => (polToDegInfo f) * (polToDegInfo g)
+  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, f, n]) => (polToDegInfo f) ^ n
+  | (``Polynomial.X, _)                                => .X
+  | (``Nat.cast, #[_, _, _n])                          => .natCast
+  | (``Int.cast, #[_, _, _n])                          => .intCast
+  -- why should I split `n = 0` from generic `n`?
+  | (``OfNat.ofNat, #[_, (.lit (.natVal 0)), _])       => .ofNatZero
+  | (``OfNat.ofNat, #[_, _n, _])                       => .ofNat
+  -- deal with `monomial` and `C`
+  | (``FunLike.coe, #[_, _, _, _, polFun, c]) => match polFun.getAppFnArgs with
+    | (``Polynomial.monomial, _)                       => .monomial c
+    | (``Polynomial.C, _)                              => .C
+    | _ => .err polFun
+  -- possibly, all that's left is the case where `pol` is an `fvar` and its `Name` is `.anonymous`
+  | (_na, _) => .rest pol
+
+example
+  {f : Int[X]} {n : Nat} : f * - 4 - (C 0 : Int[X]) * X ^ 10 * X ^ n + monomial 4 5 = 0 := by
+  run_tac do
+    let tgt := ← getMainTarget
+    if let some (t, lhs, rhs) := tgt.eq? then
+      --dbg_trace ← ppExpr lhs
+      let tf := polToDegInfo lhs
+      --dbg_trace ToExpr.toExpr tf
+      let ppe := ← ppExpr (ToExpr.toExpr (tf))
+      logInfo ppe
+
+example [LinearOrder α] {n : α}: n ≤ n := by exact le_rfl
+
+def toName : DegInfo → Name
+  | .rest _     => ``le_rfl
+  | .X          => ``natDegree_X_le
+  | .natCast    => ``nat_cast_le
+  | .intCast    => ``int_cast_le
+  | .ofNatZero  => ``zero_le
+  | .ofNat      => ``nat_cast_le
+  | .C          => ``C_le
+  | .monomial _ => ``natDegree_monomial_le
+  | .neg _      => ``neg
+  | .add ..     => ``add
+  | .sub ..     => ``sub
+  | .mul ..     => ``mul
+  | .pow ..     => ``pow
+  | .err _      => .anonymous
+
+variable (alt : Expr → MetaM Expr) in
+def toNatDegree : DegInfo → MetaM Expr
+  | .rest e     => alt e
+  | .X          => return mkNatLit 1
+  | .natCast    => return mkNatLit 0
+  | .intCast    => return mkNatLit 0
+  | .ofNatZero  => return mkNatLit 0
+  | .ofNat      => return mkNatLit 0
+  | .C          => return mkNatLit 0
+  | .monomial n => return n
+  | .neg f      => toNatDegree f
+  | .add f g    => do mkMax (← toNatDegree f) (← toNatDegree g)
+  | .sub f g    => do mkMax (← toNatDegree f) (← toNatDegree g)
+  | .mul f g    => do mkAdd (← toNatDegree f) (← toNatDegree g)
+  | .pow f n    => do mkMul n (← toNatDegree f)
+  | .err p      => throwError m!"'compute_degree_le' is not implemented for {p}"
+
+--  TODO: is it useful to return the last `Expr`, namely `rhs`, representing the target degree?
+def isDegLE (e : Expr) : CoreM (Bool × Expr) := do
+  match e.consumeMData.getAppFnArgs with
+    -- check that the target is an inequality `≤`...
+    | (``LE.le, #[_, _, lhs, _rhs]) => match lhs.getAppFnArgs with
+      -- and that the LHS is `natDegree ...` or `degree ...`
+      | (``degree, #[_, _, pol])    => return (false, pol)
+      | (``natDegree, #[_, _, pol]) => return (true, pol)
+      | (na, _) => throwError (f!"Expected an inequality of the form\n\n" ++
+        f!"  'f.natDegree ≤ d'  or  'f.degree ≤ d',\n\ninstead, {na} appears on the LHS")
+    | _ => throwError m!"Expected an inequality instead of '{e.getAppFnArgs.1}'"
+
+--#check degree (X : Nat[X]) ≤ (1 : Nat)
+--#check WithBot
+
+/-- `mkNatDegreeLE f is_natDeg?` is an expression representing eith `natDegree f ≤ guessDegree f`
+or `degree f ≤ guessDegree f`, depending on whether `is_natDeg?` is `true` or `false`. -/
+--  todo: the equality `di = polToDegInfo f` should hold.  possibly fix this -- can I only pass one,
+--  without recomputing the other?
+def mkNatDegreeLE (f : Expr) (di : DegInfo) (is_natDeg? : Bool) : MetaM Expr := do
+  let guessDegree := ← toNatDegree (fun p => dbg_trace p.getAppFnArgs; mkNatDegree p <|>
+    return mkNatLit 0) di
+  let guessDegree := ← if is_natDeg? then
+    return guessDegree
+  else
+    let wBotN := Expr.app (Expr.const ``WithBot [Level.zero]) (Expr.const ``Nat [])
+    mkAppOptM ``Nat.cast #[some wBotN, none, some guessDegree]
+  let ndf := ← if is_natDeg? then mkNatDegree f else mkDegree f
+  let ndfLE := ← mkAppM ``LE.le #[ndf, guessDegree]
+  pure ndfLE
+
+def one_step_compute_degree_le (pol : DegInfo) (mv : MVarId) :
+    MetaM (List (Bool × Expr × MVarId)) := do
+
+--  let (na, exs) := toName pol
+  let na := toName pol
+  let mvs := ← if na.isAnonymous then mv.applyConst na.get! else return [mv]
+  return (List.replicate mvs.length na.isSome).zip (exs.zip mvs)
+
+partial
+def recurse_compute_degree (l : List (Bool × Expr × MVarId)) : MetaM (List (Expr × MVarId)) := do
+  let (bs , rest) := l.unzip
+  if true ∈ bs then
+    let news := ← l.mapM fun x@(act?, pol, mv) =>
+      if act? then one_step_compute_degree_le pol mv else pure [x]
+    recurse_compute_degree news.join
+  else
+    pure rest
+    --ASCDL (← l.mapM fun x@(act?, pol, mv) => if act? then OSCDL pol mv else pure [x])
+
+
+example {f : Nat[X]} : f + 2 = 0 := by
+  run_tac do
+    let tgt := ← getMainTarget
+    if let some (_, lhs, rhs) := tgt.eq? then
+      let di := polToDegInfo lhs
+      let degExpr := ← toNatDegree mkNatDegree (di + di ^ (mkNatLit 3))
+      dbg_trace ← ppExpr degExpr
+
+
+
+
+structure DegreeInfo where
+  (add : List Expr)
+  (neg : List Expr)
+  (sub : List Expr)
+  (mul : List Expr)
+  (pow : List Expr)
+  (natDegree_X_le : List Expr)
+  (nat_cast_le : List Expr)
+  (int_cast_le : List Expr)
+  (ofNatZero : List Expr)
+  (ofNat : List Expr)
+  (C : List Expr)
+  (monomial : List Expr)
+  (rest : List Expr)
+
+
+#exit
+def assign_lemma_name (pol : Expr) : Option Name × (List Expr) :=
+match pol.getAppFnArgs with
+  | (``HAdd.hAdd, #[_, _, _, _, f, g])                 => (``add, [f,g])
+  | (``Neg.neg,   #[_, _, f])                          => (``neg, [f])
+  | (``HSub.hSub, #[_, _, _, _, f, g])                 => (``sub, [f,g])
+  | (``HMul.hMul, #[_, _, _, _, f, g])                 => (``mul, [f,g])
+  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, f, _]) => (``pow, [f])
+  | (``Polynomial.X, _)                                => (``natDegree_X_le, [pol])
+  | (``Nat.cast, #[_, _, n])                           => (``nat_cast_le, [n])
+  | (``Int.cast, #[_, _, n])                           => (``int_cast_le, [n])
+  -- why should I split `n = 0` from generic `n`?
+  | (``OfNat.ofNat, #[_, n@(.lit (.natVal 0)), _])     => (``zero_le, [n])
+  | (``OfNat.ofNat, #[_, n, _])                        => (``nat_cast_le, [n])
+  -- deal with `monomial` and `C`
+  | (``FunLike.coe, #[_, _, _, _, polFun, c])  =>
+    if polFun.isAppOf ``Polynomial.C then                 (``C_le, [c])
+    else if polFun.isAppOf ``Polynomial.monomial then     (``natDegree_monomial_le, [c])
+    -- consider `throwError m!"'compute_degree_le' is not implemented for {polFun}"`
+    else                                                  (none, [pol])
+  -- possibly, all that's left is the case where `pol` is an `fvar` and its `Name` is `.anonymous`
+  | (_na, _) => (none, [pol])
+
+
+
+
+
+
+
+
+
+
+
+
+
+/-- `toNatDegree alt pol` takes a function `alt : Expr → MetaM Expr` and `pol : Expr` as inputs.
+It assumes that `pol` represents a polynomial and guesses an `Expr` for its `natDegree`.
+It errs on the side of assuming "no cancellation/generic nontriviality", e.g. it guesses
+`natDegree (0 * X) = 1` and `natDegree X = 1`, regardless of whether the base-ring is `nontrivial`
+or not.
+Everything that is not obtained as an iterated sum, product or `Nat`-power of `C`onstants, `Nat`s,
+`X`s, `monomials` is outsourced to the function `alt`.
+
+Chances are that `alt` is the function that, for an expression `f`, guesses the `Expr`ession
+representing `natDegree f`.
+
+(Another possible choice would be `mkNatLit 0`, though this is not what `compute_degree_le` does.)
+-/
+partial
+def toNatDegree (alt : Expr → MetaM Expr) (pol : Expr) : MetaM Expr :=
+match pol.getAppFnArgs with
+  --  we assign a `natDegree` to the `Nat`s, the `Int`s, the `C`onstants and `X`
+  | (``OfNat.ofNat, _) =>  return mkNatLit 0
+  | (``Nat.cast, _) =>     return mkNatLit 0
+  | (``Int.cast, _) =>     return mkNatLit 0
+  | (``Polynomial.X, _) => return mkNatLit 1
+  | (``Neg.neg, #[_, _, a]) =>    toNatDegree alt a
+  --  we assign a `natDegree` to the powers: `natDegree (a ^ b) = b * natDegree a`
+  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, a, b]) => do
+    mkMul b (← toNatDegree alt a)
+  --  we assign a `natDegree` to a `mul`: `natDegree (a * b) = natDegree a + natDegree b`
+  | (``HMul.hMul, #[_, _, _, _, a, b]) => do
+    mkAdd (← toNatDegree alt a) (← toNatDegree alt b)
+  --  we assign a `natDegree` to an `add`: `natDegree (a + b) = max (natDegree a) (natDegree b)`
+  | (``HAdd.hAdd, #[_, _, _, _, a, b]) => do
+    mkMax (← toNatDegree alt a) (← toNatDegree alt b)
+  --  we assign a `natDegree` to a `sub`: `natDegree (a - b) = max (natDegree a) (natDegree b)`
+  | (``HSub.hSub, #[_, _, _, _, a, b]) => do
+    mkMax (← toNatDegree alt a) (← toNatDegree alt b)
+  --  we assign `natDegree` `n` to `↑(monomial n) _`;
+  --  we assign `natDegree` `0` to `C n`;
+  --  falling back to `alt pol`, if the `FunLike.coe` was not `monomial` or `C`
+  | (``FunLike.coe, #[_, _, _, _, fn, _]) => match fn.getAppFnArgs with
+    | (``monomial, #[_, _, n]) => return n
+    | (``C, _) =>                 return mkNatLit 0
+    | _ => alt pol
+  --  everything else falls back to `alt pol`.
+  | (_name, _args) => alt pol
 
 def assign_lemma_name (pol : Expr) : Option Name × (List Expr) :=
 match pol.getAppFnArgs with
