@@ -14,12 +14,12 @@ import Mathlib.Combinatorics.SetFamily.Accessible
 
 /-- Base of a set system is the collection of feasible sets which is maximal. -/
 def base {α : Type _} [Fintype α] [DecidableEq α] (Sys : Finset (Finset α)) :=
-  Sys.filter (fun s => ∀ a, s ∪ {a} ∈ Sys → a ∈ s)
+  Sys.filter (fun s => ∀ {a}, s ∪ {a} ∈ Sys → a ∈ s)
 
 /-- Bases of a set `a` given a set system is
     the collection of feasible sets which is maximal in `a`. -/
 def bases {α : Type _} [Fintype α] [DecidableEq α] (Sys : Finset (Finset α)) (s : Finset α) :=
-  Sys.filter (fun s' => s' ⊆ s ∧ (∀ a, a ∈ s → s' ∪ {a} ∈ Sys → a ∈ s'))
+  Sys.filter (fun s' => s' ⊆ s ∧ (∀ {a}, a ∈ s → s' ∪ {a} ∈ Sys → a ∈ s'))
 
 section Bases
 
@@ -37,14 +37,14 @@ theorem basis_subseteq : b ⊆ s := by simp only [bases, mem_filter] at hb; exac
 
 theorem basis_maximal {a : α} (ha₁ : a ∈ s) (ha₂ : b ∪ {a} ∈ Sys) :
     a ∈ b := by
-  simp only [bases, mem_filter] at hb; exact hb.2.2 a ha₁ ha₂
+  simp only [bases, mem_filter] at hb; exact hb.2.2 ha₁ ha₂
 
 theorem exists_basis_containing_feasible_set {s' : Finset α} (hs'₁ : s' ∈ Sys) (hs'₂ : s' ⊆ s) :
     ∃ b ∈ bases Sys s, s' ⊆ b := by
   by_cases h : ∀ x ∈ s, s' ∪ {x} ∈ Sys → x ∈ s'
   . exists s'
     simp only [Subset.refl, and_true, bases, mem_filter, hs'₁, hs'₂, true_and]
-    exact h
+    exact fun {a} => h a
   . simp only [not_forall, exists_prop, exists_and_left] at h
     have ⟨x, hx₁, hx₂, _⟩ := h
     have ⟨b, hb₁, hb₂⟩ := exists_basis_containing_feasible_set hx₂ (by

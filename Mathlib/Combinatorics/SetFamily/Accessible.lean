@@ -31,18 +31,17 @@ variable {s : Finset α} (hs₀ : s ∈ Sys)
 
 open Nat Finset
 
-theorem accessible_containsEmpty : ∅ ∈ Sys :=
-  ‹Accessible Sys›.containsEmpty
+theorem accessible_containsEmpty : ∅ ∈ Sys := Accessible.containsEmpty
 
 theorem accessible_accessible (hs₁ : s ≠ ∅) : ∃ x ∈ s, s \ {x} ∈ Sys :=
-  ‹Accessible Sys›.accessible hs₀ hs₁
+  Accessible.accessible hs₀ hs₁
 
 theorem accessible_system_smaller_feasible_set_helper (hs₁ : s ≠ ∅) {n : ℕ} (hn : n ≤ s.card) :
     ∃ s' ∈ Sys, s' ⊆ s ∧ s'.card + n = s.card := by
   induction' n with n ih generalizing s
   . exists s
   . have ⟨s', hs'₁, hs'₂, hs'₃⟩ := ih hs₀ hs₁ (le_trans (by simp_arith) hn)
-    let ⟨a, ha₁, ha₂⟩ := ‹Accessible Sys›.accessible hs'₁ (by
+    let ⟨a, ha₁, ha₂⟩ := Accessible.accessible hs'₁ (by
       intro h'
       simp [h'] at hs'₃
       rw [← hs'₃] at hn

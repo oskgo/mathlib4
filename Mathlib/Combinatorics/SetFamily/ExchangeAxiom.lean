@@ -73,4 +73,57 @@ theorem exchangeAxiom_weakExchangeAxiom_iff [Accessible Sys] :
     exchangeAxiom Sys ↔ weakExchangeAxiom Sys :=
   ⟨exchangeAxiom_to_weakExchangeAxiom, weakExchangeAxiom_to_exchangeAxiom⟩
 
+theorem weakExchangeAxiom_to_weakerExchangeAxiom (hSys : weakExchangeAxiom Sys) :
+    weakerExchangeAxiom Sys := by
+  intro s x hx₁ _ y hy₁ hy₂ z hz hxz₁ hxz₂ hxy
+  let ⟨z', hz₁', hz₂'⟩ := hSys hxz₂ hy₂ (by
+    simp [hxz₁, hx₁]
+    rw [union_comm, union_comm s {y}, ← insert_eq, ← insert_eq]
+    simp [hy₁, hz])
+  simp at hz₁'
+  let ⟨h₁, h₂⟩ := hz₁'
+  have union_lem: ∀ {s : Finset α} {x y : α}, s ∪ {x, y} = s ∪ ({x} ∪ {y}) := by
+    intro s x y; simp; rw [union_comm _ ({x} ∪ {y}), union_assoc, union_comm {y} s]; rfl
+  apply h₁.elim <;> intro h₁ <;> try (apply h₁.elim <;> intro h₁)
+  . simp [h₁] at hz₂'
+    exfalso
+    apply hxy
+    have : s ∪ {x, y} = s ∪ ({y} ∪ {x}) := union_comm {x} {y} ▸ union_lem
+    rw [this]
+    exact hz₂'
+  . exfalso
+    exact h₂ (Or.inl h₁)
+  . simp [h₁] at h₂ hz₂'
+    rw [union_lem]
+    exact hz₂'
+
+-- TODO: Add `weakerExchangeAxiom_to_weakExchangeAxiom` or `weakerExchangeAxiom_to_exchangeAxiom`
+
+theorem exchangeAxiom_bases_card_iff [Fintype α] :
+    exchangeAxiom Sys ↔ (∀ {a : Finset α},
+      ∀ {b₁}, b₁ ∈ bases Sys a →
+      ∀ {b₂}, b₂ ∈ bases Sys a →
+      b₁.card = b₂.card) := by
+  constructor <;> intro h
+  . intro a b₁ hb₁ b₂ hb₂
+    by_contra' h'
+    apply (lt_or_gt_of_ne h').elim <;> intro h' <;> simp only [bases, Finset.mem_filter] at hb₁ hb₂
+    . let ⟨x, hx₁, hx₂⟩ := h hb₂.1 hb₁.1 h'
+      simp only [mem_sdiff] at hx₁
+      exact hx₁.2 (hb₁.2.2 (hb₂.2.1 hx₁.1) hx₂)
+    . let ⟨x, hx₁, hx₂⟩ := h hb₁.1 hb₂.1 h'
+      simp only [mem_sdiff] at hx₁
+      exact hx₁.2 (hb₂.2.2 (hb₁.2.1 hx₁.1) hx₂)
+  . intro s₁ hs₁ s₂ hs₂ hs
+    have ⟨b₁, hb₁₁, hb₁₂⟩ := exists_basis_containing_feasible_set hs₁ (subset_union_left _ s₂)
+    have ⟨b₂, hb₂₁, _⟩ := exists_basis_containing_feasible_set hs₂ (subset_union_right s₁ _)
+    have : s₂.card < b₂.card := h hb₂₁ hb₁₁ ▸ lt_of_lt_of_le hs (card_le_of_subset hb₁₂)
+    by_contra' h'
+    have hs₂_basis : s₂ ∈ bases Sys (s₁ ∪ s₂) := by
+      simp only [bases, Finset.mem_union, Finset.mem_filter, hs₂, subset_union_right, true_and]
+      intro _ _ h
+      by_contra
+      exact h' _ (by simp_all) h
+    simp only [h hb₂₁ hs₂_basis, lt_self_iff_false] at this
+
 end ExchangeAxioms
