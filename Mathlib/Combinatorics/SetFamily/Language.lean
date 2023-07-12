@@ -31,7 +31,15 @@ open Nat List Finset
 
 theorem mem_simple_nodup {l : List α} (hl : l ∈ L) : l.Nodup := Simple.nodup hl
 
-theorem simple_fintype_finite [Fintype α] : L.Finite := sorry
+theorem simple_fintype_finite [Fintype α] : L.Finite :=
+  let s : Set (List α) := ⋃ (y : Finset α), ↑(Multiset.lists y.val)
+  let hs : s.Finite := by simp; exact Set.finite_iUnion (fun _ => finite_toSet _)
+  Set.Finite.subset hs (by
+    intro l hl
+    simp
+    have l_nodup := mem_simple_nodup hl
+    exists l.toFinset
+    simp only [toFinset_val, l_nodup, Nodup.dedup])
 
 end Simple
 
