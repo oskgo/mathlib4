@@ -85,17 +85,13 @@ theorem weakExchangeAxiom_to_weakerExchangeAxiom (hSys : weakExchangeAxiom Sys) 
   have union_lem: ∀ {s : Finset α} {x y : α}, s ∪ {x, y} = s ∪ ({x} ∪ {y}) := by
     intro s x y; simp; rw [union_comm _ ({x} ∪ {y}), union_assoc, union_comm {y} s]; rfl
   apply h₁.elim <;> intro h₁ <;> try (apply h₁.elim <;> intro h₁)
-  . simp [h₁] at hz₂'
-    exfalso
-    apply hxy
-    have : s ∪ {x, y} = s ∪ ({y} ∪ {x}) := union_comm {x} {y} ▸ union_lem
-    rw [this]
-    exact hz₂'
+  . exfalso
+    simp only [h₁, union_assoc] at hz₂'
+    exact hxy ((union_comm {x} {y} ▸ union_lem) ▸ hz₂')
   . exfalso
     exact h₂ (Or.inl h₁)
-  . simp [h₁] at h₂ hz₂'
-    rw [union_lem]
-    exact hz₂'
+  . simp only [h₁, union_assoc] at h₂ hz₂'
+    exact union_lem ▸ hz₂'
 
 -- TODO: Add `weakerExchangeAxiom_to_weakExchangeAxiom` or `weakerExchangeAxiom_to_exchangeAxiom`
 
@@ -115,7 +111,7 @@ theorem exchangeAxiom_bases_card_iff [Fintype α] :
       simp only [mem_sdiff] at hx₁
       exact hx₁.2 (hb₂.2.2 (hb₁.2.1 hx₁.1) hx₂)
   . intro s₁ hs₁ s₂ hs₂ hs
-    have ⟨b₁, hb₁₁, hb₁₂⟩ := exists_basis_containing_feasible_set hs₁ (subset_union_left _ s₂)
+    have ⟨_, hb₁₁, hb₁₂⟩ := exists_basis_containing_feasible_set hs₁ (subset_union_left _ s₂)
     have ⟨b₂, hb₂₁, _⟩ := exists_basis_containing_feasible_set hs₂ (subset_union_right s₁ _)
     have : s₂.card < b₂.card := h hb₂₁ hb₁₁ ▸ lt_of_lt_of_le hs (card_le_of_subset hb₁₂)
     by_contra' h'
