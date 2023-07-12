@@ -47,7 +47,7 @@ theorem accessible_system_smaller_feasible_set_helper (hs₁ : s ≠ ∅) {n : �
       rw [← hs'₃] at hn
       simp_arith at hn)
     exists s' \ {a}
-    simp [ha₂, card_sdiff (fun x hx => by simp at hx; simp [hx, ha₁] : {a} ⊆ s')]
+    simp [ha₂, card_sdiff (fun x hx => by simp only [mem_singleton.mp hx, ha₁] : {a} ⊆ s')]
     apply And.intro (Subset.trans (sdiff_subset s' {a}) hs'₂)
     rw [succ_eq_add_one, ← Nat.sub_add_comm, ← add_assoc, Nat.add_sub_cancel, hs'₃]
     have h₁ : s'.card = s.card - n := (Nat.sub_eq_of_eq_add hs'₃.symm).symm

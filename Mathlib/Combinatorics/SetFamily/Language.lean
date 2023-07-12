@@ -18,20 +18,20 @@ namespace Language
 -- Here, word and list are identical.
 
 /-- Simple language are words which only contain words without duplicates. -/
-class Simple {α : Type _} [DecidableEq α] (L : Language α) where
+class Simple {α : Type _} [DecidableEq α] (Lang : Language α) where
   /-- Any word inside a simple language does not contain a duplicate. -/
-  nodup : ∀ {l}, l ∈ L → l.Nodup
+  nodup : ∀ {l}, l ∈ Lang → l.Nodup
 
 section Simple
 
 variable {α : Type _} [DecidableEq α]
-variable {L : Language α} [Simple L]
+variable {Lang : Language α} [Simple Lang]
 
 open Nat List Finset
 
-theorem mem_simple_nodup {l : List α} (hl : l ∈ L) : l.Nodup := Simple.nodup hl
+theorem mem_simple_nodup {l : List α} (hl : l ∈ Lang) : l.Nodup := Simple.nodup hl
 
-theorem simple_fintype_finite [Fintype α] : L.Finite :=
+theorem simple_fintype_finite [Fintype α] : Lang.Finite :=
   let s : Set (List α) := ⋃ (y : Finset α), ↑y.val.lists
   let hs : s.Finite := Set.finite_iUnion (fun _ => finite_toSet _)
   Set.Finite.subset hs (by
@@ -40,71 +40,74 @@ theorem simple_fintype_finite [Fintype α] : L.Finite :=
     exists l.toFinset
     simp only [toFinset_val, mem_simple_nodup hl, Nodup.dedup])
 
-protected noncomputable def Simple.fintype [Fintype α] : Fintype L.Elem :=
+/-- Every simple languages are finite under finite type. -/
+protected noncomputable def Simple.fintype [Fintype α] : Fintype Lang.Elem :=
   Set.Finite.fintype simple_fintype_finite
 
-noncomputable def toFinsetOfList [Fintype α] (L : Language α) [Simple L] :
+/-- Convert simple `Lang` from `Language α` to `Finset (List α)`. -/
+noncomputable def toFinsetOfList [Fintype α] (Lang : Language α) [Simple Lang] :
     Finset (List α) :=
-  @Set.toFinset _ L Simple.fintype
+  @Set.toFinset _ Lang Simple.fintype
 
 end Simple
 
 /-- Normal language contains no loops; every alphabet is in some word in the language. -/
-class Normal {α : Type _} [DecidableEq α] (L : Language α) extends Simple L where
+class Normal {α : Type _} [DecidableEq α] (Lang : Language α) extends Simple Lang where
   /-- Normal language contains no loops. -/
-  noLoops : ∀ {a}, ∃ l ∈ L, a ∈ l
+  noLoops : ∀ {a}, ∃ l ∈ Lang, a ∈ l
 
 section Normal
 
 variable {α : Type _} [DecidableEq α]
-variable {L : Language α} [Normal L]
+variable {Lang : Language α} [Normal Lang]
 
 open Nat List Finset
 
-theorem mem_normal_nodup {l : List α} (hl : l ∈ L) : l.Nodup := Normal.toSimple.nodup hl
+theorem mem_normal_nodup {l : List α} (hl : l ∈ Lang) : l.Nodup := Normal.toSimple.nodup hl
 
-theorem mem_normal_noLoops {a : α} : ∃ l ∈ L, a ∈ l := Normal.noLoops
+theorem mem_normal_noLoops {a : α} : ∃ l ∈ Lang, a ∈ l := Normal.noLoops
 
-theorem normal_fintype_finite [Fintype α] : L.Finite := simple_fintype_finite
+theorem normal_fintype_finite [Fintype α] : Lang.Finite := simple_fintype_finite
 
 end Normal
 
 /-- Hereditary language contains the emptyset and the prefix of every word in the language. -/
-class Hereditary {α : Type _} [DecidableEq α] (L : Language α) extends Simple L where
+class Hereditary {α : Type _} [DecidableEq α] (Lang : Language α) extends Simple Lang where
   /-- Hereditary language contains the empty word. -/
-  containsEmpty : [] ∈ L
+  containsEmpty : [] ∈ Lang
   /-- Suffix of each word in hereditary language is in the language. -/
-  containsPrefix : ∀ {l₁ l₂}, l₂ ++ l₁ ∈ L → l₁ ∈ L
+  containsPrefix : ∀ {l₁ l₂}, l₂ ++ l₁ ∈ Lang → l₁ ∈ Lang
 
 section Hereditary
 
 variable {α : Type _} [DecidableEq α]
-variable {L : Language α} [Hereditary L]
+variable {Lang : Language α} [Hereditary Lang]
 
 open Nat List Finset
 
-theorem mem_hereditary_nodup {l : List α} (hl : l ∈ L) : l.Nodup := Hereditary.toSimple.nodup hl
+theorem mem_hereditary_nodup {l : List α} (hl : l ∈ Lang) : l.Nodup := Hereditary.toSimple.nodup hl
 
-theorem mem_hereditary_containsEmpty : [] ∈ L := Hereditary.containsEmpty
+theorem mem_hereditary_containsEmpty : [] ∈ Lang := Hereditary.containsEmpty
 
-theorem mem_hereditary_containsPrefix {l₁ l₂ : List α} (hl : l₂ ++ l₁ ∈ L) :
-    l₁ ∈ L :=
+theorem mem_hereditary_containsPrefix {l₁ l₂ : List α} (hl : l₂ ++ l₁ ∈ Lang) :
+    l₁ ∈ Lang :=
   Hereditary.containsPrefix hl
 
-theorem hereditary_fintype_finite [Fintype α] : L.Finite := simple_fintype_finite
+theorem hereditary_fintype_finite [Fintype α] : Lang.Finite := simple_fintype_finite
 
-noncomputable def toAccessibleSystem [Fintype α] (L : Language α) [Hereditary L] :
+/-- Converts hereditary language `Lang` to set system. -/
+noncomputable def toAccessibleSystem [Fintype α] (Lang : Language α) [Hereditary Lang] :
     Finset (Finset α) :=
-  L.toFinsetOfList.image fun l => l.toFinset
+  Lang.toFinsetOfList.image fun l => l.toFinset
 
-theorem toAccessibleSystem_containsEmpty [Fintype α] : ∅ ∈ L.toAccessibleSystem := by
+theorem toAccessibleSystem_containsEmpty [Fintype α] : ∅ ∈ Lang.toAccessibleSystem := by
   simp [toAccessibleSystem, toFinsetOfList, Set.toFinset]
   exists Hereditary.containsEmpty
   simp only [mem_univ _]
 
 theorem toAccessibleSystem_accessible [Fintype α]
-  {s : Finset α} (hs₁ : s ∈ L.toAccessibleSystem) (hs₂ : s ≠ ∅) :
-    ∃ x ∈ s, s \ {x} ∈ L.toAccessibleSystem := by
+  {s : Finset α} (hs₁ : s ∈ Lang.toAccessibleSystem) (hs₂ : s ≠ ∅) :
+    ∃ x ∈ s, s \ {x} ∈ Lang.toAccessibleSystem := by
   simp [toAccessibleSystem, toFinsetOfList, Set.toFinset] at *
   have ⟨l, ⟨hl₁, hl₂⟩, hl₃⟩ := hs₁
   by_cases hl₄ : l = []
@@ -116,12 +119,13 @@ theorem toAccessibleSystem_accessible [Fintype α]
     simp [← hl₃]
     exists l
     constructor
-    . exists (mem_hereditary_containsPrefix (by simp; exact hl₁ : [head] ++ l ∈ L))
+    . exists (mem_hereditary_containsPrefix (by simp; exact hl₁ : [head] ++ l ∈ Lang))
       simp only [mem_univ _]
     . rw [insert_sdiff_of_mem _ (mem_singleton_self head)]
       symm; simp [sdiff_eq_self, nodup_cons.mp (mem_hereditary_nodup hl₁)]
 
-instance [Fintype α] (L : Language α) [Hereditary L] : Accessible L.toAccessibleSystem where
+instance [Fintype α] (Lang : Language α) [Hereditary Lang] :
+    Accessible Lang.toAccessibleSystem where
   containsEmpty := toAccessibleSystem_containsEmpty
   accessible := toAccessibleSystem_accessible
 
@@ -137,7 +141,8 @@ variable {s : Finset α} (hs₀ : s ∈ Sys)
 
 open Nat List Finset Language
 
-def toHereditaryLanguage (Sys : Finset (Finset α)) [Accessible Sys] :
+/-- Converts (accessible) `Sys` to hereditary language. -/
+def toHereditaryLanguage (Sys : Finset (Finset α)) :
     Language α :=
   fun l => l.Nodup ∧ ∀ {l'}, l' <:+ l → l'.toFinset ∈ Sys
 
