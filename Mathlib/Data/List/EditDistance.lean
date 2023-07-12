@@ -511,6 +511,14 @@ theorem foo [LinearOrder α] {a b c : α} (w : min a b = c) (h : c < a) : b = c 
   · exfalso; apply lt_irrefl a; exact h
   · rfl
 
+example [LinearOrder α] {a b c : α} (w : min a b = c) : b = c := by
+  replace w := foo w ?_
+  -- Now I can use the stronger result
+  exact w
+  -- But I have to prove the inequality at some point:
+  · guard_target = c < a
+    sorry
+
 theorem levenshtein_eq_of_zero [LinearOrderedAddCommMonoid δ]
     (hdelete : ∀ a : α, 0 < Cost.delete a) (hinsert : ∀ a : α, 0 < Cost.insert a)
     (hsubstitute₁ : ∀ a b : α, 0 ≤ Cost.substitute a b) (hsubstitute₂ : ∀ a b : α, Cost.substitute a b = 0 ↔ a = b)
