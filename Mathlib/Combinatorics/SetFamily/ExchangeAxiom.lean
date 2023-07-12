@@ -49,6 +49,28 @@ instance {α : Type _} [DecidableEq α] :
 
 section ExchangeAxioms
 
+variable {α : Type _} [DecidableEq α] {Sys : Finset (Finset α)}
+
 open Nat List Finset
+
+theorem exchangeAxiom_to_weakExchangeAxiom (hSys : exchangeAxiom Sys) :
+    weakExchangeAxiom Sys :=
+  fun {_} hs₁ {_} hs₂ hs => hSys hs₁ hs₂ (by simp only [hs, lt_add_iff_pos_right])
+
+theorem weakExchangeAxiom_to_exchangeAxiom [Accessible Sys] (hSys : weakExchangeAxiom Sys) :
+    exchangeAxiom Sys := by
+  intro s₁ hs₁ s₂ hs₂ hs
+  have s₁_nonempty : s₁ ≠ ∅ := by intro h'; simp only [h', card_empty, not_lt_zero'] at hs
+  have ⟨s', hs'₁, hs'₂, hs'₃⟩ : ∃ s', s' ∈ Sys ∧ s' ⊆ s₁ ∧ card s' = card s₂ + 1 :=
+    accessible_system_smaller_feasible_set hs₁ s₁_nonempty (by simp_arith at hs; exact hs)
+  have ⟨x, hx₁, hx₂⟩:= hSys hs'₁ hs₂ hs'₃
+  exists x
+  simp only [mem_sdiff] at hx₁
+  simp only [mem_sdiff, hx₁, hx₂, and_true]
+  exact hs'₂ hx₁.1
+
+theorem exchangeAxiom_weakExchangeAxiom_iff [Accessible Sys] :
+    exchangeAxiom Sys ↔ weakExchangeAxiom Sys :=
+  ⟨exchangeAxiom_to_weakExchangeAxiom, weakExchangeAxiom_to_exchangeAxiom⟩
 
 end ExchangeAxioms
