@@ -20,7 +20,7 @@ namespace Language
 /-- Simple language are words which only contain words without duplicates. -/
 class Simple {α : Type _} [DecidableEq α] (L : Language α) where
   /-- Any word inside a simple language does not contain a duplicate. -/
-  nodup : ∀ {l}, l ∈ L → List.Nodup l
+  nodup : ∀ {l}, l ∈ L → l.Nodup
 
 section Simple
 
@@ -52,7 +52,7 @@ end Simple
 /-- Normal language contains no loops; every alphabet is in some word in the language. -/
 class Normal {α : Type _} [DecidableEq α] (L : Language α) extends Simple L where
   /-- Normal language contains no loops. -/
-  noLoops : ∀ {a}, ∃ w ∈ L, a ∈ w
+  noLoops : ∀ {a}, ∃ l ∈ L, a ∈ l
 
 section Normal
 
@@ -63,7 +63,7 @@ open Nat List Finset
 
 theorem mem_normal_nodup {l : List α} (hl : l ∈ L) : l.Nodup := Normal.toSimple.nodup hl
 
-theorem mem_normal_noLoops {a : α} : ∃ w ∈ L, a ∈ w := Normal.noLoops
+theorem mem_normal_noLoops {a : α} : ∃ l ∈ L, a ∈ l := Normal.noLoops
 
 theorem normal_fintype_finite [Fintype α] : L.Finite := simple_fintype_finite
 
@@ -74,7 +74,7 @@ class Hereditary {α : Type _} [DecidableEq α] (L : Language α) extends Simple
   /-- Hereditary language contains the empty word. -/
   containsEmpty : [] ∈ L
   /-- Suffix of each word in hereditary language is in the language. -/
-  containsPrefix : ∀ {w₁ w₂}, w₂ ++ w₁ ∈ L → w₁ ∈ L
+  containsPrefix : ∀ {l₁ l₂}, l₂ ++ l₁ ∈ L → l₁ ∈ L
 
 section Hereditary
 
@@ -87,9 +87,9 @@ theorem mem_hereditary_nodup {l : List α} (hl : l ∈ L) : l.Nodup := Hereditar
 
 theorem mem_hereditary_containsEmpty : [] ∈ L := Hereditary.containsEmpty
 
-theorem mem_hereditary_containsPrefix {w₁ w₂ : List α} (hw : w₂ ++ w₁ ∈ L) :
-    w₁ ∈ L :=
-  Hereditary.containsPrefix hw
+theorem mem_hereditary_containsPrefix {l₁ l₂ : List α} (hl : l₂ ++ l₁ ∈ L) :
+    l₁ ∈ L :=
+  Hereditary.containsPrefix hl
 
 theorem hereditary_fintype_finite [Fintype α] : L.Finite := simple_fintype_finite
 
@@ -119,8 +119,7 @@ theorem toAccessibleSystem_accessible [Fintype α]
     . exists (mem_hereditary_containsPrefix (by simp; exact hl₁ : [head] ++ l ∈ L))
       simp only [mem_univ _]
     . rw [insert_sdiff_of_mem _ (mem_singleton_self head)]
-      symm
-      simp [sdiff_eq_self, nodup_cons.mp (mem_hereditary_nodup hl₁)]
+      symm; simp [sdiff_eq_self, nodup_cons.mp (mem_hereditary_nodup hl₁)]
 
 instance [Fintype α] (L : Language α) [Hereditary L] : Accessible L.toAccessibleSystem where
   containsEmpty := toAccessibleSystem_containsEmpty
@@ -129,3 +128,36 @@ instance [Fintype α] (L : Language α) [Hereditary L] : Accessible L.toAccessib
 end Hereditary
 
 end Language
+
+section Accessible
+
+variable {α : Type _} [DecidableEq α]
+variable {Sys : Finset (Finset α)} [Accessible Sys]
+variable {s : Finset α} (hs₀ : s ∈ Sys)
+
+open Nat List Finset Language
+
+def toHereditaryLanguage (Sys : Finset (Finset α)) [Accessible Sys] :
+    Language α :=
+  fun l => l.Nodup ∧ ∀ {l'}, l' <:+ l → l'.toFinset ∈ Sys
+
+theorem toHereditaryLanguage_nodup {l : List α} (hl : l ∈ toHereditaryLanguage Sys) :
+    l.Nodup := hl.1
+
+theorem toHereditaryLanguage_containsEmpty :
+    [] ∈ toHereditaryLanguage Sys := by
+  simp only [toHereditaryLanguage]; constructor <;> simp [accessible_containsEmpty]
+
+theorem toHereditaryLanguage_containsPrefix {l₁ l₂ : List α}
+  (hl : l₂ ++ l₁ ∈ toHereditaryLanguage Sys) :
+    l₁ ∈ toHereditaryLanguage Sys := by
+  simp only [toHereditaryLanguage] at *
+  apply And.intro (Nodup.of_append_right hl.1)
+  exact fun h => hl.2 (isSuffix.trans h (suffix_append _ _))
+
+instance (Sys : Finset (Finset α)) [Accessible Sys] : Hereditary (toHereditaryLanguage Sys) where
+  nodup := toHereditaryLanguage_nodup
+  containsEmpty := toHereditaryLanguage_containsEmpty
+  containsPrefix := toHereditaryLanguage_containsPrefix
+
+end Accessible

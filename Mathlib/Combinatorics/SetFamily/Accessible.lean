@@ -43,7 +43,7 @@ theorem accessible_system_smaller_feasible_set_helper (hs₁ : s ≠ ∅) {n : �
   . have ⟨s', hs'₁, hs'₂, hs'₃⟩ := ih hs₀ hs₁ (le_trans (by simp_arith) hn)
     let ⟨a, ha₁, ha₂⟩ := Accessible.accessible hs'₁ (by
       intro h'
-      simp [h'] at hs'₃
+      rw [h', card_empty, zero_add] at hs'₃
       rw [← hs'₃] at hn
       simp_arith at hn)
     exists s' \ {a}
