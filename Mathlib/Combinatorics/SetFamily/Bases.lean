@@ -67,7 +67,7 @@ theorem accessible_bases_nonempty {Sys : Finset (Finset α)} [Accessible Sys] {s
     Nonempty (bases Sys s) := by
   simp only [nonempty_subtype]
   have ⟨b, _⟩ :=
-    exists_basis_containing_feasible_set (@accessible_contains_empty _ _ Sys _) (empty_subset s)
+    exists_basis_containing_feasible_set (@accessible_containsEmpty _ _ Sys _) (empty_subset s)
   exists b; tauto
 
 end Bases

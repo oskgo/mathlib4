@@ -32,14 +32,20 @@ open Nat List Finset
 theorem mem_simple_nodup {l : List α} (hl : l ∈ L) : l.Nodup := Simple.nodup hl
 
 theorem simple_fintype_finite [Fintype α] : L.Finite :=
-  let s : Set (List α) := ⋃ (y : Finset α), ↑(Multiset.lists y.val)
-  let hs : s.Finite := by simp; exact Set.finite_iUnion (fun _ => finite_toSet _)
+  let s : Set (List α) := ⋃ (y : Finset α), ↑y.val.lists
+  let hs : s.Finite := Set.finite_iUnion (fun _ => finite_toSet _)
   Set.Finite.subset hs (by
     intro l hl
     simp
-    have l_nodup := mem_simple_nodup hl
     exists l.toFinset
-    simp only [toFinset_val, l_nodup, Nodup.dedup])
+    simp only [toFinset_val, mem_simple_nodup hl, Nodup.dedup])
+
+protected noncomputable def Simple.fintype [Fintype α] : Fintype L.Elem :=
+  Set.Finite.fintype simple_fintype_finite
+
+noncomputable def toFinsetOfList [Fintype α] (L : Language α) [Simple L] :
+    Finset (List α) :=
+  @Set.toFinset _ L Simple.fintype
 
 end Simple
 
@@ -86,6 +92,39 @@ theorem mem_hereditary_containsPrefix {w₁ w₂ : List α} (hw : w₂ ++ w₁ �
   Hereditary.containsPrefix hw
 
 theorem hereditary_fintype_finite [Fintype α] : L.Finite := simple_fintype_finite
+
+noncomputable def toAccessibleSystem [Fintype α] (L : Language α) [Hereditary L] :
+    Finset (Finset α) :=
+  L.toFinsetOfList.image fun l => l.toFinset
+
+theorem toAccessibleSystem_containsEmpty [Fintype α] : ∅ ∈ L.toAccessibleSystem := by
+  simp [toAccessibleSystem, toFinsetOfList, Set.toFinset]
+  exists Hereditary.containsEmpty
+  simp only [mem_univ _]
+
+theorem toAccessibleSystem_accessible [Fintype α]
+  {s : Finset α} (hs₁ : s ∈ L.toAccessibleSystem) (hs₂ : s ≠ ∅) :
+    ∃ x ∈ s, s \ {x} ∈ L.toAccessibleSystem := by
+  simp [toAccessibleSystem, toFinsetOfList, Set.toFinset] at *
+  have ⟨l, ⟨hl₁, hl₂⟩, hl₃⟩ := hs₁
+  by_cases hl₄ : l = []
+  . rw [hl₄] at hl₃
+    rw [← hl₃] at hs₂
+    contradiction
+  . cases' l with head l <;> try contradiction
+    exists head
+    simp [← hl₃]
+    exists l
+    constructor
+    . exists (mem_hereditary_containsPrefix (by simp; exact hl₁ : [head] ++ l ∈ L))
+      simp only [mem_univ _]
+    . rw [insert_sdiff_of_mem _ (mem_singleton_self head)]
+      symm
+      simp [sdiff_eq_self, nodup_cons.mp (mem_hereditary_nodup hl₁)]
+
+instance [Fintype α] (L : Language α) [Hereditary L] : Accessible L.toAccessibleSystem where
+  containsEmpty := toAccessibleSystem_containsEmpty
+  accessible := toAccessibleSystem_accessible
 
 end Hereditary
 

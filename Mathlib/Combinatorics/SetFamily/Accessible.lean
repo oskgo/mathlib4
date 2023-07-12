@@ -17,11 +17,11 @@ import Mathlib.Tactic.WLOG
     here we only pick its properties. -/
 class Accessible {α : Type _} [DecidableEq α] (Sys : Finset (Finset α)) where
   /-- Accessible set system contains the empty set. -/
-  contains_empty : ∅ ∈ Sys
+  containsEmpty : ∅ ∈ Sys
   /-- For some nonempty feasible set of any accessible set system,
       there is some feasible subset of the set
       whose cardinality is exactly one less than the set. -/
-  accessible : ∀ s ∈ Sys, s ≠ ∅ → ∃ x ∈ s, s \ {x} ∈ Sys
+  accessible : ∀ {s}, s ∈ Sys → s ≠ ∅ → ∃ x ∈ s, s \ {x} ∈ Sys
 
 section Accessible
 
@@ -31,18 +31,18 @@ variable {s : Finset α} (hs₀ : s ∈ Sys)
 
 open Nat Finset
 
-theorem accessible_contains_empty : ∅ ∈ Sys :=
-  ‹Accessible Sys›.contains_empty
+theorem accessible_containsEmpty : ∅ ∈ Sys :=
+  ‹Accessible Sys›.containsEmpty
 
 theorem accessible_accessible (hs₁ : s ≠ ∅) : ∃ x ∈ s, s \ {x} ∈ Sys :=
-  ‹Accessible Sys›.accessible _ hs₀ hs₁
+  ‹Accessible Sys›.accessible hs₀ hs₁
 
 theorem accessible_system_smaller_feasible_set_helper (hs₁ : s ≠ ∅) {n : ℕ} (hn : n ≤ s.card) :
     ∃ s' ∈ Sys, s' ⊆ s ∧ s'.card + n = s.card := by
   induction' n with n ih generalizing s
   . exists s
   . have ⟨s', hs'₁, hs'₂, hs'₃⟩ := ih hs₀ hs₁ (le_trans (by simp_arith) hn)
-    let ⟨a, ha₁, ha₂⟩ := ‹Accessible Sys›.accessible _ hs'₁ (by
+    let ⟨a, ha₁, ha₂⟩ := ‹Accessible Sys›.accessible hs'₁ (by
       intro h'
       simp [h'] at hs'₃
       rw [← hs'₃] at hn
@@ -74,7 +74,7 @@ theorem induction_on_accessible {α : Type _} [DecidableEq α]
   (insert : ∀ ⦃a : α⦄ {s : Finset α}, a ∉ s → s ∈ Sys → s ∪ {a} ∈ Sys → p s → p (s ∪ {a})) :
     p s := by
   by_cases s = ∅ <;> simp only [h, empty]
-  have ⟨x, hx₁, hx₂⟩ := ‹Accessible Sys›.accessible _ hs₀ h
+  have ⟨x, hx₁, hx₂⟩ := ‹Accessible Sys›.accessible hs₀ h
   have : p (s \ {x}) := induction_on_accessible hx₂ empty insert
   have : p ((s \ {x}) ∪ {x}):= insert
     (fun h => (mem_sdiff.mp h).2 (mem_singleton.mpr rfl)) hx₂ (by
