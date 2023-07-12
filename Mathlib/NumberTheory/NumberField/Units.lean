@@ -25,6 +25,8 @@ field `K`.
 number field, units
  -/
 
+-- See: https://github.com/leanprover/lean4/issues/2220
+local macro_rules | `($x ^ $y)   => `(HPow.hPow $x $y)
 
 open scoped NumberField
 
@@ -275,8 +277,26 @@ theorem seq.next {x : 𝓞 K} (hx : x ≠ 0) :
       (by rw [convex_body_volume]; convert hb; exact congrArg ((↑): NNReal → ENNReal) h_gprod)
     refine ⟨y, h_ynz, fun w hw => by convert h_geqf w hw ▸ h_yle w, ?_⟩
     · rw [← Rat.cast_le (K := ℝ), ← prod_mult_eq_abs_norm]
---      have := Finset.prod_le_prod (f := fun w => (w y) ^ (mult K w)) ?_  ?_
-      sorry
+      have : ∀ w : InfinitePlace K, w y ≤ (fun a => w a) x := sorry
+      have := Finset.prod_le_prod (s := Finset.univ)
+        (f := fun w : InfinitePlace K => (w y) ^ mult K w)
+        (g := fun w : InfinitePlace K => (g w) ^ mult K w) ?_ ?_
+      refine this.trans ?_
+      refine le_of_eq ?_
+      have t1 := congrArg toReal h_gprod
+      rw [← NNReal.coe_prod]
+      rw [t1]
+      rfl
+      intro w _
+      dsimp only
+      refine pow_nonneg ?_ _
+      exact AbsoluteValue.nonneg _ _
+      intro w _
+      dsimp only
+      simp only [coe_pow]
+      refine pow_le_pow_of_le_left ?_ ?_ (mult K w)
+      exact AbsoluteValue.nonneg _ _
+      exact le_of_lt (h_yle w)
   sorry
 
 end dirichlet
