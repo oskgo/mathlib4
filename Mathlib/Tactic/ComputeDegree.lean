@@ -125,6 +125,103 @@ def _root_.Lean.Syntax.getVal : Syntax → Name
 --  | .node _ _ arr  => arr
 --  | _ => #[]
 
+declare_syntax_cat di
+
+syntax "s0" : di
+syntax "sℕ" : di
+syntax "sℤ" : di
+syntax "sC" : di
+syntax "sX" : di
+syntax:max " ( " di " ) " : di
+syntax:65 di " + " di:66 : di
+syntax:65 di " - " di:66 : di
+syntax:70 di " * " di:71 : di
+syntax:75 "- " di:76 : di
+syntax:80 di " ^ " term:81 : di
+syntax:75 "sM " term:76 : di
+
+#check (s0 : TSyntax `di)
+
+syntax "[di|" di "]" : term
+
+
+open Lean Elab Term
+
+def polToDegInfo (pol : Expr) : TermElabM (Name × TSyntax `term) :=
+match pol.getAppFnArgs with
+  | (``HAdd.hAdd, #[_, _, _, _, f, g])                 => do
+    let (_, fs) := ← polToDegInfo f
+    let (_, gs) := ← polToDegInfo g
+    let fg := ← `(fs + gs)
+    pure (``add, fg)
+  | (``Neg.neg,   #[_, _, f])                          => - (polToDegInfo f)
+  | (``HSub.hSub, #[_, _, _, _, f, g])                 => (polToDegInfo f) - (polToDegInfo g)
+  | (``HMul.hMul, #[_, _, _, _, f, g])                 => (polToDegInfo f) * (polToDegInfo g)
+  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, f, n]) => (polToDegInfo f) ^ n
+  | (``Polynomial.X, _)                                => .X
+  | (``Nat.cast, #[_, _, _n])                          => .natCast
+  | (``Int.cast, #[_, _, _n])                          => .intCast
+  -- why should I split `n = 0` from generic `n`?
+  | (``OfNat.ofNat, #[_, (.lit (.natVal 0)), _])       => .ofNatZero
+  | (``OfNat.ofNat, #[_, _n, _])                       => .ofNat
+  -- deal with `monomial` and `C`
+  | (``FunLike.coe, #[_, _, _, _, polFun, c]) => match polFun.getAppFnArgs with
+    | (``Polynomial.monomial, _)                       => .monomial c
+    | (``Polynomial.C, _)                              => .C
+    | _ => .err polFun
+  -- possibly, all that's left is the case where `pol` is an `fvar` and its `Name` is `.anonymous`
+  | (_na, _) => .rest pol
+
+
+
+def toName : DegInfo → Name
+  | .rest _     => ``le_rfl
+  | .X          => ``natDegree_X_le
+  | .natCast    => ``nat_cast_le
+  | .intCast    => ``int_cast_le
+  | .ofNatZero  => ``zero_le
+  | .ofNat      => ``nat_cast_le
+  | .C          => ``C_le
+  | .monomial _ => ``natDegree_monomial_le
+  | .neg _      => ``neg
+  | .add ..     => ``add
+  | .sub ..     => ``sub
+  | .mul ..     => ``mul
+  | .pow ..     => ``pow
+  | .err _      => .anonymous
+
+
+--#check [di| C * X ^ 4 - Nat * zero]
+
+partial
+def toN : TSyntax `di → Nat
+--  | `([di|$a + $b]) => toN a + toN b
+--  | `(_X:di) => 1
+--  | `($a:di) => 1
+  | _ => 0
+
+#check toN
+#check toN [di|sX + sX]
+
+variable (n z c x : Int)
+macro_rules
+  | `([di|$a + $b]) => `([di|$a] + [di|$b])
+  | `([di|$a * $b]) => `([di|$a] * [di|$b])
+  | `([di|$a ^ $b]) => `([di|$a] ^ $b)
+  | `([di|$a - $b]) => `([di|$a] - [di|$b])
+  | `([di|($a)])    => `(- [di|$a])
+  | `([di|- $a])    => `(- [di|$a])
+  | `([di|s0])    => `(0)
+  | `([di|sℕ])    => `(n)
+  | `([di|sℤ])    => `(z)
+  | `([di|sC])      => `(c)
+  | `([di|sX])      => `(x)
+  | `([di|sM $t]) => `(x ^ $t)
+--def toaN : Syntax → Nat
+
+
+
+
 def tos (stx : TSyntax `term) (val : String := "") : Bool :=
 if (stx.raw.getArg 0).getVal == `Expr.fvar then true
 else
@@ -289,8 +386,15 @@ example
       --dbg_trace ToExpr.toExpr tf
       let ppe := ← ppExpr (ToExpr.toExpr (tf))
       logInfo ppe
+  sorry
 
-example [LinearOrder α] {n : α}: n ≤ n := by exact le_rfl
+example {f : Int[X]} {n : Nat} : natDegree (4 - (C 1 : Int[X]) * X ^ 10) ≤ 10 := by
+  apply (natDegree_sub_le _ _).trans
+
+
+
+
+
 
 def toName : DegInfo → Name
   | .rest _     => ``le_rfl
@@ -361,7 +465,7 @@ def one_step_compute_degree_le (pol : DegInfo) (mv : MVarId) :
 
 --  let (na, exs) := toName pol
   let na := toName pol
-  let mvs := ← if na.isAnonymous then mv.applyConst na.get! else return [mv]
+  let mvs := ← if na.isAnonymous then return [mv] else mv.applyConst na
   return (List.replicate mvs.length na.isSome).zip (exs.zip mvs)
 
 partial
@@ -402,7 +506,7 @@ structure DegreeInfo where
   (monomial : List Expr)
   (rest : List Expr)
 
-
+#check MVarId
 #exit
 def assign_lemma_name (pol : Expr) : Option Name × (List Expr) :=
 match pol.getAppFnArgs with
