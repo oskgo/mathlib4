@@ -56,7 +56,7 @@ theorem mul {a b : Nat} {f g : R[X]} (hf : natDegree f ≤ a) (hg : natDegree g 
     natDegree (f * g) ≤ a + b :=
 (f.natDegree_mul_le).trans $ add_le_add ‹_› ‹_›
 
-theorem pow {a b : Nat} {f : R[X]} (hf : natDegree f ≤ a) :
+theorem pow {a : Nat} (b : Nat) {f : R[X]} (hf : natDegree f ≤ a) :
     natDegree (f ^ b) ≤ b * a :=
 natDegree_pow_le.trans (Nat.mul_le_mul rfl.le ‹_›)
 
@@ -125,54 +125,173 @@ def _root_.Lean.Syntax.getVal : Syntax → Name
 --  | .node _ _ arr  => arr
 --  | _ => #[]
 
-declare_syntax_cat di
+/--
+`DegInfo` is the type containing the part of the syntax tree of a polynomial that currently
+plays a role in the computation of its degree.
+-/
+inductive DegInfo where
+  /-- `.rest pol` is a node where `f` is typically an `fvar`.  It corresponds to `natDegree pol`. -/
+  | rest      : Expr → DegInfo
+  /-- `.X` is a node representing `X`.  It corresponds to `1`. -/
+  | X         : DegInfo
+  /-- `.natCast` is a node representing a `Nat`.  It corresponds to `0`. -/
+  | natCast   : DegInfo
+  /-- `.intCast` is a node representing an `Int`.  It corresponds to `0`. -/
+  | intCast   : DegInfo
+  /-- `.ofNatZero` is a node representing the literal `0`.  It corresponds to `0`. -/
+  | ofNatZero : DegInfo
+  /-- `.ofNat` is a node representing a `OfNat`.  It corresponds to `0`. -/
+  | ofNat     : DegInfo
+  /-- `.C` is a node representing `C x`.  It corresponds to `0`. -/
+  | C         : DegInfo
+  /-- `.monomial n` is a node representing a `↑(monomial n) _`.  It corresponds to `n`. -/
+  | monomial  : Expr → DegInfo
+  /-- `.neg pol` is a node representing `- pol`.  It corresponds to `natDegree pol`. -/
+  | neg       : DegInfo → DegInfo
+  /-- `.add f g` is a node representing `f + g`.
+      It corresponds to `max (natDegree f) (natDegree g)`. -/
+  | add       : DegInfo → DegInfo → DegInfo
+  /-- `.sub f g` is a node representing `f - g`.
+      It corresponds to `max (natDegree f) (natDegree g)`. -/
+  | sub       : DegInfo → DegInfo → DegInfo
+  /-- `.mul f g` is a node representing `f * g`.
+      It corresponds to `(natDegree f) + (natDegree g)`. -/
+  | mul       : DegInfo → DegInfo → DegInfo
+  /-- `.pow f n` is a node representing `f ^ n`.
+      It corresponds to `n * (natDegree f)`. -/
+  | pow       : DegInfo → Expr → DegInfo
+  /-- `.err e` is a node for error-management.
+      The `Expr`ession `e` is data useful to report the error. -/
+  | err       : Expr → DegInfo
+  deriving BEq, Inhabited, ToExpr
 
-syntax "s0" : di
-syntax "sℕ" : di
-syntax "sℤ" : di
-syntax "sC" : di
-syntax "sX" : di
-syntax:max " ( " di " ) " : di
-syntax:65 di " + " di:66 : di
-syntax:65 di " - " di:66 : di
-syntax:70 di " * " di:71 : di
-syntax:75 "- " di:76 : di
-syntax:80 di " ^ " term:81 : di
-syntax:75 "sM " term:76 : di
-
-#check (s0 : TSyntax `di)
-
-syntax "[di|" di "]" : term
-
+instance : HAdd DegInfo DegInfo DegInfo where hAdd := .add
+instance : HMul DegInfo DegInfo DegInfo where hMul := .mul
+instance : Neg DegInfo                  where neg := .neg
+instance : HSub DegInfo DegInfo DegInfo where hSub := .sub
+instance : Pow DegInfo Expr             where pow := .pow
 
 open Lean Elab Term
 
-def polToDegInfo (pol : Expr) : TermElabM (Name × TSyntax `term) :=
+partial
+def direct (pol : Expr) : MetaM Expr :=
 match pol.getAppFnArgs with
   | (``HAdd.hAdd, #[_, _, _, _, f, g])                 => do
-    let (_, fs) := ← polToDegInfo f
-    let (_, gs) := ← polToDegInfo g
-    let fg := ← `(fs + gs)
-    pure (``add, fg)
-  | (``Neg.neg,   #[_, _, f])                          => - (polToDegInfo f)
-  | (``HSub.hSub, #[_, _, _, _, f, g])                 => (polToDegInfo f) - (polToDegInfo g)
-  | (``HMul.hMul, #[_, _, _, _, f, g])                 => (polToDegInfo f) * (polToDegInfo g)
-  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, f, n]) => (polToDegInfo f) ^ n
-  | (``Polynomial.X, _)                                => .X
-  | (``Nat.cast, #[_, _, _n])                          => .natCast
-  | (``Int.cast, #[_, _, _n])                          => .intCast
+    let fe := ← direct f
+    let ge := ← direct g
+    mkAppM ``add #[fe, ge]
+  | (``HSub.hSub, #[_, _, _, _, f, g])                 => do
+    let fe := ← direct f
+    let ge := ← direct g
+    mkAppM ``sub #[fe, ge]
+  | (``HMul.hMul, #[_, _, _, _, f, g])                 => do
+    let fe := ← direct f
+    let ge := ← direct g
+    mkAppM ``mul #[fe, ge]
+  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, f, n]) => do
+    let fe := ← direct f
+    mkAppM ``pow #[n, fe]
+  | (``Neg.neg,   #[_, _, f])                          => do
+    let fe := ← direct f
+    mkAppM ``neg #[fe]
+  | (``Polynomial.X, #[R, inst])                                => do
+    mkAppOptM ``natDegree_X_le #[some R, some inst]
+  | (``OfNat.ofNat, #[_, (.lit (.natVal 0)), _])       => do
+    mkAppM ``nat_cast_le #[mkNatLit 0]
+  | (``OfNat.ofNat, #[R, n, _])       => do
+    mkAppOptM ``nat_cast_le #[some R, none, some n]
+--  | (``Nat.cast, #[_, _, _n])                          => do
+--    dbg_trace "here"
+--    (mkAppM ``nat_cast_le #[])
+  | (``FunLike.coe, #[_, _, _, _, polFun, c]) => match polFun.getAppFnArgs with
+    | (``Polynomial.monomial, #[R, inst, n])                       => do
+      logInfo n
+      (mkAppOptM ``natDegree_monomial_le #[some R, some inst, some c, some n])
+    | (``Polynomial.C, _)                              => do
+      (mkAppM ``C_le #[c])
+    | _ => pure default
+  | e => dbg_trace f!"there {e.1}"; pure default
+
+
+example {f : Int[X]} : (- C 3 * (C 2) ^ 2 + monomial 4 5 - C (- 3) + X + 3 : Int[X]) = 0 := by
+  run_tac do
+    let tgt := ← getMainTarget
+    if let some (_, lhs, rhs) := tgt.eq? then
+      dbg_trace ← ppExpr (← inferType (← direct lhs))
+--      dbg_trace lhs.ctorName
+--      dbg_trace lhs.getAppFnArgs
+
+
+#exit
+
+  | (``Polynomial.X, _)                                => do
+    return (mkNatLit 1, .X)
+  | (``Nat.cast, #[_, _, _n])                          => do
+    return (mkNatLit 0, .natCast)
+  | (``Int.cast, #[_, _, _n])                          => do
+    return (mkNatLit 0, .intCast)
   -- why should I split `n = 0` from generic `n`?
-  | (``OfNat.ofNat, #[_, (.lit (.natVal 0)), _])       => .ofNatZero
-  | (``OfNat.ofNat, #[_, _n, _])                       => .ofNat
+  | (``OfNat.ofNat, #[_, (.lit (.natVal 0)), _])       => do
+    return (mkNatLit 0, .ofNatZero)
+  | (``OfNat.ofNat, #[_, _n, _])                       => do
+    return (mkNatLit 0, .ofNat)
   -- deal with `monomial` and `C`
   | (``FunLike.coe, #[_, _, _, _, polFun, c]) => match polFun.getAppFnArgs with
-    | (``Polynomial.monomial, _)                       => .monomial c
-    | (``Polynomial.C, _)                              => .C
-    | _ => .err polFun
+    | (``Polynomial.monomial, _)                       => do
+      return (c, .monomial c)
+    | (``Polynomial.C, _)                              => do
+      return (mkNatLit 0, .C)
+    | _ => do
+      return (default, .err polFun)
   -- possibly, all that's left is the case where `pol` is an `fvar` and its `Name` is `.anonymous`
-  | (_na, _) => .rest pol
+  | (_na, _) => do
+    return (← alt pol, .rest pol)
 
 
+variable (alt : Expr → MetaM Expr) in
+partial
+def polToDegInfo (pol : Expr) : MetaM (Expr × DegInfo) :=
+match pol.getAppFnArgs with
+  | (``HAdd.hAdd, #[_, _, _, _, f, g])                 => do
+    let (fe, fd) := ← polToDegInfo f
+    let (ge, gd) := ← polToDegInfo g
+    return (← mkMax fe ge, fd + gd)
+  | (``Neg.neg,   #[_, _, f])                          => do
+    let (fe, fd) := ← polToDegInfo f
+    return (fe, - fd)
+  | (``HSub.hSub, #[_, _, _, _, f, g])                 => do
+    let (fe, fd) := ← polToDegInfo f
+    let (ge, gd) := ← polToDegInfo g
+    return (← mkMax fe ge, fd - gd)
+  | (``HMul.hMul, #[_, _, _, _, f, g])                 => do
+    let (fe, fd) := ← polToDegInfo f
+    let (ge, gd) := ← polToDegInfo g
+    return (← mkMul fe ge, fd * gd)
+  | (``HPow.hPow, #[_, (.const ``Nat []), _, _, f, n]) => do
+    let (fe, fd) := ← polToDegInfo f
+    return (← mkMul n fe, fd ^ n)
+  | (``Polynomial.X, _)                                => do
+    return (mkNatLit 1, .X)
+  | (``Nat.cast, #[_, _, _n])                          => do
+    return (mkNatLit 0, .natCast)
+  | (``Int.cast, #[_, _, _n])                          => do
+    return (mkNatLit 0, .intCast)
+  -- why should I split `n = 0` from generic `n`?
+  | (``OfNat.ofNat, #[_, (.lit (.natVal 0)), _])       => do
+    return (mkNatLit 0, .ofNatZero)
+  | (``OfNat.ofNat, #[_, _n, _])                       => do
+    return (mkNatLit 0, .ofNat)
+  -- deal with `monomial` and `C`
+  | (``FunLike.coe, #[_, _, _, _, polFun, c]) => match polFun.getAppFnArgs with
+    | (``Polynomial.monomial, _)                       => do
+      return (c, .monomial c)
+    | (``Polynomial.C, _)                              => do
+      return (mkNatLit 0, .C)
+    | _ => do
+      return (default, .err polFun)
+  -- possibly, all that's left is the case where `pol` is an `fvar` and its `Name` is `.anonymous`
+  | (_na, _) => do
+    return (← alt pol, .rest pol)
 
 def toName : DegInfo → Name
   | .rest _     => ``le_rfl
@@ -190,6 +309,13 @@ def toName : DegInfo → Name
   | .pow ..     => ``pow
   | .err _      => .anonymous
 
+example {f : Int[X]} : (monomial 2 4 : Int[X]) = 0 := by
+  run_tac do
+    let tgt := ← getMainTarget
+    if let some (_, lhs, rhs) := tgt.eq? then
+      dbg_trace ← ppExpr (← polToDegInfo mkNatDegree lhs).1
+      dbg_trace lhs.ctorName
+      dbg_trace lhs.getAppFnArgs
 
 --#check [di| C * X ^ 4 - Nat * zero]
 
@@ -256,45 +382,6 @@ else
 --  `($ato)
   false
 
-/--
-`DegInfo` is the type containing the part of the syntax tree of a polynomial that currently
-plays a role in the computation of its degree.
--/
-inductive DegInfo where
-  /-- `.rest pol` is a node where `f` is typically an `fvar`.  It corresponds to `natDegree pol`. -/
-  | rest      : Expr → DegInfo
-  /-- `.X` is a node representing `X`.  It corresponds to `1`. -/
-  | X         : DegInfo
-  /-- `.natCast` is a node representing a `Nat`.  It corresponds to `0`. -/
-  | natCast   : DegInfo
-  /-- `.intCast` is a node representing an `Int`.  It corresponds to `0`. -/
-  | intCast   : DegInfo
-  /-- `.ofNatZero` is a node representing the literal `0`.  It corresponds to `0`. -/
-  | ofNatZero : DegInfo
-  /-- `.ofNat` is a node representing a `OfNat`.  It corresponds to `0`. -/
-  | ofNat     : DegInfo
-  /-- `.C` is a node representing `C x`.  It corresponds to `0`. -/
-  | C         : DegInfo
-  /-- `.monomial n` is a node representing a `↑(monomial n) _`.  It corresponds to `n`. -/
-  | monomial  : Expr → DegInfo
-  /-- `.neg pol` is a node representing `- pol`.  It corresponds to `natDegree pol`. -/
-  | neg       : DegInfo → DegInfo
-  /-- `.add f g` is a node representing `f + g`.
-      It corresponds to `max (natDegree f) (natDegree g)`. -/
-  | add       : DegInfo → DegInfo → DegInfo
-  /-- `.sub f g` is a node representing `f - g`.
-      It corresponds to `max (natDegree f) (natDegree g)`. -/
-  | sub       : DegInfo → DegInfo → DegInfo
-  /-- `.mul f g` is a node representing `f * g`.
-      It corresponds to `(natDegree f) + (natDegree g)`. -/
-  | mul       : DegInfo → DegInfo → DegInfo
-  /-- `.pow f n` is a node representing `f ^ n`.
-      It corresponds to `n * (natDegree f)`. -/
-  | pow       : DegInfo → Expr → DegInfo
-  /-- `.err e` is a node for error-management.
-      The `Expr`ession `e` is data useful to report the error. -/
-  | err       : Expr → DegInfo
-  deriving BEq, Inhabited, ToExpr
 
 @[app_unexpander DegInfo.add] def unexpand_add : Lean.PrettyPrinter.Unexpander
   | `($_ $a $b) => `($a + $b)
@@ -344,11 +431,6 @@ inductive DegInfo where
   | `($_ $a) => if tos a "monomial: " then `(monomial nnn) else `(monomial lit)
   | _ => throw ()
 
-instance : HAdd DegInfo DegInfo DegInfo where hAdd := .add
-instance : HMul DegInfo DegInfo DegInfo where hMul := .mul
-instance : Neg DegInfo                  where neg := .neg
-instance : HSub DegInfo DegInfo DegInfo where hSub := .sub
-instance : Pow DegInfo Expr             where pow := .pow
 
 /-- `polToDegInfo pol` converts an `Expr`ession `pol` representing a polynomial to the
 corresponding "tree object" of Type `DegInfo`.
