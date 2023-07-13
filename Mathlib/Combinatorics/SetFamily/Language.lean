@@ -94,6 +94,10 @@ theorem mem_hereditary_containsPrefix {l₁ l₂ : List α} (hl : l₂ ++ l₁ �
     l₁ ∈ Lang :=
   Hereditary.containsPrefix hl
 
+theorem mem_hereditary_containsTail {head : α} {tail : List α} (h : head :: tail ∈ Lang) :
+    tail ∈ Lang :=
+  @mem_hereditary_containsPrefix _ _ _ _ tail [head] (singleton_append ▸ h)
+
 theorem hereditary_fintype_finite [Fintype α] : Lang.Finite := simple_fintype_finite
 
 /-- Converts hereditary language `Lang` to set system. -/
@@ -118,7 +122,7 @@ theorem toAccessibleSystem_accessible [Fintype α]
     exists head
     simp [← hl₂]
     exists l
-    apply And.intro (mem_hereditary_containsPrefix (by simp; exact hl₁ : [head] ++ l ∈ Lang))
+    apply And.intro (mem_hereditary_containsTail hl₁)
     rw [insert_sdiff_of_mem _ (mem_singleton_self head)]
     symm; simp [sdiff_eq_self, nodup_cons.mp (mem_hereditary_nodup hl₁)]
 
@@ -157,6 +161,11 @@ theorem toHereditaryLanguage_containsPrefix {l₁ l₂ : List α}
   simp only [toHereditaryLanguage] at *
   apply And.intro (Nodup.of_append_right hl.1)
   exact fun h => hl.2 (isSuffix.trans h (suffix_append _ _))
+
+theorem toHereditaryLanguage_containsTail {head : α} {tail : List α}
+  (hl : head :: tail ∈ toHereditaryLanguage Sys) :
+    tail ∈ toHereditaryLanguage Sys :=
+  @toHereditaryLanguage_containsPrefix _ _ _ tail [head] hl
 
 instance (Sys : Finset (Finset α)) [Accessible Sys] : Hereditary (toHereditaryLanguage Sys) where
   nodup := toHereditaryLanguage_nodup
