@@ -35,6 +35,8 @@ namespace GreedoidLanguage
 
 variable {α : Type _}
 
+open Nat List Finset Language
+
 /-- List of axioms in `GreedoidLanguage` -/
 def greedoidLanguageAxiom (Lang : Language α) :=
   (∀ {l}, l ∈ Lang → l.Nodup) ∧
@@ -52,14 +54,14 @@ theorem greedoidLanguageAxiom_greedoidLangauge [Fintype α] {L : GreedoidLanguag
   ⟨L.nodup, L.containsEmpty, L.containsPrefix, L.exchangeAxiom⟩
 
 instance [DecidableEq α] [Fintype α] {L : GreedoidLanguage α} :
-    Language.Hereditary L.language where
+    Hereditary L.language where
   nodup := L.nodup
   containsEmpty := L.containsEmpty
   containsPrefix := L.containsPrefix
 
 noncomputable instance [DecidableEq α] [Fintype α] {L : GreedoidLanguage α} :
     Fintype L.language.Elem :=
-  Language.fintypeLanguage
+  fintypeLanguage
 
 end GreedoidLanguage
 
@@ -132,13 +134,53 @@ open Nat List Finset Language GreedoidSystem
 noncomputable def fromLanguageToSystem' (L : GreedoidLanguage α) :=
   L.language.toAccessibleSystem
 
+theorem fromLanguageToSystem'_containsEmpty {L : GreedoidLanguage α} :
+    ∅ ∈ L.fromLanguageToSystem' :=
+  Language.toAccessibleSystem_containsEmpty
+
+theorem fromLanguageToSystem'_accessible {L : GreedoidLanguage α}
+  {s : Finset α} (hs₀ : s ∈ L.fromLanguageToSystem') (hs₁ : s ≠ ∅) :
+    ∃ x ∈ s, s \ {x} ∈ L.fromLanguageToSystem' :=
+  toAccessibleSystem_accessible hs₀ hs₁
+
 instance AccessibleLanguageToSystem' (L : GreedoidLanguage α) :
     Accessible L.fromLanguageToSystem' where
-  containsEmpty := Language.toAccessibleSystem_containsEmpty
-  accessible := Language.toAccessibleSystem_accessible
+  containsEmpty := fromLanguageToSystem'_containsEmpty
+  accessible := fromLanguageToSystem'_accessible
 
-theorem greedoidSystemAxiom_fromLanguageToSystem' {L : GreedoidLanguage α} :
+theorem fromLanguageToSystem'_exchangeAxiom {L : GreedoidLanguage α} :
+    _root_.exchangeAxiom L.fromLanguageToSystem' := by
+  simp only [_root_.exchangeAxiom, fromLanguageToSystem']
+  intro s₁ hs₁
+  apply induction_on_accessible hs₁ <;> try (intro s₂ hs₂ hs; contradiction)
+  intro a s₂ ha₁ _ ha₂ ih s₃ hs₃ hs
+  simp_arith [ha₁] at hs
+  rw [le_iff_lt_or_eq] at hs
+  apply hs.elim <;> intro hs
+  . have ⟨x, hx⟩ := ih hs₃ hs
+    exists x; simp only [mem_sdiff] at hx; simp only [mem_sdiff, Finset.mem_union, true_or, hx]
+  . simp only [toAccessibleSystem, toFinsetOfList, mem_image, Set.mem_toFinset] at ha₂ hs₃
+    let ⟨l₁, hl₁₁, hl₁₂⟩ := ha₂
+    let ⟨l₂, hl₂₁, hl₂₂⟩ := hs₃
+    let ⟨x, hx₁, hx₂⟩ := L.exchangeAxiom hl₁₁ hl₂₁ (by
+      rw [← toFinset_card_of_nodup (mem_hereditary_nodup hl₁₁),
+          ← toFinset_card_of_nodup (mem_hereditary_nodup hl₂₁),
+          hl₁₂, hl₂₂, hs]
+      simp [ha₁])
+    exists x
+    simp only [Finset.mem_union, Finset.mem_singleton, toAccessibleSystem, toFinsetOfList,
+      mem_image, Set.mem_toFinset]
+    have x_l₂_nodup := nodup_cons.mp (mem_hereditary_nodup hx₂)
+    rw [← hl₁₂, ← hl₂₂]
+    simp [hx₁, x_l₂_nodup]
+    exists x :: l₂
+    apply And.intro hx₂
+    simp only [toFinset_cons, mem_toFinset, x_l₂_nodup, insert_eq, union_comm]
+
+theorem fromLanguageToSystem'_greedoidSystemAxiom {L : GreedoidLanguage α} :
     greedoidSystemAxiom L.fromLanguageToSystem' :=
-  sorry
+  ⟨fromLanguageToSystem'_containsEmpty,
+    fromLanguageToSystem'_accessible,
+    fromLanguageToSystem'_exchangeAxiom⟩
 
 end GreedoidLanguage
