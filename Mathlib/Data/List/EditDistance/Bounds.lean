@@ -52,13 +52,6 @@ theorem levenshtein_bound' [LinearOrderedAddCommMonoid δ]
         _ ≤ _ := by
             simpa using le_add_of_nonneg_left (hsubstitute x y)
 
-theorem List.minimum_le_coe_iff [LinearOrder α] (L : List α) (a : α) :
-    L.minimum ≤ a ↔ ∃ b, b ∈ L ∧ b ≤ a := by
-  induction L with
-  | nil => simp
-  | cons h t ih =>
-    simp [List.minimum_cons, ih]
-
 theorem levenshtein_bound [LinearOrderedAddCommMonoid δ]
     (hdelete : ∀ a, 0 ≤ C.delete a) (hinsert : ∀ b, 0 ≤ C.insert b)
     (hsubstitute : ∀ a b, 0 ≤ C.substitute a b) (xs : List α) (y ys) :

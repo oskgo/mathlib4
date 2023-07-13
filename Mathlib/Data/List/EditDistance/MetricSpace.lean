@@ -88,7 +88,7 @@ theorem right_eq_of_min_eq_lt [LinearOrder α] {a b c : α} (w : min a b = c) (h
 Given suitable hypotheses on the cost functions,
 the Levenshtein distance is zero only if the lists are the same.
 -/
-theorem levenshtein_eq_of_zero' {C : Levenshtein.Cost α α δ} [LinearOrderedAddCommMonoid δ]
+theorem levenshtein_eq_of_zero {C : Levenshtein.Cost α α δ} [LinearOrderedAddCommMonoid δ]
     (hdelete : ∀ a, 0 < C.delete a) (hinsert : ∀ a, 0 < C.insert a)
     (hsubstitute₁ : ∀ a b, 0 ≤ C.substitute a b)
     (hsubstitute₂ : ∀ a b, C.substitute a b = 0 ↔ a = b)
@@ -127,20 +127,14 @@ theorem levenshtein_eq_of_zero' {C : Levenshtein.Cost α α δ} [LinearOrderedAd
       · exact add_pos_of_pos_of_nonneg (hinsert _) (nonneg _ _)
       · exact add_pos_of_pos_of_nonneg (hdelete _) (nonneg _ _)
 
-theorem levenshtein_eq_of_zero [DecidableEq α]
-    {xs ys : List α} (w : levenshtein Levenshtein.default xs ys = 0) : xs = ys :=
-  levenshtein_eq_of_zero' (by simp) (by simp) (by simp) (by simp; tauto) w
-
 /-- Reverse the source and target in a Levenshtein cost structure. -/
 def Levenshtein.Cost.flip (C : Cost α β δ) : Cost β α δ where
   insert a := C.delete a
   delete b := C.insert b
   substitute a b := C.substitute b a
 
-theorem levenshtein_symm [AddZeroClass δ] [LinearOrder δ]
-    (xs : List α) (ys : List β) :
-    levenshtein C xs ys =
-      levenshtein C.flip ys xs := by
+theorem levenshtein_symm [AddZeroClass δ] [LinearOrder δ] (xs : List α) (ys : List β) :
+    levenshtein C xs ys = levenshtein C.flip ys xs := by
   induction xs generalizing ys with
   | nil =>
     induction ys with
