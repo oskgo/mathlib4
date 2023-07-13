@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2023 Kim Liesinger. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Kim Liesinger
+-/
 import Mathlib.Order.CompleteLattice
 import Mathlib.Order.ConditionallyCompleteLattice.Basic
 import Mathlib.Data.Nat.Lattice
@@ -7,13 +12,13 @@ import Mathlib.Tactic.Abel
 /-!
 # Levenshtein distances
 
-We define the Levenshtein edit distance `levenshtein` between two `List α`,
-with a customizable cost function for the `delete`, `insert`, and `substitute` operations.
+We define the Levenshtein edit distance `levenshtein C xy ys` between two `List α`,
+with a customizable cost structure `C` for the `delete`, `insert`, and `substitute` operations.
 
-As an auxiliary function, we define `suffixLevenshtein xs ys`, which gives the list of distances
+As an auxiliary function, we define `suffixLevenshtein C xs ys`, which gives the list of distances
 from each suffix of `xs` to `ys`.
 This is defined by recursion on `ys`, using the internal function `Levenshtein.impl`,
-which computes `suffixLevenshtein xs (y :: ys)` using `xs`, `y`, and `suffixLevenshtein xs ys`.
+which computes `suffixLevenshtein C xs (y :: ys)` using `xs`, `y`, and `suffixLevenshtein C xs ys`.
 (This corresponds to the usual algorithm
 using the last two rows of the matrix of distances between suffixes.)
 
@@ -22,45 +27,39 @@ particularly
 
 ```
 theorem suffixLevenshtein_eq_tails_map :
-  (suffixLevenshtein xs ys).1 = xs.tails.map fun xs' => levenshtein xs' ys := ...
+  (suffixLevenshtein C xs ys).1 = xs.tails.map fun xs' => levenshtein C xs' ys := ...
 ```
 
 and
 
 ```
 theorem levenshtein_cons_cons :
-  levenshtein (x :: xs) (y :: ys) =
-    min (delete x + levenshtein xs (y :: ys))
-      (min (insert y + levenshtein (x :: xs) ys)
-        (substitute x y + levenshtein xs ys)) := ...
+  levenshtein C (x :: xs) (y :: ys) =
+    min (C.delete x + levenshtein C xs (y :: ys))
+      (min (C.insert y + levenshtein C (x :: xs) ys)
+        (C.substitute x y + levenshtein C xs ys)) := ...
 ```
-
 -/
 
-variable {α δ : Type _}
-
-section AddZeroClass
-variable [AddZeroClass δ]
-
-section Min
-variable [Min δ]
+variable {α β δ : Type _} [AddZeroClass δ] [Min δ]
 
 namespace Levenshtein
 
+/-- A cost structure for Levenshtein edit distance. -/
 structure Cost (α β : Type _) (δ : Type _) where
   delete : α → δ
   insert : β → δ
   substitute : α → β → δ
 
+/-- The default cost structure, for which all operations cost `1`. -/
 def default [DecidableEq α] : Cost α α ℕ :=
   ⟨fun _ => 1, fun _ => 1, fun a b => if a = b then 0 else 1⟩
 
 instance [DecidableEq α] : Inhabited (Cost α α ℕ) := ⟨default⟩
 
-
-@[simp] lemma decidableEqDelete [DecidableEq α] (a : α) : default.delete a = 1 := rfl
-@[simp] lemma decidableEqInsert [DecidableEq α] (a : α) : default.insert a = 1 := rfl
-@[simp] lemma decidableEqSubstitute [DecidableEq α] (a b : α) :
+@[simp] lemma defaultDelete [DecidableEq α] (a : α) : default.delete a = 1 := rfl
+@[simp] lemma defaultInsert [DecidableEq α] (a : α) : default.insert a = 1 := rfl
+@[simp] lemma defaultSubstitute [DecidableEq α] (a b : α) :
     default.substitute a b = if a = b then 0 else 1 := rfl
 
 variable (C : Cost α β δ)
@@ -86,35 +85,26 @@ def impl
       ⟨min (C.delete x + r[0]) (min (C.insert y + d₀) (C.substitute x y + d₁)) :: r, by simp⟩)
 
 variable {C}
+variable (x : α) (xs : List α) (y : β) (d : δ) (ds : List δ) (w : 0 < (d :: ds).length)
 
 -- Note this lemma has an unspecified proof `w'` on the right-hand-side,
 -- which will become an extra goal when rewriting.
-theorem impl_cons
-    (x) (xs) (y) (d) (ds) (w) (w') :
+theorem impl_cons (w') :
     impl C (x :: xs) y ⟨d :: ds, w⟩ =
       let ⟨r, w⟩ := impl C xs y ⟨ds, w'⟩
-      ⟨min
-        (C.delete x + r[0])
-        (min
-          (C.insert y + d)
-          (C.substitute x y + ds[0])) :: r, by simp⟩ :=
+      ⟨min (C.delete x + r[0]) (min (C.insert y + d) (C.substitute x y + ds[0])) :: r, by simp⟩ :=
   match ds, w' with | _ :: _, _ => rfl
 
-theorem impl_cons_fst_zero
-    (x) (xs) (y) (d) (ds) (w) (h) (w') :
+-- Note this lemma has two unspecified proofs: `h` appears on the left-hand-side
+-- and should be found by matching, but `w'` will become an extra goal when rewriting.
+theorem impl_cons_fst_zero (h) (w') :
     (impl C (x :: xs) y ⟨d :: ds, w⟩).1[0] =
       let ⟨r, w⟩ := impl C xs y ⟨ds, w'⟩
-      min
-        (C.delete x + r[0])
-        (min
-          (C.insert y + d)
-          (C.substitute x y + ds[0])) :=
+      min (C.delete x + r[0]) (min (C.insert y + d) (C.substitute x y + ds[0])) :=
   match ds, w' with | _ :: _, _ => rfl
 
-theorem impl_length
-    (xs) (y) (d) (w : d.1.length = xs.length + 1) :
-    (impl C xs y d).1.length =
-      xs.length + 1 := by
+theorem impl_length (d : Σ' (r : List δ), 0 < r.length) (w : d.1.length = xs.length + 1) :
+    (impl C xs y d).1.length = xs.length + 1 := by
   induction xs generalizing d
   · case nil =>
     rfl
@@ -133,29 +123,27 @@ open Levenshtein
 variable (C : Cost α β δ)
 
 /--
-`suffixLevenshtein x y` computes the Levenshtein distance
-(using the cost functions provided by a `Cost α β δ`)
-from each suffix of the list `x` to the list `y`.
+`suffixLevenshtein C xs ys` computes the Levenshtein distance
+(using the cost functions provided by a `C : Cost α β δ`)
+from each suffix of the list `xs` to the list `ys`.
 
-The first element of this list is the Levenshtein distance from `x` to `y`.
+The first element of this list is the Levenshtein distance from `xs` to `ys`.
 
 Note that if the cost functions do not satisfy the inequalities
-* `Cost.delete a + Cost.insert b ≥ Cost.substitute a b`
-* `Cost.substitute a b + Cost.substitute b c ≥ Cost.substitute a c`
+* `C.delete a + C.insert b ≥ C.substitute a b`
+* `C.substitute a b + C.substitute b c ≥ C.substitute a c`
 (or if any values are negative)
 then the edit distances calculated here may not agree with the general
 geodesic distance on the edit graph.
 -/
-def suffixLevenshtein (xs : List α) (ys : List β) :
-    Σ' (r : List δ), 0 < r.length :=
+def suffixLevenshtein (xs : List α) (ys : List β) : Σ' (r : List δ), 0 < r.length :=
   ys.foldr
     (impl C xs)
     (xs.foldr (init := ⟨[0], by simp⟩) (fun a ⟨r, w⟩ => ⟨(C.delete a + r[0]) :: r, by simp⟩))
 
 variable {C}
 
-theorem suffixLevenshtein_length
-    (xs : List α) (ys : List β) :
+theorem suffixLevenshtein_length (xs : List α) (ys : List β) :
     (suffixLevenshtein C xs ys).1.length = xs.length + 1 := by
   induction ys
   · case nil =>
@@ -178,13 +166,13 @@ theorem suffixLevenshtein_eq (xs : List α) (y ys) (w : d = suffixLevenshtein C 
 variable (C)
 
 /--
-`levenshtein x y` computes the Levenshtein distance
-(using the cost functions provided by an instance `Cost α β δ`)
-from the list `x` to the list `y`.
+`levenshtein C xs ys` computes the Levenshtein distance
+(using the cost functions provided by a `C : Cost α β δ`)
+from the list `xs` to the list `ys`.
 
 Note that if the cost functions do not satisfy the inequalities
-* `Cost.delete a + Cost.insert b ≥ Cost.substitute a b`
-* `Cost.substitute a b + Cost.substitute b c ≥ Cost.substitute a c`
+* `C.delete a + C.insert b ≥ C.substitute a b`
+* `C.substitute a b + C.substitute b c ≥ C.substitute a c`
 (or if any values are negative)
 then the edit distance calculated here may not agree with the general
 geodesic distance on the edit graph.
@@ -213,7 +201,7 @@ theorem suffixLevenshtein_cons₂ (xs : List α) (y ys) :
     suffixLevenshtein C xs (y :: ys) = (impl C xs) y (suffixLevenshtein C xs ys) :=
   rfl
 
-theorem ext_helper {x y : Σ' (r : List β), 0 < r.length}
+theorem suffixLevenshtein_cons₁_aux {x y : Σ' (r : List β), 0 < r.length}
     (w₀ : x.1[0]'x.2 = y.1[0]'y.2) (w : x.1.tail = y.1.tail) : x = y := by
   match x, y with
   | ⟨hx :: tx, _⟩, ⟨hy :: ty, _⟩ => simp_all
@@ -227,7 +215,7 @@ theorem suffixLevenshtein_cons₁
   · case nil =>
     dsimp [levenshtein, suffixLevenshtein]
   · case cons y ys ih =>
-    apply ext_helper
+    apply suffixLevenshtein_cons₁_aux
     · rfl
     · rw [suffixLevenshtein_cons₂ (x :: xs), ih, impl_cons]
       · rfl
@@ -297,29 +285,9 @@ theorem levenshtein_cons_cons
           (C.substitute x y + levenshtein C xs ys)) :=
   suffixLevenshtein_cons_cons_fst_get_zero _ _ _ _ _
 
-end Min
+#guard
+  (suffixLevenshtein Levenshtein.default "kitten".toList "sitting".toList).1 = [3, 3, 4, 5, 6, 6, 7]
 
-end AddZeroClass
-
--- Err... what hypotheses does this need?
--- @[simp]
--- theorem levenshtein_cons_self [LinearOrderedAddCommMonoid δ]
---     {delete : α → δ} {insert : α → δ} {substitute : α → α → δ}
---     (hdelete : ∀ a, 0 ≤ delete a) (hinsert : ∀ a, 0 ≤ insert a)
---     (hsubstitute : ∀ a, substitute a a = 0) (a xs ys) :
---     levenshtein delete insert substitute (a :: xs) (a :: ys) =
---       levenshtein delete insert substitute xs ys := by
---   sorry
-
-
-#eval suffixLevenshtein Levenshtein.default "kitten".toList "".toList |>.1
-#eval suffixLevenshtein Levenshtein.default "kitten".toList "g".toList |>.1
-#eval suffixLevenshtein Levenshtein.default "kitten".toList "ng".toList |>.1
-#eval suffixLevenshtein Levenshtein.default "kitten".toList "sitting".toList |>.1
-
-#eval levenshtein Levenshtein.default "the cat sat on the mat".toList "would you like to play a game?".toList
-
-def string1 := ", ".intercalate (List.replicate 100 "hello")
-def string2 := ", ".intercalate (List.replicate 25 "this is just a test")
-
-#eval levenshtein Levenshtein.default string1.toList string2.toList
+#guard levenshtein Levenshtein.default
+  "but our fish said, 'no! no!'".toList
+  "'put me down!' said the fish.".toList = 21

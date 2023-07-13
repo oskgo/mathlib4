@@ -1,4 +1,27 @@
+/-
+Copyright (c) 2023 Kim Liesinger. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Kim Liesinger
+-/
 import Mathlib.Data.List.EditDistance.Defs
+
+/-!
+# Levenshtein distances give a metric
+
+We show that with suitable hypotheses on the cost function,
+Levenshtein distance is non-negative, and zero iff the lists are identical.
+
+We show that it is symmetric.
+
+For now we do not prove the triangle inequality.
+
+(This is a bit harder, as I don't think it can be proved just by
+some inductive argument from the definition.
+Instead we need to look at the geodesic distance on the edit graph,
+and argue that every minimal path can be put in the form:
+"repeatedly: edit an initial character, then edit the suffix".)
+
+-/
 
 variable {C : Levenshtein.Cost α β δ}
 
@@ -108,7 +131,7 @@ theorem levenshtein_eq_of_zero [DecidableEq α]
     {xs ys : List α} (w : levenshtein Levenshtein.default xs ys = 0) : xs = ys :=
   levenshtein_eq_of_zero' (by simp) (by simp) (by simp) (by simp; tauto) w
 
-
+/-- Reverse the source and target in a Levenshtein cost structure. -/
 def Levenshtein.Cost.flip (C : Cost α β δ) : Cost β α δ where
   insert a := C.delete a
   delete b := C.insert b
@@ -130,88 +153,3 @@ theorem levenshtein_symm [AddZeroClass δ] [LinearOrder δ]
       simp only [List.map_cons, levenshtein_cons_cons, ih₁, ih₂]
       rw [← min_assoc, min_comm (C.delete x + _), min_assoc]
       rfl
-
-
-
-
-theorem levenshtein_le_insert {C : Levenshtein.Cost α α δ} [LinearOrderedAddCommMonoid δ]
-    (hinsert : ∀ a, 0 ≤ C.insert a) (hdelete : ∀ a, 0 ≤ C.delete a)
-    (x : α) (xs ys) :
-    levenshtein C xs ys ≤ C.insert x + levenshtein C (x :: xs) ys := by
-  induction ys generalizing x xs with
-  | nil =>
-    simp only [levenshtein_cons_nil]
-    refine le_add_of_nonneg_of_le (hinsert x) (le_add_of_nonneg_left (hdelete x))
-  | cons y ys ihy =>
-    simp only [levenshtein_cons_cons]
-    rw [←min_add_add_left, ←min_add_add_left]
-    simp
-    sorry
-    -- err, this is much harder than it looks
-
-theorem levenshtein_trans {C : Levenshtein.Cost α α δ} [LinearOrderedAddCommMonoid δ]
-    (hinsert : ∀ a, 0 ≤ C.insert a) (hdelete : ∀ a, 0 ≤ C.delete a)
-    (hsubstitute₁ : ∀ a b, 0 ≤ C.substitute a b) (hsubstitute₂ : ∀ a, C.substitute a a = 0)
-    (hsubstitute₃ : ∀ a b c, C.substitute a c ≤ C.substitute a b + C.substitute b c)
-    (xs ys zs : List α) :
-    levenshtein C xs zs ≤
-      levenshtein C xs ys +
-      levenshtein C ys zs := by
-  induction xs generalizing ys zs with
-  | nil => sorry
-  | cons x xs ihx =>
-    induction zs generalizing ys with
-    | nil => sorry
-    | cons z zs ihz =>
-      induction ys with
-      | nil => sorry
-      | cons y ys ihy =>
-        simp only [levenshtein_cons_cons x xs y ys]
-        rw [←min_add_add_right, ←min_add_add_right]
-        simp only [le_min_iff]
-        refine ⟨?_, ?_, ?_⟩
-        · simp only [levenshtein_cons_cons x xs z zs]
-          apply min_le_of_left_le
-          rw [add_assoc]
-          exact add_le_add_left (ihx (y :: ys) (z :: zs)) (C.delete x)
-        · simp only [levenshtein_cons_cons y ys z zs]
-          rw [←min_add_add_left, ←min_add_add_left]
-          simp only [le_min_iff]
-          refine ⟨?_, ?_, ?_⟩
-          · sorry -- easy
-          · simp only [levenshtein_cons_cons x xs z zs]
-            apply min_le_of_right_le
-            apply min_le_of_left_le
-            rw [add_left_comm]
-            apply add_le_add_left
-            refine (ihz ys).trans ?_
-            rw [add_comm (C.insert y), add_assoc]
-            apply add_le_add_left
-            apply levenshtein_le_insert hinsert hdelete
-          · simp only [levenshtein_cons_cons x xs z zs]
-            apply min_le_of_right_le
-            apply min_le_of_left_le
-            sorry -- easy, although needs another hypothesis!
-        · simp only [levenshtein_cons_cons y ys z zs]
-          rw [←min_add_add_left, ←min_add_add_left]
-          simp only [le_min_iff]
-          refine ⟨?_, ?_, ?_⟩
-          · sorry -- easy
-          · simp only [levenshtein_cons_cons x xs z zs]
-            apply min_le_of_right_le
-            apply min_le_of_left_le
-            rw [add_left_comm]
-            apply add_le_add_left
-            refine (ihz (y :: ys)).trans ?_
-            apply add_le_add_right
-            simp only [levenshtein_cons_cons x xs y ys]
-            apply min_le_of_right_le
-            apply min_le_of_right_le
-            rfl
-          · simp only [levenshtein_cons_cons x xs z zs]
-            apply min_le_of_right_le
-            apply min_le_of_right_le
-            calc
-              _ ≤ _ := add_le_add_right (hsubstitute₃ x y z) _
-              _ ≤ _ := add_le_add_left (ihx ys zs) _
-              _ = _ := by abel
