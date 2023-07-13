@@ -41,13 +41,14 @@ theorem simple_fintype_finite [Fintype α] : Lang.Finite :=
     simp only [toFinset_val, mem_simple_nodup hl, Nodup.dedup])
 
 /-- Every simple languages are finite under finite type. -/
-protected noncomputable def Simple.fintype [Fintype α] : Fintype Lang.Elem :=
+noncomputable instance fintypeLanguage [Fintype α] :
+    Fintype Lang.Elem :=
   Set.Finite.fintype simple_fintype_finite
 
 /-- Convert simple `Lang` from `Language α` to `Finset (List α)`. -/
 noncomputable def toFinsetOfList [Fintype α] (Lang : Language α) [Simple Lang] :
     Finset (List α) :=
-  @Set.toFinset _ Lang Simple.fintype
+  Set.toFinset Lang
 
 end Simple
 
@@ -102,27 +103,24 @@ noncomputable def toAccessibleSystem [Fintype α] (Lang : Language α) [Heredita
 
 theorem toAccessibleSystem_containsEmpty [Fintype α] : ∅ ∈ Lang.toAccessibleSystem := by
   simp [toAccessibleSystem, toFinsetOfList, Set.toFinset]
-  exists Hereditary.containsEmpty
-  simp only [mem_univ _]
+  exact Hereditary.containsEmpty
 
 theorem toAccessibleSystem_accessible [Fintype α]
   {s : Finset α} (hs₁ : s ∈ Lang.toAccessibleSystem) (hs₂ : s ≠ ∅) :
     ∃ x ∈ s, s \ {x} ∈ Lang.toAccessibleSystem := by
   simp [toAccessibleSystem, toFinsetOfList, Set.toFinset] at *
-  have ⟨l, ⟨hl₁, hl₂⟩, hl₃⟩ := hs₁
+  have ⟨l, hl₁, hl₂⟩ := hs₁
   by_cases hl₄ : l = []
-  . rw [hl₄] at hl₃
-    rw [← hl₃] at hs₂
+  . rw [hl₄] at hl₂
+    rw [← hl₂] at hs₂
     contradiction
   . cases' l with head l <;> try contradiction
     exists head
-    simp [← hl₃]
+    simp [← hl₂]
     exists l
-    constructor
-    . exists (mem_hereditary_containsPrefix (by simp; exact hl₁ : [head] ++ l ∈ Lang))
-      simp only [mem_univ _]
-    . rw [insert_sdiff_of_mem _ (mem_singleton_self head)]
-      symm; simp [sdiff_eq_self, nodup_cons.mp (mem_hereditary_nodup hl₁)]
+    apply And.intro (mem_hereditary_containsPrefix (by simp; exact hl₁ : [head] ++ l ∈ Lang))
+    rw [insert_sdiff_of_mem _ (mem_singleton_self head)]
+    symm; simp [sdiff_eq_self, nodup_cons.mp (mem_hereditary_nodup hl₁)]
 
 instance [Fintype α] (Lang : Language α) [Hereditary Lang] :
     Accessible Lang.toAccessibleSystem where
