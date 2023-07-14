@@ -6,7 +6,8 @@ Authors: Kim Liesinger
 import Mathlib.Order.RelClasses
 import Mathlib.Init.Data.Bool.Lemmas
 import Mathlib.Algebra.Order.Monoid.Canonical.Defs
-import Mathlib.Algebra.Order.Sub.Defs
+import Mathlib.Algebra.Order.Sub.Prod
+import Mathlib.Data.Nat.Order.Basic
 
 /--
 Given `[EstimatorData a ε]`
@@ -28,14 +29,21 @@ class Estimator [Preorder α] (a : α) (ε : Type _) extends EstimatorData a ε 
     | none => bound e = a
     | some e' => bound e < bound e'
 
--- `improveUntil` could probably be generalized to allow values in
--- `[ExistsAddOfLE α] [WellFoundedLT]`.
--- attribute [local instance] WellFoundedLT.toWellFoundedRelation
-
 open EstimatorData
 
+variable {α β} [PartialOrder α] [WellFoundedLT α] [PartialOrder β] [WellFoundedLT β]
+#synth WellFoundedLT (α × β)
+
+-- These typeclasses are satified for the two cases I'm interested in, `ℕ` and `ℕ × ℕ`.
+variable {α : Type _} [AddCommSemigroup α] [PartialOrder α] [ExistsAddOfLE α]
+  [CovariantClass α α (· + ·) (· ≤ ·)] [ContravariantClass α α (· + ·) (· ≤ ·)]
+  [Sub α] [OrderedSub α]
+
+attribute [local instance] WellFoundedLT.toWellFoundedRelation
+
 /-- Improve an estimate until it satisfies a predicate, or stop if we reach the exact value. -/
-def Estimator.improveUntil (a : ℕ) (p : ℕ → Bool) [Estimator a ε] (e : ε) : Option ε :=
+def Estimator.improveUntil [WellFoundedLT α]
+    (a : α) (p : α → Bool) [Estimator a ε] (e : ε) : Option ε :=
   if p (bound a e) then
     return e
   else
@@ -43,16 +51,18 @@ def Estimator.improveUntil (a : ℕ) (p : ℕ → Bool) [Estimator a ε] (e : ε
     | none, _ => none
     | some e', lt =>
       have : a - bound a e' < a - bound a e :=
-        Nat.sub_lt_sub_left (lt_of_lt_of_le lt (bound_le e')) lt
+        tsub_lt_tsub_left_of_le (bound_le e') lt
       Estimator.improveUntil a p e'
 termination_by Estimator.improveUntil p I e => a - bound a e
+
+variable [WellFoundedLT α]
 
 /--
 If `Estimator.improveUntil a p e` returns `some e'`, then `bound a e'` satisfies `p`.
 Otherwise, that value `a` must not satisfy `p`.
 -/
 theorem Estimator.improveUntil_spec
-    (a : ℕ) (p : ℕ → Bool) [Estimator a ε] (e : ε) :
+    (a : α) (p : α → Bool) [Estimator a ε] (e : ε) :
     match Estimator.improveUntil a p e with
     | none => ¬ p a
     | some e' => p (bound a e') := by
@@ -66,7 +76,7 @@ theorem Estimator.improveUntil_spec
       exact Bool.bool_eq_false h
     | some e', lt =>
       have : a - bound a e' < a - bound a e :=
-        Nat.sub_lt_sub_left (lt_of_lt_of_le lt (bound_le e')) lt
+        tsub_lt_tsub_left_of_le (bound_le e') lt
       exact Estimator.improveUntil_spec a p e'
 termination_by Estimator.improveUntil_spec p I e => a - bound a e
 
