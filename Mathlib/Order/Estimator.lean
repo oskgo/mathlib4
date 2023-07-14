@@ -31,9 +31,6 @@ class Estimator [Preorder α] (a : α) (ε : Type _) extends EstimatorData a ε 
 
 open EstimatorData
 
-variable {α β} [PartialOrder α] [WellFoundedLT α] [PartialOrder β] [WellFoundedLT β]
-#synth WellFoundedLT (α × β)
-
 -- These typeclasses are satified for the two cases I'm interested in, `ℕ` and `ℕ × ℕ`.
 variable {α : Type _} [AddCommSemigroup α] [PartialOrder α] [ExistsAddOfLE α]
   [CovariantClass α α (· + ·) (· ≤ ·)] [ContravariantClass α α (· + ·) (· ≤ ·)]
