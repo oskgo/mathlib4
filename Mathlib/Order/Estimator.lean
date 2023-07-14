@@ -32,21 +32,9 @@ class Estimator [Preorder α] (a : α) (ε : Type _) extends EstimatorData a ε 
 -- `[ExistsAddOfLE α] [WellFoundedLT]`.
 -- attribute [local instance] WellFoundedLT.toWellFoundedRelation
 
-example {a b c : ℕ} : a - (b + c) = a - b - c := by exact Nat.sub_add_eq a b c
-example {a b c : ℕ × ℕ} : a - (b + c) = a - b - c := by exact Nat.sub_add_eq a b c
-
-example [AddCommMonoid α] {a b c : α} : a - (b + c) = a - b - c := by apply?
-
-theorem sub_lt_sub_left' [AddCommMonoid α] [Preorder α] [Sub α] [ExistsAddOfLE α]
-    {a b c : α} (w : c < b) (h : b ≤ a) : a - b < a - c := by
-  obtain ⟨d, rfl⟩ := exists_add_of_le h
-  clear h
-  obtain ⟨e, rfl⟩ := exists_add_of_le w.le
-
-
 open EstimatorData
 
-/-- Improve an estimate until is satisfies a predicate, or stop if we reach the exact value. -/
+/-- Improve an estimate until it satisfies a predicate, or stop if we reach the exact value. -/
 def Estimator.improveUntil (a : ℕ) (p : ℕ → Bool) [Estimator a ε] (e : ε) : Option ε :=
   if p (bound a e) then
     return e
