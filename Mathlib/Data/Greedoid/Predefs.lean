@@ -188,17 +188,33 @@ theorem fromLanguageToSystem'_eq {L₁ L₂ : GreedoidLanguage α}
     L₁ = L₂ := by
   apply GreedoidLanguage.eq_of_veq
   ext l; constructor <;> intro h <;> induction' l with head l ih <;> simp only [containsEmpty] <;>
-    have ⟨hhead, hl⟩ := nodup_cons.mp (mem_hereditary_nodup h) <;>
-    have ih := ih (mem_hereditary_containsTail h)
-  . have ⟨l', hl'₁, hl'₂⟩ : ∃ l' ∈ L₂.language, l'.toFinset = (head :: l).toFinset := by
-      sorry
-    have ⟨head', hhead'₁, hhead'₂⟩ := L₂.exchangeAxiom hl'₁ ih sorry
-    have : head = head' := sorry
+    have ⟨hhead, l_nodup⟩ := nodup_cons.mp (mem_hereditary_nodup h) <;>
+    have ih := ih (mem_hereditary_containsTail h) <;>
+    simp only [fromLanguageToSystem', toAccessibleSystem, ext_iff, mem_image,
+      mem_toFinsetOfList, mem_toFinset] at hL
+  . have ⟨l', hl'₁, hl'₂⟩ := (hL (head :: l).toFinset).mp ⟨head :: l, by simp [← ext_iff, h]⟩
+    have l'_nodup := mem_hereditary_nodup hl'₁
+    have hl'₃ : l'.toFinset = (head :: l).toFinset := by simp [ext_iff, hl'₂]
+    have ⟨head', hhead'₁, hhead'₂⟩ := L₂.exchangeAxiom hl'₁ ih (by
+      rw [← toFinset_card_of_nodup l_nodup, ← toFinset_card_of_nodup l'_nodup, hl'₃]
+      simp [hhead])
+    have : head = head' := by
+      have := nodup_cons.mp (mem_hereditary_nodup hhead'₂)
+      have := (hl'₂ _).mp hhead'₁
+      simp only [toFinset_cons, mem_toFinset, mem_insert] at this
+      tauto
     exact this ▸ hhead'₂
-  . have ⟨l', hl'₁, hl'₂⟩ : ∃ l' ∈ L₁.language, l'.toFinset = (head :: l).toFinset := by
-      sorry
-    have ⟨head', hhead'₁, hhead'₂⟩ := L₁.exchangeAxiom hl'₁ ih sorry
-    have : head = head' := sorry
+  . have ⟨l', hl'₁, hl'₂⟩ := (hL (head :: l).toFinset).mpr ⟨head :: l, by simp [← ext_iff, h]⟩
+    have l'_nodup := mem_hereditary_nodup hl'₁
+    have hl'₃ : l'.toFinset = (head :: l).toFinset := by simp [ext_iff, hl'₂]
+    have ⟨head', hhead'₁, hhead'₂⟩ := L₁.exchangeAxiom hl'₁ ih (by
+      rw [← toFinset_card_of_nodup l_nodup, ← toFinset_card_of_nodup l'_nodup, hl'₃]
+      simp [hhead])
+    have : head = head' := by
+      have := nodup_cons.mp (mem_hereditary_nodup hhead'₂)
+      have := (hl'₂ _).mp hhead'₁
+      simp only [toFinset_cons, mem_toFinset, mem_insert] at this
+      tauto
     exact this ▸ hhead'₂
 
 end GreedoidLanguage

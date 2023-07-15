@@ -50,6 +50,11 @@ noncomputable def toFinsetOfList [Fintype α] (Lang : Language α) [Simple Lang]
     Finset (List α) :=
   Set.toFinset Lang
 
+@[simp]
+theorem mem_toFinsetOfList [Fintype α] {Lang : Language α} [Simple Lang] {l : List α} :
+    l ∈ Lang.toFinsetOfList ↔ l ∈ Lang :=
+  Set.mem_toFinset
+
 end Simple
 
 /-- Normal language contains no loops; every alphabet is in some word in the language. -/
