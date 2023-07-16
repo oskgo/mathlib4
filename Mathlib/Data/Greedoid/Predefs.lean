@@ -180,8 +180,8 @@ theorem fromLanguageToSystem'_exchangeAxiom {L : GreedoidLanguage α} :
 theorem fromLanguageToSystem'_greedoidSystemAxiom {L : GreedoidLanguage α} :
     greedoidSystemAxiom L.fromLanguageToSystem' :=
   ⟨fromLanguageToSystem'_containsEmpty,
-    fromLanguageToSystem'_accessible,
-    fromLanguageToSystem'_exchangeAxiom⟩
+   fromLanguageToSystem'_accessible,
+   fromLanguageToSystem'_exchangeAxiom⟩
 
 theorem fromLanguageToSystem'_eq {L₁ L₂ : GreedoidLanguage α}
   (hL : L₁.fromLanguageToSystem' = L₂.fromLanguageToSystem') :
@@ -217,4 +217,143 @@ theorem fromLanguageToSystem'_eq {L₁ L₂ : GreedoidLanguage α}
       tauto
     exact this ▸ hhead'₂
 
+noncomputable def fromLanguageToSystem (L : GreedoidLanguage α) : GreedoidSystem α :=
+  ⟨L.fromLanguageToSystem',
+   fromLanguageToSystem'_containsEmpty,
+   fromLanguageToSystem'_accessible,
+   fromLanguageToSystem'_exchangeAxiom⟩
+
+theorem fromLanguageToSystem_eq {L₁ L₂ : GreedoidLanguage α}
+  (hL : L₁.fromLanguageToSystem = L₂.fromLanguageToSystem) :
+    L₁ = L₂ := by
+  apply fromLanguageToSystem'_eq
+  simp [fromLanguageToSystem] at hL
+  exact hL
+
 end GreedoidLanguage
+
+namespace GreedoidSystem
+
+variable {α : Type _} [DecidableEq α] [Fintype α]
+variable {S : GreedoidSystem α}
+
+open Nat List Finset Language GreedoidLanguage
+
+def fromSystemToLanguage' (S : GreedoidSystem α) := toHereditaryLanguage S.feasibleSet
+
+theorem fromSystemToLanguage'_nodup {l : List α} (hl : l ∈ S.fromSystemToLanguage') :
+    l.Nodup :=
+  toHereditaryLanguage_nodup hl
+
+theorem fromSystemToLanguage'_containsEmpty :
+    [] ∈ S.fromSystemToLanguage' :=
+  toHereditaryLanguage_containsEmpty
+
+theorem fromSystemToLanguage'_containsPrefix {l₁ l₂ : List α}
+  (hl : l₂ ++ l₁ ∈ S.fromSystemToLanguage') :
+    l₁ ∈ S.fromSystemToLanguage' :=
+  toHereditaryLanguage_containsPrefix hl
+
+theorem fromSystemToLanguage'_containsTail {head : α} {tail : List α}
+  (hl : head :: tail ∈ S.fromSystemToLanguage') :
+    tail ∈ S.fromSystemToLanguage' :=
+  toHereditaryLanguage_containsTail hl
+
+instance (S : GreedoidSystem α) : Hereditary S.fromSystemToLanguage' where
+  nodup := fromSystemToLanguage'_nodup
+  containsEmpty := fromSystemToLanguage'_containsEmpty
+  containsPrefix := fromSystemToLanguage'_containsPrefix
+
+theorem fromSystemToLanguage'_exchangeAxiom
+  {l₁ : List α} (hl₁ : l₁ ∈ S.fromSystemToLanguage')
+  {l₂ : List α} (hl₂ : l₂ ∈ S.fromSystemToLanguage')
+  (hl : l₁.length > l₂.length) :
+    ∃ x ∈ l₁, x :: l₂ ∈ S.fromSystemToLanguage' := by
+  sorry
+
+theorem fromSystemToLanguage'_greedoidLanguageAxiom :
+    greedoidLanguageAxiom S.fromSystemToLanguage' :=
+  ⟨fromSystemToLanguage'_nodup,
+   fromSystemToLanguage'_containsEmpty,
+   fromSystemToLanguage'_containsPrefix,
+   fromSystemToLanguage'_exchangeAxiom⟩
+
+theorem fromSystemToLanguage'_eq {S₁ S₂ : GreedoidSystem α}
+  (hS : S₁.fromSystemToLanguage' = S₂.fromSystemToLanguage') :
+    S₁ = S₂ := by
+  sorry
+
+def fromSystemToLanguage (S : GreedoidSystem α) : GreedoidLanguage α :=
+  ⟨S.fromSystemToLanguage',
+   fromSystemToLanguage'_nodup,
+   fromSystemToLanguage'_containsEmpty,
+   fromSystemToLanguage'_containsPrefix,
+   fromSystemToLanguage'_exchangeAxiom⟩
+
+theorem fromSystemToLanguage_eq {S₁ S₂ : GreedoidSystem α}
+  (hS : S₁.fromSystemToLanguage = S₂.fromSystemToLanguage) :
+    S₁ = S₂ := by
+  apply fromSystemToLanguage'_eq
+  simp [fromSystemToLanguage] at hS
+  exact hS
+
+end GreedoidSystem
+
+namespace Greedoid
+
+variable {α : Type _} [DecidableEq α] [Fintype α]
+variable {L : GreedoidLanguage α}
+variable {S : GreedoidSystem α}
+
+open Nat List Finset GreedoidLanguage GreedoidSystem
+
+@[simp]
+theorem fromSystemToLanguage_fromLanguageToSystem_eq :
+    S.fromSystemToLanguage.fromLanguageToSystem = S := by
+  sorry
+
+@[simp]
+theorem fromLanguageToSystem_fromSystemToLanguage_eq :
+    L.fromLanguageToSystem.fromSystemToLanguage = L := by
+  sorry
+
+def relatedLanguageSystem' (L : GreedoidLanguage α) (S : GreedoidSystem α) :=
+  S.feasibleSet = L.fromLanguageToSystem' ∧ L.language = S.fromSystemToLanguage'
+
+def relatedLanguageSystem (L : GreedoidLanguage α) (S : GreedoidSystem α) :=
+  S = L.fromLanguageToSystem ∧ L = S.fromSystemToLanguage
+
+@[simp]
+theorem relatedLanguageSystem'_iff_relatedLanguageSystem :
+    relatedLanguageSystem' L S ↔ relatedLanguageSystem L S := by
+  sorry
+
+theorem relatedLanguageSystem_eq
+  {L₁ L₂ : GreedoidLanguage α} {S₁ S₂ : GreedoidSystem α}
+  (h₁ : relatedLanguageSystem L₁ S₁)
+  (h₂ : relatedLanguageSystem L₂ S₂) :
+    L₁ = L₂ ↔ S₁ = S₂ :=
+  ⟨fun h => fromSystemToLanguage_eq ((h ▸ h₁.2) ▸ h₂.2),
+   fun h => fromLanguageToSystem_eq ((h ▸ h₁.1) ▸ h₂.1)⟩
+
+theorem relatedLanguageSystem_of_fromLanguageToSystem :
+    relatedLanguageSystem L L.fromLanguageToSystem := by
+  simp [relatedLanguageSystem]
+
+theorem relatedLanguageSystem_of_fromSystemToLanguage :
+    relatedLanguageSystem S.fromSystemToLanguage S := by
+  simp [relatedLanguageSystem]
+
+theorem toFinset_mem_greedoidSystem_of_mem_greedoidLanguage
+  (hrelated : relatedLanguageSystem L S)
+  {l : List α} (hl : l ∈ L.language) :
+    l.toFinset ∈ S.feasibleSet := by
+  sorry
+
+theorem exists_word_mem_greedoidLanguage_of_mem_greedoidSystem
+  (hrelated : relatedLanguageSystem L S)
+  {s : Finset α} (hs : s ∈ S.feasibleSet) :
+    ∃ l ∈ L.language, l.toFinset = s := by
+  sorry
+
+end Greedoid
