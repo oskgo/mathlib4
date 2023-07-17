@@ -11,7 +11,7 @@ namespace ProbabilityTheory
 -- -> expression did not parse correctly for some reason. Add parentheses, check the type of
 -- everything
 
--- typeclass instance problem is stuck, it is often due to metavariables
+-- "typeclass instance problem is stuck, it is often due to metavariables"
 -- -> not enough arguments, add ?_ after the lemma name until goals appear
 -- or specify enough arguments
 
@@ -30,19 +30,19 @@ def expCdf (ℓ : ℝ) (hℓ : 0 < ℓ) : StieltjesFunction :=
     refine fun x y hxy ↦ ?_
     dsimp only
     split_ifs with hx hy h
-    . refine sub_le_sub le_rfl (exp_monotone ?_)
+    · refine sub_le_sub le_rfl (exp_monotone ?_)
       rw [neg_mul, neg_mul]
       refine neg_le_neg (mul_le_mul_of_nonneg_left hxy hℓ.le)
-    . exact absurd (hx.trans hxy) hy
-    . refine sub_nonneg_of_le (exp_le_one_iff.mpr ?_)
+    · exact absurd (hx.trans hxy) hy
+    · refine sub_nonneg_of_le (exp_le_one_iff.mpr ?_)
       rw [neg_mul]
       refine neg_nonpos.mpr (mul_nonneg hℓ.le h)
-    . exact le_rfl
+    · exact le_rfl
   right_continuous' := by
     refine fun x ↦ Continuous.continuousWithinAt ?_
     refine Continuous.if_le ?_ continuous_const continuous_const continuous_id ?_
-    . continuity
-    . rintro x rfl
+    · continuity
+    · rintro x rfl
       simp }
 
 lemma tendsto_expCdf_atBot (ℓ : ℝ) (hℓ : 0 < ℓ) : Tendsto (expCdf ℓ hℓ) atBot (𝓝 0) := by
@@ -61,9 +61,9 @@ lemma tendsto_expCdf_atTop (ℓ : ℝ) (hℓ : 0 < ℓ) : Tendsto (expCdf ℓ h�
     simp [hb]
   rw [← sub_zero 1]
   refine Tendsto.sub ?_ ?_
-  . rw [sub_zero]
+  · rw [sub_zero]
     exact tendsto_const_nhds
-  . refine tendsto_exp_atBot.comp ?_
+  · refine tendsto_exp_atBot.comp ?_
     refine Tendsto.neg_const_mul_atTop ?_ tendsto_id
     linarith
 
@@ -85,10 +85,10 @@ lemma expDistrib_eq_withDensity (ℓ : ℝ) (hℓ : 0 < ℓ) :
   simp only [neg_mul, measurableSet_Iic, withDensity_apply,
     expDistrib, StieltjesFunction.measure_Iic _ (tendsto_expCdf_atBot _ hℓ)]
   rw [← ofReal_integral_eq_lintegral_ofReal]
-  . congr
+  · congr
     rw [sub_zero]
     sorry
-  . sorry
-  . sorry
+  · sorry
+  · sorry
 
 end ProbabilityTheory
