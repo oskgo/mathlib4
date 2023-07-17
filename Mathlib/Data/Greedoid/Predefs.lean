@@ -63,6 +63,14 @@ noncomputable instance [DecidableEq α] [Fintype α] {L : GreedoidLanguage α} :
     Fintype L.language.Elem :=
   fintypeLanguage
 
+noncomputable instance [DecidableEq α] [Fintype α] :
+    Fintype (GreedoidLanguage α) where
+  elems :=
+    @Set.toFinset _
+      {L : GreedoidLanguage α | greedoidLanguageAxiom L.language}
+      ⟨sorry, sorry⟩
+  complete := sorry
+
 end GreedoidLanguage
 
 /-- Set System version of greedoid. -/
