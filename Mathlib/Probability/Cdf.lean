@@ -51,7 +51,7 @@ noncomputable
 def cdf (μ : Measure ℝ) : StieltjesFunction :=
   condCdf ((Measure.dirac Unit.unit).prod μ) Unit.unit
 
-section
+section ExplicitMeasureArg
 variable (μ : Measure ℝ)
 
 /-- The cdf is non-negative. -/
@@ -87,7 +87,7 @@ lemma measure_cdf [IsProbabilityMeasure μ] : (cdf μ).measure = μ := by
   refine Measure.ext_of_Iic (cdf μ).measure μ (fun a ↦ ?_)
   rw [StieltjesFunction.measure_Iic _ (tendsto_cdf_atBot μ), sub_zero, ofReal_cdf]
 
-end
+end ExplicitMeasureArg
 
 lemma cdf_measure (f : StieltjesFunction) (hf0 : Tendsto f atBot (𝓝 0))
     (hf1 : Tendsto f atTop (𝓝 1)) :

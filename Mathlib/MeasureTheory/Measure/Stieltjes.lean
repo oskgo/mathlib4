@@ -622,10 +622,10 @@ lemma eq_of_measure_of_tendsto_atBot (g : StieltjesFunction) {l : ℝ}
   ext x
   have hf := measure_Iic f hfl x
   rw [hfg, measure_Iic g hgl x, ENNReal.ofReal_eq_ofReal_iff, eq_comm] at hf
-  . simpa using hf
-  . rw [sub_nonneg]
+  · simpa using hf
+  · rw [sub_nonneg]
     exact Monotone.le_of_tendsto g.mono hgl x
-  . rw [sub_nonneg]
+  · rw [sub_nonneg]
     exact Monotone.le_of_tendsto f.mono hfl x
 
 lemma eq_of_measure_of_eq (g : StieltjesFunction) {y : ℝ}
@@ -636,18 +636,18 @@ lemma eq_of_measure_of_eq (g : StieltjesFunction) {y : ℝ}
   | inl hxy =>
       have hf := measure_Ioc f x y
       rw [hfg, measure_Ioc g x y, ENNReal.ofReal_eq_ofReal_iff, eq_comm, hy] at hf
-      . simpa using hf
-      . rw [sub_nonneg]
+      · simpa using hf
+      · rw [sub_nonneg]
         exact g.mono hxy
-      . rw [sub_nonneg]
+      · rw [sub_nonneg]
         exact f.mono hxy
   | inr hxy =>
       have hf := measure_Ioc f y x
       rw [hfg, measure_Ioc g y x, ENNReal.ofReal_eq_ofReal_iff, eq_comm, hy] at hf
-      . simpa using hf
-      . rw [sub_nonneg]
+      · simpa using hf
+      · rw [sub_nonneg]
         exact g.mono hxy
-      . rw [sub_nonneg]
+      · rw [sub_nonneg]
         exact f.mono hxy
 
 end StieltjesFunction
