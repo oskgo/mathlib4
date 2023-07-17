@@ -152,8 +152,13 @@ def LevenshteinEstimator [CanonicallyLinearOrderedAddMonoid δ]
     (C : Levenshtein.Cost α β δ) (xs : List α) (ys : List β) :=
   Estimator.fst (levenshtein C xs ys, ys.length) (LevenshteinEstimator' C xs ys)
 
-#synth WellFoundedGT { q : ℕ × ℕ // q ≤ (37, 42) }
+variable [Finite α] [PartialOrder α] in
+#synth WellFoundedLT α
+
+#synth Finite { q : ℕ × ℕ // q ≤ (37, 42) }
+#synth WellFoundedLT { q : ℕ × ℕ // q ≤ (37, 42) }
 #synth WellFoundedGT { q : ℕ // q ≤ 37 }
+#synth WellFoundedGT { q : ℕ × ℕ // q ≤ (37, 42) }
 
 instance
     (C : Levenshtein.Cost α β ℕ) (xs : List α) (ys : List β) :
