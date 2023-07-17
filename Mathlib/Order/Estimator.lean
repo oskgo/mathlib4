@@ -8,6 +8,8 @@ import Mathlib.Init.Data.Bool.Lemmas
 import Mathlib.Algebra.Order.Monoid.Canonical.Defs
 import Mathlib.Algebra.Order.Sub.Prod
 import Mathlib.Data.Nat.Order.Basic
+import Mathlib.Order.LocallyFinite
+import Mathlib.Data.Nat.Interval
 
 /--
 Given `[EstimatorData a ε]`
@@ -31,28 +33,21 @@ class Estimator [Preorder α] (a : α) (ε : Type _) extends EstimatorData a ε 
 
 open EstimatorData
 
--- These typeclasses are satified for the two cases I'm interested in, `ℕ` and `ℕ × ℕ`.
-variable {α : Type _} [AddCommSemigroup α] [PartialOrder α] [ExistsAddOfLE α]
-  [CovariantClass α α (· + ·) (· ≤ ·)] [ContravariantClass α α (· + ·) (· ≤ ·)]
-  [Sub α] [OrderedSub α]
-
-attribute [local instance] WellFoundedLT.toWellFoundedRelation
+attribute [local instance] WellFoundedGT.toWellFoundedRelation
 
 /-- Improve an estimate until it satisfies a predicate, or stop if we reach the exact value. -/
-def Estimator.improveUntil [WellFoundedLT α]
+def Estimator.improveUntil [PartialOrder α] [∀ a : α, WellFoundedGT { x // x ≤ a }]
     (a : α) (p : α → Bool) [Estimator a ε] (e : ε) : Option ε :=
   if p (bound a e) then
     return e
   else
     match improve a e, improve_spec e with
     | none, _ => none
-    | some e', lt =>
-      have : a - bound a e' < a - bound a e :=
-        tsub_lt_tsub_left_of_le (bound_le e') lt
+    | some e', _ =>
       Estimator.improveUntil a p e'
-termination_by Estimator.improveUntil p I e => a - bound a e
+termination_by Estimator.improveUntil p I e => (⟨_, bound_le e⟩ : { x // x ≤ a })
 
-variable [WellFoundedLT α]
+variable [PartialOrder α] [∀ a : α, WellFoundedGT { x // x ≤ a }]
 
 /--
 If `Estimator.improveUntil a p e` returns `some e'`, then `bound a e'` satisfies `p`.
@@ -71,11 +66,41 @@ theorem Estimator.improveUntil_spec
       simp only [Bool.not_eq_true]
       rw [eq] at h
       exact Bool.bool_eq_false h
-    | some e', lt =>
-      have : a - bound a e' < a - bound a e :=
-        tsub_lt_tsub_left_of_le (bound_le e') lt
+    | some e', _ =>
       exact Estimator.improveUntil_spec a p e'
-termination_by Estimator.improveUntil_spec p I e => a - bound a e
+termination_by Estimator.improveUntil_spec p I e => (⟨_, bound_le e⟩ : { x // x ≤ a })
+
+/--
+An estimator for `(a, b)` can be turned into an estimator for `a`,
+simply by repeatedly running `improve` until the first factor "improves".
+With the hypothesis that `>` is well-founded on `{ q // q ≤ (a, b) }` ensures this terminates.
+-/
+structure Estimator.fst [Preorder α] [Preorder β] (p : α × β) (ε : Type _) [Estimator p ε] where
+  inner : ε
+
+instance [PartialOrder α] [DecidableRel ((· : α) < ·)] [PartialOrder β] {a : α} {b : β}
+    (ε : Type _) [Estimator (a, b) ε] [∀ (p : α × β), WellFoundedGT { q // q ≤ p }] :
+    EstimatorData a (Estimator.fst (a, b) ε) where
+  bound e := (bound (a, b) e.inner).1
+  improve e :=
+    let bd := (bound (a, b) e.inner).1
+    Estimator.improveUntil (a, b) (fun p => bd < p.1) e.inner |>.map Estimator.fst.mk
+
+instance [PartialOrder α] [DecidableRel ((· : α) < ·)] [PartialOrder β] {a : α} {b : β}
+    (ε : Type _) [Estimator (a, b) ε] [∀ (p : α × β), WellFoundedGT { q // q ≤ p }] :
+    Estimator a (Estimator.fst (a, b) ε) where
+  bound_le e := (Estimator.bound_le e.inner : bound (a, b) e.inner ≤ (a, b)).1
+  improve_spec e := by
+    let bd := (bound (a, b) e.inner).1
+    have := Estimator.improveUntil_spec (a, b) (fun p => bd < p.1) e.inner
+    revert this
+    simp only [EstimatorData.improve, decide_eq_true_eq]
+    match Estimator.improveUntil (a, b) _ _ with
+    | none =>
+      simp only [Option.map_none']
+      exact fun w =>
+        eq_of_le_of_not_lt (Estimator.bound_le e.inner : bound (a, b) e.inner ≤ (a, b)).1 w
+    | some e' => exact fun w => w
 
 open Estimator
 
