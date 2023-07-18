@@ -1,5 +1,6 @@
 import Mathlib.Data.List.EditDistance.Bounds
 import Mathlib.Order.Estimator
+import Mathlib.Util.Time
 
 theorem List.getElem_mem (L : List α) (i : ℕ) (w : i < L.length) : L[i] ∈ L := by
   simp only [getElem_eq_get]
@@ -74,8 +75,10 @@ theorem List.minimum_of_length_pos_le_getElem {L : List α} (w : i < L.length) :
 
 end
 
-structure LevenshteinEstimator' [CanonicallyLinearOrderedAddMonoid δ]
-    (C : Levenshtein.Cost α β δ) (xs : List α) (ys : List β) where
+variable [CanonicallyLinearOrderedAddMonoid δ]
+    (C : Levenshtein.Cost α β δ) (xs : List α) (ys : List β)
+
+structure LevenshteinEstimator' : Type _ where
   pre_rev : List β
   suff : List β
   split : pre_rev.reverse ++ suff = ys
@@ -86,8 +89,7 @@ structure LevenshteinEstimator' [CanonicallyLinearOrderedAddMonoid δ]
     | [] => (distances.1[0]'(distances.2), ys.length)
     | _ => (List.minimum_of_length_pos distances.2, suff.length)
 
-instance [CanonicallyLinearOrderedAddMonoid δ] (C : Levenshtein.Cost α β δ) (xs : List α) (ys : List β) :
-    EstimatorData (levenshtein C xs ys, ys.length) (LevenshteinEstimator' C xs ys) where
+instance : EstimatorData (Thunk.mk fun _ => (levenshtein C xs ys, ys.length)) (LevenshteinEstimator' C xs ys) where
   bound e := e.bound
   improve e := match e.pre_rev, e.split with
     | [], _ => none
@@ -100,8 +102,7 @@ instance [CanonicallyLinearOrderedAddMonoid δ] (C : Levenshtein.Cost α β δ) 
         bound := _
         bound_eq := rfl }
 
-instance [CanonicallyLinearOrderedAddMonoid δ] (C : Levenshtein.Cost α β δ) (xs : List α) (ys : List β) :
-    Estimator (levenshtein C xs ys, ys.length) (LevenshteinEstimator' C xs ys) where
+instance estimator' : Estimator (Thunk.mk fun _ => (levenshtein C xs ys, ys.length)) (LevenshteinEstimator' C xs ys) where
   bound_le e := match e.pre_rev, e.split, e.bound_eq with
   | [], split, eq => by
     simp only [List.reverse_nil, List.nil_append] at split
@@ -148,20 +149,43 @@ instance [CanonicallyLinearOrderedAddMonoid δ] (C : Levenshtein.Cost α β δ) 
         apply le_suffixLevenshtein_cons_minimum
       · exact Nat.lt.base _
 
-def LevenshteinEstimator [CanonicallyLinearOrderedAddMonoid δ]
-    (C : Levenshtein.Cost α β δ) (xs : List α) (ys : List β) :=
-  Estimator.fst (levenshtein C xs ys, ys.length) (LevenshteinEstimator' C xs ys)
+/-- An estimator for Levenshtein distances. -/
+def LevenshteinEstimator : Type _ :=
+  Estimator.fst (Thunk.mk fun _ => (levenshtein C xs ys, ys.length)) (LevenshteinEstimator' C xs ys)
 
-variable [Finite α] [PartialOrder α] in
-#synth WellFoundedLT α
+instance [∀ a : δ × ℕ, WellFoundedGT { x // x ≤ a }] :
+    Estimator (Thunk.mk fun _ => levenshtein C xs ys) (LevenshteinEstimator C xs ys) :=
+  @instEstimatorFst _ _ _ _ _ _ (Thunk.mk fun _ => _) (Thunk.mk fun _ => _) _ (estimator' C xs ys)
 
-#synth Finite { q : ℕ × ℕ // q ≤ (37, 42) }
-#synth WellFoundedLT { q : ℕ × ℕ // q ≤ (37, 42) }
-#synth WellFoundedGT { q : ℕ // q ≤ 37 }
-#synth WellFoundedGT { q : ℕ × ℕ // q ≤ (37, 42) }
+/-- The trivial estimator for Levenshtein distances. -/
+instance [CanonicallyLinearOrderedAddMonoid δ]
+    (C : Levenshtein.Cost α β δ) (xs : List α) (ys : List β) :
+    Bot (LevenshteinEstimator C xs ys) where
+  bot :=
+  { inner :=
+    { pre_rev := ys.reverse
+      suff := []
+      split := by simp
+      distances_eq := rfl
+      bound_eq := rfl } }
 
-instance
-    (C : Levenshtein.Cost α β ℕ) (xs : List α) (ys : List β) :
-    Estimator (levenshtein C xs ys) (LevenshteinEstimator C xs ys) := by
-  dsimp [LevenshteinEstimator]
-  infer_instance
+@[reducible]
+def EditDistanceQueue (α : Type) [DecidableEq α] : Type _ := EstimatorQueue (List α × List α)
+    (fun ⟨xs, ys⟩ => Thunk.mk fun _ => levenshtein Levenshtein.default xs ys)
+    (fun ⟨xs, ys⟩ => LevenshteinEstimator Levenshtein.default xs ys)
+
+def bar : List ℕ := Id.run do
+  let mut Q : EditDistanceQueue Char := ∅
+  Q := Q.pushAll
+    [("hello".toList, "world".toList),
+      ((" ... ".intercalate <| List.replicate 100 "nothing to see here").toList,
+        (" ... ".intercalate <| List.replicate 100 "another long phrase").toList),
+      ("cat".toList, "hat".toList)]
+  return Q.toListWithPriority.map (·.2)
+
+set_option maxHeartbeats 500 in
+/--
+info: [1, 4, 5]
+-/
+#guard_msgs in
+#eval bar
