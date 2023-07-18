@@ -63,14 +63,6 @@ noncomputable instance [DecidableEq α] [Fintype α] {L : GreedoidLanguage α} :
     Fintype L.language.Elem :=
   fintypeLanguage
 
-noncomputable instance [DecidableEq α] [Fintype α] :
-    Fintype (GreedoidLanguage α) where
-  elems :=
-    @Set.toFinset _
-      {L : GreedoidLanguage α | greedoidLanguageAxiom L.language}
-      ⟨sorry, sorry⟩
-  complete := sorry
-
 end GreedoidLanguage
 
 /-- Set System version of greedoid. -/
@@ -324,6 +316,13 @@ theorem fromSystemToLanguage_fromLanguageToSystem_eq :
 theorem fromLanguageToSystem_fromSystemToLanguage_eq :
     L.fromLanguageToSystem.fromSystemToLanguage = L := by
   sorry
+
+-- TODO: This instance should be under `GreedoidLanguage` namespace.
+instance {α : Type _} [DecidableEq α] [Fintype α] : Fintype (GreedoidLanguage α) :=
+  Fintype.ofBijective GreedoidSystem.fromSystemToLanguage (Function.bijective_iff_has_inverse.mpr
+    ⟨GreedoidLanguage.fromLanguageToSystem, by
+      simp [Function.LeftInverse], by
+      simp [Function.RightInverse, Function.LeftInverse]⟩)
 
 def relatedLanguageSystem' (L : GreedoidLanguage α) (S : GreedoidSystem α) :=
   S.feasibleSet = L.fromLanguageToSystem' ∧ L.language = S.fromSystemToLanguage'
