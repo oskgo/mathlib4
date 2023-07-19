@@ -85,6 +85,7 @@ def isDegLE (e : Expr) : CoreM (Bool × Expr) := do
       | (na, _) => throwError (m!"Expected an inequality of the form\n\n" ++
         f!"  'f.natDegree ≤ d'  or  'f.degree ≤ d',\n\ninstead, {na} appears on the LHS")
     | (na, _)  => throwError m!"Expected an inequality instead of '{na}', '{e}'"
+#check TSyntax
 
 /--
 `DegInfo` is a type whose terms encode the part of the syntax tree of a polynomial that currently
@@ -198,6 +199,194 @@ match pol.numeral? with
       | _ => .err polFun
     -- possibly, all that's left is the case where `pol` is an `fvar` and its `Name` is `.anonymous`
     | _ => .rest
+
+declare_syntax_cat poly
+
+syntax num : poly
+syntax poly "+" poly : poly
+syntax poly "-" poly : poly
+syntax "-" poly : poly
+syntax poly "*" poly : poly
+syntax poly "^" term : poly
+syntax "mymonomial" term : poly
+syntax "(" poly ")" : poly
+syntax "myX" : poly
+syntax "myNC" : poly
+syntax "myIC" : poly
+syntax "myC" : poly
+syntax "myEr" : poly
+syntax "myRe" : poly
+syntax "[poly|" poly "]" : term
+
+open Meta Elab Expr Lean Tactic
+--#check myX
+--#check (poly|myX)
+#check quote
+
+partial
+def toSynPoly1 (pol : Expr) : TermElabM (TSyntax `poly) :=
+match pol.numeral? with
+  -- can I avoid the tri-splitting `n = 0`, `n = 1`, and generic `n`?
+  | some 0 => `(poly| 0)
+  | some 1 => `(poly| 1)
+  | some _ => `(poly| 2)
+  | none => match pol.getAppFnArgs with
+    | (``HAdd.hAdd, #[_, _, _, _, f, g]) => do `(poly| $(← toSynPoly1 f) + $(← toSynPoly1 g))
+    | (``HSub.hSub, #[_, _, _, _, f, g]) => do `(poly| $(← toSynPoly1 f) - $(← toSynPoly1 g))
+    | (``HMul.hMul, #[_, _, _, _, f, g]) => do `(poly| $(← toSynPoly1 f) * $(← toSynPoly1 g))
+    | (``HPow.hPow, #[_, _, _, _, f, n]) => do `(poly| $(← toSynPoly1 f) ^ $(← toSyntax n))
+    | (``Neg.neg,   #[_, _, f]) => do `(poly| - $(← toSynPoly1 f))
+    | (``Polynomial.X, _) => `(poly| myX)
+    | (``Nat.cast, _)        => `(poly| myNC)
+    | (``NatCast.natCast, _) => `(poly| myNC)
+    | (``Int.cast, _)        => `(poly| myIC)
+    | (``IntCast.intCast, _) => `(poly| myIC)
+    | (``FunLike.coe, #[_, _, _, _, polFun, _]) => match polFun.getAppFnArgs with
+      | (``Polynomial.monomial, #[_, _, c]) => do `(poly| mymonomial $(← toSyntax c))
+      | (``Polynomial.C, _) => `(poly| myC)
+      | _ => `(poly| myEr) --.err polFun
+    | _ => `(poly| myRe)
+
+syntax "mymonomial" term : term
+syntax "myX" : term
+syntax "myNC" : term
+syntax "myIC" : term
+syntax "myC" : term
+syntax "myEr" : term
+syntax "myRe" : term
+
+partial
+def toSyn1 (pol : Expr) : TermElabM (TSyntax `term) :=
+match pol.numeral? with
+  -- can I avoid the tri-splitting `n = 0`, `n = 1`, and generic `n`?
+  | some _ => do `(term| $(← toSyntax pol))
+--  | some 1 => `(term| 1)
+--  | some _ => `(term| 2)
+  | none => match pol.getAppFnArgs with
+    | (``HAdd.hAdd, #[_, _, _, _, f, g]) => do `(term| $(← toSyn1 f) + $(← toSyn1 g))
+    | (``HSub.hSub, #[_, _, _, _, f, g]) => do `(term| $(← toSyn1 f) - $(← toSyn1 g))
+    | (``HMul.hMul, #[_, _, _, _, f, g]) => do `(term| $(← toSyn1 f) * $(← toSyn1 g))
+    | (``HPow.hPow, #[_, _, _, _, f, n]) => do `(term| $(← toSyn1 f) ^ $(← toSyntax n))
+    | (``Neg.neg,   #[_, _, f]) => do `(term| - $(← toSyn1 f))
+    | (``Polynomial.X, _) => `(term| myX)
+    | (``Nat.cast, _)        => `(term| myNC)
+    | (``NatCast.natCast, _) => `(term| myNC)
+    | (``Int.cast, _)        => `(term| myIC)
+    | (``IntCast.intCast, _) => `(term| myIC)
+    | (``FunLike.coe, #[_, _, _, _, polFun, _]) => match polFun.getAppFnArgs with
+      | (``Polynomial.monomial, #[_, _, c]) => do `(term| mymonomial $(← toSyntax c))
+      | (``Polynomial.C, _) => `(term| myC)
+      | _ => `(term| myEr) --.err polFun
+    | _ => `(term| myRe)
+
+partial
+def short (pol : Expr) (mv : MVarId) (π : Name × Name → Name) : MetaM (List (Expr × MVarId)) := do
+let (fg, names) := match pol.numeral? with
+-- can I avoid the tri-splitting `n = 0`, `n = 1`, and generic `n`?
+| some 0 => ([], (``natDegree_zero_le, ``degree_zero_le))
+| some 1 => ([], (``natDegree_one_le, ``degree_one_le))
+| some _ => ([], (``natDegree_nat_cast_le, ``degree_nat_cast_le))
+| none => match pol.getAppFnArgs with
+  | (`HAdd.hAdd, #[_, _, _, _, f, g]) => ([f, g], (``natDegree_add_le_of_le, ``degree_add_le_of_le))
+  | (`HSub.hSub, #[_, _, _, _, f, g]) => ([f, g], (``natDegree_sub_le_of_le, ``degree_sub_le_of_le))
+  | (`HMul.hMul, #[_, _, _, _, f, g]) => ([f, g], (``natDegree_mul_le_of_le, ``degree_mul_le_of_le))
+  | (`HPow.hPow, #[_, _, _, _, f, _]) => ([f],    (``natDegree_pow_le_of_le, ``degree_pow_le_of_le))
+  | (`Neg.neg,   #[_, _, f])          => ([f],    (``natDegree_neg_le_of_le, ``degree_neg_le_of_le))
+  | (`Polynomial.X, _)                => ([],     (``natDegree_X_le,         ``degree_X_le))
+  | (`Nat.cast, _)                    => ([],     (``natDegree_nat_cast_le, ``degree_nat_cast_le))
+  | (`NatCast.natCast, _)             => ([],     (``natDegree_nat_cast_le, ``degree_nat_cast_le))
+  | (`Int.cast, _)                    => ([],     (``natDegree_int_cast_le, ``degree_int_cast_le))
+  | (`IntCast.intCast, _)             => ([],     (``natDegree_int_cast_le, ``degree_int_cast_le))
+  | (`FunLike.coe, #[_, _, _, _, polFun, _]) => match polFun.getAppFnArgs with
+    | (`Polynomial.monomial, #[_, _, _]) => ([], (``natDegree_monomial_le, ``degree_monomial_le))
+    | (`Polynomial.C, _) => ([], (``natDegree_C_le, ``degree_C_le))
+    | _ => ([polFun], (.anonymous, .anonymous)) --throwError "how did we get here?"
+  | _ => ([], (``le_rfl, ``le_rfl))
+return (← (fg.zip (← mv.applyConst (π names))).mapM fun (p, m) => short p m π).join
+
+/-
+def toNN : Name → Name × Name
+  | rest     => (``le_rfl, ``le_rfl)
+  | X        => (``natDegree_X_le,         ``degree_X_le)
+  | natCast  => (``natDegree_nat_cast_le,  ``degree_nat_cast_le)
+  | intCast  => (``natDegree_int_cast_le,  ``degree_int_cast_le)
+  | ofNat0   => (``natDegree_zero_le,      ``degree_zero_le)
+  | ofNat1   => (``natDegree_one_le,       ``degree_one_le)
+  | ofNatN   => (``natDegree_nat_cast_le,  ``degree_nat_cast_le)
+  | C        => (``natDegree_C_le,         ``degree_C_le)
+  | monomial => (``natDegree_monomial_le,  ``degree_monomial_le)
+  | neg ..   => (``natDegree_neg_le_of_le, ``degree_neg_le_of_le)
+  | add ..   => (``natDegree_add_le_of_le, ``degree_add_le_of_le)
+  | sub ..   => (``natDegree_sub_le_of_le, ``degree_sub_le_of_le)
+  | mul ..   => (``natDegree_mul_le_of_le, ``degree_mul_le_of_le)
+  | pow ..   => (``natDegree_pow_le_of_le, ``degree_pow_le_of_le)
+  | err ..   => (.anonymous, .anonymous)
+-/
+
+
+example [Ring R] {n : ℤ} : degree (C (Int.cast n) + 4 + 3 - 3 + X ^ 2 - monomial 2 10 : R[X]) ≤ 2 := by
+  apply le_trans
+  run_tac do
+    let (isNatDeg?, p) := ← isDegLE (← getMainTarget)
+    short p (← getMainGoal) (if isNatDeg? then Prod.fst else Prod.snd)
+  norm_num
+
+
+
+partial
+def ta (mv : MVarId) (ts : TSyntax `term) : MetaM (List MVarId) := do
+let lms := ← match ts with
+  | `(term| $a + $b) => do
+    logInfo "+"
+    return (← mv.applyConst ``natDegree_add_le_of_le).zip [a, b]
+  | `(term| $a - $b) => do
+    logInfo "-"
+    return (← mv.applyConst ``natDegree_sub_le_of_le).zip [a, b]
+  | `(term| $a * $b) => do
+    logInfo "*"
+    pure []
+  | _ =>
+    return (← mv.applyConst ``natDegree_nat_cast_le).zip []
+return (← lms.mapM fun (m, s) => ta m s).join
+--    pure [(mv, ts)]
+
+
+example {n : ℤ} : natDegree (4 + 3 - 3 : ℤ[X]) ≤ 2 := by
+  apply le_trans
+--/-
+  run_tac do
+    let gs := ← getGoals
+    let (_, p) := ← isDegLE (← getMainTarget)
+--    let s := ← toSyntax p
+    let s := ← toSyn1 p
+    dbg_trace s
+    let ng := ← ta (← getMainGoal) s
+    setGoals (gs ++ ng)
+    dbg_trace ng.length
+    --let synp := ← toSyn1 p
+    --let _ := ← evalTactic (← `(tactic| have : $synp = 0))
+    --logInfo m!"{synp}"
+
+--/
+  norm_num
+--  apply natDegree_add_le_of_le
+--  apply natDegree_add_le_of_le
+--  apply natDegree_nat_cast_le
+--  apply natDegree_nat_cast_le
+--  norm_num
+  --rfl
+  --sorry
+
+partial
+def toSyn (pol : Expr) : CoreM (TSyntax `poly) :=
+match pol.getAppFnArgs with
+  | (``HAdd.hAdd, #[_, _, _, _, f, g]) => do
+    let fs := ← toSyn f
+    let gs := ← toSyn g
+    `(poly| $fs + $gs)
+  | _ => sorry
+
+
 
 /-- `cDegCore (di, mv) π` takes as input
 *  a pair consisting of `di : DegInfo` and `mv : MVarId`;
