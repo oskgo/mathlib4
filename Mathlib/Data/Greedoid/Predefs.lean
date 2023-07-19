@@ -269,7 +269,20 @@ theorem fromSystemToLanguage'_exchangeAxiom
   {l₂ : List α} (hl₂ : l₂ ∈ S.fromSystemToLanguage')
   (hl : l₁.length > l₂.length) :
     ∃ x ∈ l₁, x :: l₂ ∈ S.fromSystemToLanguage' := by
-  sorry
+  simp [fromSystemToLanguage', toHereditaryLanguage] at *
+  rw [Set.mem_def] at hl₁ hl₂
+  have ⟨x, hx₁, hx₂⟩ := S.exchangeAxiom (hl₁.2 (suffix_refl l₁)) (hl₂.2 (suffix_refl l₂))
+    ((toFinset_card_of_nodup hl₁.1) ▸ (toFinset_card_of_nodup hl₂.1) ▸ hl)
+  simp only [mem_sdiff, mem_toFinset] at hx₁
+  exists x
+  rw [Set.mem_def]
+  simp only [hx₁, nodup_cons, not_false_eq_true, hl₂, true_and]
+  intro l' hl'
+  rw [suffix_cons_iff] at hl'
+  apply hl'.elim _ (fun h => hl₂.2 h)
+  intro hl'
+  rw [union_comm, ← insert_eq] at hx₂
+  simp only [hl', toFinset_cons, mem_toFinset, hx₂]
 
 theorem fromSystemToLanguage'_greedoidLanguageAxiom :
     greedoidLanguageAxiom S.fromSystemToLanguage' :=
@@ -281,7 +294,14 @@ theorem fromSystemToLanguage'_greedoidLanguageAxiom :
 theorem fromSystemToLanguage'_eq {S₁ S₂ : GreedoidSystem α}
   (hS : S₁.fromSystemToLanguage' = S₂.fromSystemToLanguage') :
     S₁ = S₂ := by
-  sorry
+  simp [fromSystemToLanguage', toHereditaryLanguage] at hS
+  rw [Set.ext_iff] at hS
+  simp only [Set.mem_def, and_congr_right_iff] at hS
+  apply GreedoidSystem.eq_of_veq
+  ext s
+  constructor <;> intro h
+  . sorry
+  . sorry
 
 def fromSystemToLanguage (S : GreedoidSystem α) : GreedoidLanguage α :=
   ⟨S.fromSystemToLanguage',
