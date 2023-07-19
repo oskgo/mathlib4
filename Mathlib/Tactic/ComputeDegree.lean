@@ -247,21 +247,26 @@ match pol.numeral? with
       | _ => `(poly| myEr) --.err polFun
     | _ => `(poly| myRe)
 
-syntax "mymonomial" term : term
+syntax "mymo" term : term
 syntax "myX" : term
 syntax "myNC" : term
 syntax "myIC" : term
 syntax "myC" : term
-syntax "myEr" : term
+syntax "myEr" term : term
 syntax "myRe" : term
+--#synth Add (TSyntax `term)
+#check getMainGoal
+
+variable (a : TSyntax `term)
+--#eval a + a
 
 partial
 def toSyn1 (pol : Expr) : TermElabM (TSyntax `term) :=
 match pol.numeral? with
   -- can I avoid the tri-splitting `n = 0`, `n = 1`, and generic `n`?
+  | some 0 => `(term| 0)
+  | some 1 => `(term| 1)
   | some _ => do `(term| $(← toSyntax pol))
---  | some 1 => `(term| 1)
---  | some _ => `(term| 2)
   | none => match pol.getAppFnArgs with
     | (``HAdd.hAdd, #[_, _, _, _, f, g]) => do `(term| $(← toSyn1 f) + $(← toSyn1 g))
     | (``HSub.hSub, #[_, _, _, _, f, g]) => do `(term| $(← toSyn1 f) - $(← toSyn1 g))
@@ -274,9 +279,9 @@ match pol.numeral? with
     | (``Int.cast, _)        => `(term| myIC)
     | (``IntCast.intCast, _) => `(term| myIC)
     | (``FunLike.coe, #[_, _, _, _, polFun, _]) => match polFun.getAppFnArgs with
-      | (``Polynomial.monomial, #[_, _, c]) => do `(term| mymonomial $(← toSyntax c))
+      | (``Polynomial.monomial, #[_, _, c]) => do `(term| mymo $(← toSyntax c))
       | (``Polynomial.C, _) => `(term| myC)
-      | _ => `(term| myEr) --.err polFun
+      | _ => do `(term| myEr $(← toSyntax polFun)) --.err polFun
     | _ => `(term| myRe)
 
 partial
@@ -332,37 +337,72 @@ example [Ring R] {n : ℤ} : degree (C (Int.cast n) + 4 + 3 - 3 + X ^ 2 - monomi
   norm_num
 
 
-
 partial
-def ta (mv : MVarId) (ts : TSyntax `term) : MetaM (List MVarId) := do
-let lms := ← match ts with
-  | `(term| $a + $b) => do
-    logInfo "+"
-    return (← mv.applyConst ``natDegree_add_le_of_le).zip [a, b]
-  | `(term| $a - $b) => do
-    logInfo "-"
-    return (← mv.applyConst ``natDegree_sub_le_of_le).zip [a, b]
-  | `(term| $a * $b) => do
-    logInfo "*"
-    pure []
-  | _ =>
-    return (← mv.applyConst ``natDegree_nat_cast_le).zip []
+def ta (mv : MVarId) (ts : TSyntax `term) : TacticM (List MVarId) := do
+let (na, fg) := ← match ts with
+  | `(term| $a + $b) => do logInfo "+";  return (``natDegree_add_le_of_le, [a, b])
+  | `(term| $a - $b) => do logInfo "-";  return (``natDegree_sub_le_of_le, [a, b])
+  | `(term| $a * $b) => do logInfo "*";  return (``natDegree_mul_le_of_le, [a, b])
+  | `(term| $a ^ $_) => do logInfo "^";  return (``natDegree_pow_le_of_le, [a])
+  | `(term| mymo $b) => do logInfo "m";  return (``natDegree_monomial_le, [b])
+  | `(term| myX)     => do logInfo "X";  return (``natDegree_X_le, [])
+  | `(term| myNC)    => do logInfo "NC"; return (``natDegree_nat_cast_le, [])
+  | `(term| myIC)    => do logInfo "IC"; return (``natDegree_int_cast_le, [])
+  | `(term| myC)     => do logInfo "C";  return (``natDegree_C_le, [])
+  | `(term| myEr $a) => do logInfo "Er"; throwError m!"{← elabTerm a none}"
+  | `(term| myRe $_) => do logInfo "Re"; return (``le_rfl, [])
+  | `(term| 0)       => do logInfo "0";  return (``natDegree_zero_le, [])
+  | `(term| 1)       => do logInfo "1";  return (``natDegree_one_le, [])
+  | `(term| $a)      => do logInfo m!"{← elabTerm a (some (.const ``Nat []))}"; return (``natDegree_int_cast_le, [])
+--  | _ => do logInfo "oh no!"; return (``natDegree_nat_cast_le, [])
+let lms := (← mv.applyConst na).zip fg
 return (← lms.mapM fun (m, s) => ta m s).join
 --    pure [(mv, ts)]
 
+noncomputable def ouch [Semiring R] := Polynomial.C (R := R)
 
-example {n : ℤ} : natDegree (4 + 3 - 3 : ℤ[X]) ≤ 2 := by
+example {n : ℤ} : natDegree ((ouch 3) * 1 * 0 * 40 * C 6 + Int.cast n : ℤ[X]) ≤ 5 := by
+  apply le_trans
+--  apply natDegree_int_cast_le
+  run_tac do
+    let (_, p) := ← isDegLE (← getMainTarget)
+    let s := ← toSyn1 p
+    logInfo m!"This is s: {s}"
+    let _ := ← ta (← getMainGoal) s
+    setGoals (← getUnsolvedGoals)
+  norm_num
+
+
+/-- Return `a + b` using a heterogeneous `+`. This method assumes `a` and `b` have the same type. -/
+def mkMax (a b : Expr) : MetaM Expr := mkAppM ``max #[a, b]
+
+partial
+def deg (ts : TSyntax `term) : TacticM Expr := do
+match ts with
+  | `(term| $a + $b) => do logInfo "+"; mkMax (← deg a) (← deg b)
+  | `(term| $a - $b) => do logInfo "-"; mkMax (← deg a) (← deg b)
+  | `(term| $a * $b) => do logInfo "*"; mkAdd (← deg a) (← deg b)
+  | `(term| $a ^ $b) => do logInfo "^"; mkMul (← deg b) (← deg a)
+  | `(term| mymo $b) => do logInfo "m"; elabTerm b (some (.const ``Nat []))
+  | `(term| myX)     => do logInfo "X"; return mkNatLit 1
+  | _ => return mkNatLit 0
+
+
+
+
+example {n : ℕ} {z : ℤ} : natDegree (0 + 1 * Nat.cast n + Int.cast z + 4 + 3 - 3 + X ^ 2 + monomial 4 6 + C 4 * X ^ 5 : ℤ[X]) ≤ 5 := by
   apply le_trans
 --/-
   run_tac do
-    let gs := ← getGoals
+    --let gs := ← getGoals
     let (_, p) := ← isDegLE (← getMainTarget)
 --    let s := ← toSyntax p
     let s := ← toSyn1 p
-    dbg_trace s
-    let ng := ← ta (← getMainGoal) s
-    setGoals (gs ++ ng)
-    dbg_trace ng.length
+--    logInfo m!"The guessed degree is: {← deg s}"
+    logInfo s
+    let _ := ← ta (← getMainGoal) s
+    setGoals (← getUnsolvedGoals)
+--    dbg_trace ng.length
     --let synp := ← toSyn1 p
     --let _ := ← evalTactic (← `(tactic| have : $synp = 0))
     --logInfo m!"{synp}"
