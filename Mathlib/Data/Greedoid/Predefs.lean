@@ -330,9 +330,10 @@ open Nat List Finset GreedoidLanguage GreedoidSystem
 @[simp]
 theorem fromSystemToLanguage_fromLanguageToSystem_eq :
     S.fromSystemToLanguage.fromLanguageToSystem = S := by
-  simp [fromLanguageToSystem, fromSystemToLanguage, fromLanguageToSystem', fromSystemToLanguage']
+  simp only [fromLanguageToSystem, fromLanguageToSystem']
+  simp only [fromSystemToLanguage, fromSystemToLanguage']
   apply GreedoidSystem.eq_of_veq
-  simp [Language.toAccessibleSystem, Language.toFinsetOfList]
+  simp only [Language.toAccessibleSystem, Language.toFinsetOfList]
   ext s
   constructor <;> intro h
   . simp only [mem_image, Set.mem_toFinset] at h
@@ -340,7 +341,7 @@ theorem fromSystemToLanguage_fromLanguageToSystem_eq :
     rw [← ha₂]
     simp only [toHereditaryLanguage] at ha₁
     rw [Set.mem_def] at ha₁
-    exact ha₁.2 (suffix_rfl)
+    exact ha₁.2 suffix_rfl
   . simp only [mem_image, Set.mem_toFinset]
     apply induction_on_accessible h
     . exists []
