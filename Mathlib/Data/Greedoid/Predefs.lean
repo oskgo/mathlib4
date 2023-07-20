@@ -330,7 +330,39 @@ open Nat List Finset GreedoidLanguage GreedoidSystem
 @[simp]
 theorem fromSystemToLanguage_fromLanguageToSystem_eq :
     S.fromSystemToLanguage.fromLanguageToSystem = S := by
-  sorry
+  simp [fromLanguageToSystem, fromSystemToLanguage, fromLanguageToSystem', fromSystemToLanguage']
+  apply GreedoidSystem.eq_of_veq
+  simp [Language.toAccessibleSystem, Language.toFinsetOfList]
+  ext s
+  constructor <;> intro h
+  . simp only [mem_image, Set.mem_toFinset] at h
+    let ⟨a, ha₁, ha₂⟩ := h; clear h
+    rw [← ha₂]
+    simp only [toHereditaryLanguage] at ha₁
+    rw [Set.mem_def] at ha₁
+    exact ha₁.2 (suffix_rfl)
+  . simp only [mem_image, Set.mem_toFinset]
+    apply induction_on_accessible h
+    . exists []
+      exact ⟨toHereditaryLanguage_containsEmpty, rfl⟩
+    . rintro a s ha hs₁ hs₂ ⟨l, ih₁, ih₂⟩
+      exists a :: l
+      constructor
+      . simp only [toHereditaryLanguage, Set.mem_toFinset, Set.mem_def] at *
+        rw [← ih₂] at ha hs₁ hs₂; clear ih₂
+        rw [mem_toFinset] at ha
+        simp only [nodup_cons, ha, true_and, ih₁.1]
+        intro l' hl'
+        rw [suffix_cons_iff] at hl'
+        apply hl'.elim <;> intro hl'
+        . rw [hl']
+          simp only [toFinset_cons, mem_toFinset]
+          rw [union_comm, ← insert_eq] at hs₂
+          exact hs₂
+        . exact ih₁.2 hl'
+      . rw [← ih₂]
+        simp only [toFinset_cons, mem_toFinset]
+        rw [union_comm, ← insert_eq]
 
 @[simp]
 theorem fromLanguageToSystem_fromSystemToLanguage_eq :
