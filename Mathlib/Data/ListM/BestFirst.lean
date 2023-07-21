@@ -66,24 +66,24 @@ partial def Queue.toListM [Monad m] [Queue m α Q] (q : Q) : ListM m α :=
 def Queue.toList [Monad m] [Queue m α Q] (q : Q) : m (List α) :=
   ListM.force (Queue.toListM q)
 
-set_option linter.unusedVariables false in
-/--
-If we can view a type `Q` as a monadic priority queue of `α × β`,
-and we have a monadic function `f : β → m α`
-that can "reconstruct" the second elements of such pairs,
-then this wrapper can be viewed as a monadic priority queue of `β`.
+-- set_option linter.unusedVariables false in
+-- /--
+-- If we can view a type `Q` as a monadic priority queue of `α × β`,
+-- and we have a monadic function `f : β → m α`
+-- that can "reconstruct" the second elements of such pairs,
+-- then this wrapper can be viewed as a monadic priority queue of `β`.
 
-(The "reconstructable" value comes first in the pair because we'll often be sorting by it.)
--/
-def Queue.snd {m : Type _ → Type _} (f : α → m β) (Q : Type _) : Type := Q
+-- (The "reconstructable" value comes first in the pair because we'll often be sorting by it.)
+-- -/
+-- def Queue.snd {m : Type _ → Type _} (f : α → m β) (Q : Type _) : Type := Q
 
-instance [Monad m] {α β} {f : β → m α} [Queue m (α × β) Q] : Queue m β (Queue.snd f Q) where
-  empty := (Queue.empty : m Q)
-  push q b := do (Queue.push q (← f b, b) : m Q)
-  pop (q : Q) := do
-    match ← Queue.pop q with
-    | none => pure none
-    | some ((_, b), q) => pure (some (b, q))
+-- instance [Monad m] {α β} {f : β → m α} [Queue m (α × β) Q] : Queue m β (Queue.snd f Q) where
+--   empty := (Queue.empty : m Q)
+--   push q b := do (Queue.push q (← f b, b) : m Q)
+--   pop (q : Q) := do
+--     match ← Queue.pop q with
+--     | none => pure none
+--     | some ((_, b), q) => pure (some (b, q))
 
 /--
 View an `RBMap α β compare` as a `Queue` of `α × β`,

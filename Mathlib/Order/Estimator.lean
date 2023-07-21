@@ -125,7 +125,7 @@ When adding elements we place a pair in the first place such that the estimates 
 When removing elements we recursively improve the estimates to be sure that the element we return
 has minimal priority.
 -/
-def EstimatorQueue (β : Type _) (prio : β → Thunk ℕ) (ε : β → Type _) : Type _ :=
+def EstimatorQueue (β : Type u) (prio : β → Thunk ℕ) (ε : β → Type u) : Type _ :=
   List (Σ b, ε b)
 
 instance : EmptyCollection (EstimatorQueue β p ε) := ⟨[]⟩
@@ -133,7 +133,7 @@ instance : Inhabited (EstimatorQueue β p ε) := ⟨∅⟩
 
 namespace EstimatorQueue
 
-variable {prio : β → Thunk ℕ} {ε : β → Type _} [∀ b, Estimator (prio b) (ε b)] [∀ b, Bot (ε b)]
+variable {prio : β → Thunk ℕ} {ε : β → Type u} [∀ b, Estimator (prio b) (ε b)] [∀ b, Bot (ε b)]
 
 /--
 Add a pair, consisting of an element and an estimate of its priority, to an estimator queue,
@@ -164,31 +164,37 @@ If it succeeds, we swap the order of the first two elements, and try again.
 We could give a termination proof, based on the sum of the estimates,
 but don't for now.
 -/
-partial def popWithPriority (Q : EstimatorQueue β prio ε) :
-    Option (β × ℕ) × EstimatorQueue β prio ε :=
+partial def popWithBound (Q : EstimatorQueue β prio ε) :
+    Option (((b : β) × ε b) × EstimatorQueue β prio ε) :=
   match Q with
-  | [] => (none, [])
-  | [⟨b, e⟩] => ((b, bound (prio b) e), [])
+  | [] => none
+  | [⟨b, e⟩] => some (⟨b, e⟩, [])
   | ⟨b₁, e₁⟩ :: ⟨b₂, e₂⟩ :: (t : EstimatorQueue β prio ε) =>
       match improveUntil (prio b₁) (bound (prio b₂) e₂ < ·) e₁ with
-      | none => ((b₁, bound (prio b₁) e₁), ⟨b₂, e₂⟩ :: t)
-      | some e₁' => EstimatorQueue.popWithPriority (⟨b₂, e₂⟩ :: t.push b₁ e₁')
+      | none => some (⟨b₁, e₁⟩, ⟨b₂, e₂⟩ :: t)
+      | some e₁' => EstimatorQueue.popWithBound (⟨b₂, e₂⟩ :: t.push b₁ e₁')
+
+partial def popWithPriority (Q : EstimatorQueue β prio ε) :
+    Option ((β × ℕ) × EstimatorQueue β prio ε) :=
+  match Q.popWithBound with
+  | none => none
+  | some (⟨b, e⟩, Q') => some (⟨b, bound (prio b) e⟩, Q')
 
 /--
 Assuming the elements in the estimator queue have non-decreasing bounds,
 pop off the element with the lowest priority.
 -/
-def pop (Q : EstimatorQueue β prio ε) : Option β × EstimatorQueue β prio ε :=
-  match Q.popWithPriority with
-  | (none, Q) => (none, Q)
-  | (some (b, _), Q) => (some b, Q)
+def pop (Q : EstimatorQueue β prio ε) : Option (β × EstimatorQueue β prio ε) :=
+  match Q.popWithBound with
+  | none => none
+  | some (⟨b, _⟩, Q') => some (b, Q')
 
 partial def toListWithPriority (Q : EstimatorQueue β prio ε) : List (β × ℕ) :=
   match Q.popWithPriority with
-  | (none, _) => []
-  | (some p, Q) => p :: Q.toListWithPriority
+  | none => []
+  | some (p, Q) => p :: Q.toListWithPriority
 
 partial def toList (Q : EstimatorQueue β prio ε) : List β :=
   match Q.pop with
-  | (none, _) => []
-  | (some b, Q) => b :: Q.toList
+  | none => []
+  | some (b, Q) => b :: Q.toList
