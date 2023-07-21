@@ -298,8 +298,7 @@ theorem fromSystemToLanguage'_eq {S₁ S₂ : GreedoidSystem α}
   rw [Set.ext_iff] at hS
   simp only [Set.mem_def, and_congr_right_iff] at hS
   apply GreedoidSystem.eq_of_veq
-  ext s
-  constructor <;> intro h
+  ext s; constructor <;> intro hs₁
   . sorry
   . sorry
 
@@ -368,7 +367,16 @@ theorem fromSystemToLanguage_fromLanguageToSystem_eq :
 @[simp]
 theorem fromLanguageToSystem_fromSystemToLanguage_eq :
     L.fromLanguageToSystem.fromSystemToLanguage = L := by
-  sorry
+  simp only [fromLanguageToSystem, fromSystemToLanguage]
+  simp only [fromSystemToLanguage', fromLanguageToSystem']
+  apply GreedoidLanguage.eq_of_veq
+  simp only [toHereditaryLanguage, Language.toAccessibleSystem]
+  ext l
+  simp only [mem_image, Language.mem_toFinsetOfList]
+  rw [Set.mem_def]
+  constructor <;> intro h
+  . sorry
+  . sorry
 
 -- TODO: This instance should be under `GreedoidLanguage` namespace.
 instance {α : Type _} [DecidableEq α] [Fintype α] : Fintype (GreedoidLanguage α) :=
@@ -386,7 +394,15 @@ def relatedLanguageSystem (L : GreedoidLanguage α) (S : GreedoidSystem α) :=
 @[simp]
 theorem relatedLanguageSystem'_iff_relatedLanguageSystem :
     relatedLanguageSystem' L S ↔ relatedLanguageSystem L S := by
-  sorry
+  simp only [relatedLanguageSystem, fromLanguageToSystem, fromSystemToLanguage]
+  simp only [relatedLanguageSystem', fromLanguageToSystem', fromSystemToLanguage']
+  constructor <;> intro h <;> constructor
+  . apply GreedoidSystem.eq_of_veq
+    exact h.1
+  . apply GreedoidLanguage.eq_of_veq
+    exact h.2
+  . rw [h.1]
+  . rw [h.2]
 
 theorem relatedLanguageSystem_eq
   {L₁ L₂ : GreedoidLanguage α} {S₁ S₂ : GreedoidSystem α}
