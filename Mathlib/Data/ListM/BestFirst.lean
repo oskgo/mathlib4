@@ -29,24 +29,61 @@ Options:
 open Std
 
 /--
-View a type `Q` as a queue of `α`.
+View a type `Q` as a monadic priority queue of `α`.
 
 We can push an element on to the queue or pop an element off.
 No guarantees about the order is implied
 (or indeed any relation between pushed and popped elements).
 -/
 -- If this proves useful elsewhere it can be moved up the import hierarchy.
-class Queue (α : outParam (Type u)) (Q : Type u) where
-  empty : Q
-  push : Q → α → Q
-  pop : Q → Option (α × Q)
+class Queue (m : Type u → Type u) (α : outParam (Type u)) (Q : Type u) where
+  empty : m Q
+  push : Q → α → m Q
+  pop : Q → m (Option (α × Q))
 
-instance (α : Type _) : Queue α (List α) where
-  empty := []
-  push Q a := a :: Q
+instance [Monad m] [MonadLift m n] [Queue m α Q] : Queue n α Q where
+  empty := (Queue.empty : m Q)
+  push q a := (Queue.push q a : m Q)
+  pop q := (Queue.pop q : m _)
+
+instance [Monad m] (α : Type _) : Queue m α (List α) where
+  empty := pure []
+  push Q a := pure (a :: Q)
   pop := fun
-  | [] => none
-  | h :: t => some (h, t)
+  | [] => pure none
+  | h :: t => pure (some (h, t))
+
+def Queue.pushAll [Monad m] [Queue m α Q] (q : Q) (l : List α) : m Q :=
+  l.foldlM (init := q) fun q' a => Queue.push q' a
+
+/-- Read a queue as a lazy list. -/
+partial def Queue.toListM [Monad m] [Queue m α Q] (q : Q) : ListM m α :=
+  .squash do
+    match ← Queue.pop q with
+    | none => pure .nil
+    | some (a, q') => pure <| ListM.cons' a (Queue.toListM q')
+
+def Queue.toList [Monad m] [Queue m α Q] (q : Q) : m (List α) :=
+  ListM.force (Queue.toListM q)
+
+set_option linter.unusedVariables false in
+/--
+If we can view a type `Q` as a monadic priority queue of `α × β`,
+and we have a monadic function `f : β → m α`
+that can "reconstruct" the second elements of such pairs,
+then this wrapper can be viewed as a monadic priority queue of `β`.
+
+(The "reconstructable" value comes first in the pair because we'll often be sorting by it.)
+-/
+def Queue.snd {m : Type _ → Type _} (f : α → m β) (Q : Type _) : Type := Q
+
+instance [Monad m] {α β} {f : β → m α} [Queue m (α × β) Q] : Queue m β (Queue.snd f Q) where
+  empty := (Queue.empty : m Q)
+  push q b := do (Queue.push q (← f b, b) : m Q)
+  pop (q : Q) := do
+    match ← Queue.pop q with
+    | none => pure none
+    | some ((_, b), q) => pure (some (b, q))
 
 /--
 View an `RBMap α β compare` as a `Queue` of `α × β`,
@@ -56,21 +93,21 @@ the pair with largest `α` component is discarded.
 
 Note that enqueuing multiple elements with the same first component will discard the earlier ones.
 -/
-def rbMapQueue (α β : Type u) [Ord α] (bound : Option Nat := none) :
-    Queue (α × β) (RBMap α β compare) where
-  empty := ∅
+def rbMapQueue (m : Type u → Type u) [Monad m] (α β : Type u) [Ord α] (bound : Option Nat := none) :
+    Queue m (α × β) (RBMap α β compare) where
+  empty := pure ∅
   push Q := fun ⟨a, b⟩ =>
     let R := Q.insert a b
     match bound with
-    | none => R
-    | some b => if R.size ≤ b then R else match R.max with
+    | none => pure R
+    | some b => if R.size ≤ b then pure R else match R.max with
       | none => unreachable!
-      | some (a', _) => R.erase a'
+      | some (a', _) => pure (R.erase a')
   pop Q := match Q.min with
-  | none => none
-  | some (a, b) => some ((a, b), Q.erase a)
+  | none => pure none
+  | some (a, b) => pure (some ((a, b), Q.erase a))
 
-variable {α : Type u} [Monad m] [Alternative m]
+variable {α : Type u} {m : Type u → Type u} [Monad m] [Alternative m]
 
 open ListM Queue
 
@@ -82,15 +119,16 @@ We remove the next element from the list contained in the best triple
 enqueue it and return it.
 -/
 -- The return type has `× List α` rather than just `× Option α` so `bestFirstSearch` can use `fixl`.
-def bestFirstSearchAux {Q : Type u} [Queue (α × (Nat × ListM m α)) Q]
+-- The list has length at most one.
+def bestFirstSearchAux [Queue m (α × (Nat × ListM m α)) Q]
     (f : Nat → α → ListM m α) (s : Q) : m (Q × List α) := do
-  match Queue.pop s with
+  match ← Queue.pop s with
   | none => failure
   | some ((a, (n, L)), s') =>
     match ← uncons L with
     | none => pure (s', [])
     | some (b, L') => do
-      let s' := Queue.push (Queue.push s' (a, (n, L'))) (b, (n + 1, f (n+1) b))
+      let s' ← Queue.push (← Queue.push s' (a, (n, L'))) (b, (n + 1, f (n+1) b))
       pure (s', [b])
 
 variable [Ord α]
@@ -99,10 +137,10 @@ variable [Ord α]
 Implementation of the `bestFirstSearch` function,
 allowing for an arbitrary `Queue` data structure which handles prioritization.
 -/
-def bestFirstSearchImpl (Q : Type u → Type u) [∀ β : Type u, Queue (α × β) (Q β)]
+def bestFirstSearchImpl (Q : Type u → Type u) [∀ β : Type u, Queue m (α × β) (Q β)]
     (f : α → ListM m α) (a : α)
     (maxDepth : Option Nat := none) (removeDuplicates := true) :
-    ListM m α :=
+    ListM m α := squash do
   let f := match maxDepth with
   | none => fun _ a => f a
   | some d => fun n a => if d < n then empty else f a
@@ -113,12 +151,12 @@ def bestFirstSearchImpl (Q : Type u → Type u) [∀ β : Type u, Queue (α × �
         if s.contains b then failure
         set <| s.insert b
         pure b
-    let init := Queue.push (Queue.empty : Q (Nat × _)) (a, (0, f' 0 a))
-    cons (do pure (some a, fixl (bestFirstSearchAux f') init))
+    let init ← Queue.push (← Queue.empty : Q (Nat × _)) (a, (0, f' 0 a))
+    return cons (do pure (some a, fixl (bestFirstSearchAux f') init))
       |>.runState' (RBSet.empty.insert a)
   else
-    let init := Queue.push (Queue.empty : Q (Nat × _)) (a, (0, f 0 a))
-    cons do pure (some a, fixl (bestFirstSearchAux f) init)
+    let init ← Queue.push (← Queue.empty : Q (Nat × _)) (a, (0, f 0 a))
+    return cons do pure (some a, fixl (bestFirstSearchAux f) init)
 
 /--
 A lazy list recording the best first search of a graph generated by a function
@@ -139,5 +177,5 @@ Otherwise, if the graph is not a tree then nodes will be visited multiple times.
 def bestFirstSearch (f : α → ListM m α) (a : α)
     (maxDepth : Option Nat := none) (maxQueued : Option Nat := none) (removeDuplicates := true) :
     ListM m α :=
-  have := fun (β : Type u) => rbMapQueue α β maxQueued
+  have := fun (β : Type u) => rbMapQueue m α β maxQueued
   bestFirstSearchImpl (fun β => RBMap α β compare) f a maxDepth removeDuplicates

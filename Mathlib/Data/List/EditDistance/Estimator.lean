@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2023 Kim Liesinger. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Kim Liesinger
+-/
 import Mathlib.Data.List.EditDistance.Bounds
 import Mathlib.Order.Estimator
 import Mathlib.Util.Time
@@ -6,11 +11,15 @@ theorem List.getElem_mem (L : List α) (i : ℕ) (w : i < L.length) : L[i] ∈ L
   simp only [getElem_eq_get]
   exact get_mem L i w
 
+#find_home List.getElem_mem
+
 theorem List.length_left_le_append_length {xs ys : List α} : xs.length ≤ (xs ++ ys).length :=
   List.length_le_of_sublist (sublist_append_left xs ys)
 
 theorem List.length_right_le_append_length {xs ys : List α} : ys.length ≤ (xs ++ ys).length :=
   List.length_le_of_sublist (sublist_append_right xs ys)
+
+#find_home List.length_right_le_append_length
 
 theorem WithBot.le_unbot_iff [LE α] {a : α} {b : WithBot α} (h : b ≠ ⊥) :
     a ≤ WithBot.unbot b h ↔ (a : WithBot α) ≤ b := by
@@ -168,24 +177,3 @@ instance [CanonicallyLinearOrderedAddMonoid δ]
       split := by simp
       distances_eq := rfl
       bound_eq := rfl } }
-
-@[reducible]
-def EditDistanceQueue (α : Type) [DecidableEq α] : Type _ := EstimatorQueue (List α × List α)
-    (fun ⟨xs, ys⟩ => Thunk.mk fun _ => levenshtein Levenshtein.default xs ys)
-    (fun ⟨xs, ys⟩ => LevenshteinEstimator Levenshtein.default xs ys)
-
-def bar : List ℕ := Id.run do
-  let mut Q : EditDistanceQueue Char := ∅
-  Q := Q.pushAll
-    [("hello".toList, "world".toList),
-      ((" ... ".intercalate <| List.replicate 100 "nothing to see here").toList,
-        (" ... ".intercalate <| List.replicate 100 "another long phrase").toList),
-      ("cat".toList, "hat".toList)]
-  return Q.toListWithPriority.map (·.2)
-
-set_option maxHeartbeats 500 in
-/--
-info: [1, 4, 5]
--/
-#guard_msgs in
-#eval bar

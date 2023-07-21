@@ -13,8 +13,10 @@ import Mathlib.Data.Nat.Interval
 
 /--
 Given `[EstimatorData a ε]`
-* a term `e : ε` can be interpreted via `bound a e` as a lower bound for `a`, and
-* we can ask for an improved lower bound via `improve a e`.
+* a term `e : ε` can be interpreted via `bound a e : α` as a lower bound for `a`, and
+* we can ask for an improved lower bound via `improve a e : Option ε`.
+
+The value `a` in `α` that we are estimating is hidden inside a `Thunk` to avoid evaluation.
  -/
 class EstimatorData (a : Thunk α) (ε : Type _) where
   bound : ε → α
@@ -73,13 +75,17 @@ termination_by Estimator.improveUntil_spec p I e => (⟨_, bound_le e⟩ : { x /
 /--
 An estimator for `(a, b)` can be turned into an estimator for `a`,
 simply by repeatedly running `improve` until the first factor "improves".
-With the hypothesis that `>` is well-founded on `{ q // q ≤ (a, b) }` ensures this terminates.
+The hypothesis that `>` is well-founded on `{ q // q ≤ (a, b) }` ensures this terminates.
 -/
 structure Estimator.fst [Preorder α] [Preorder β]
     (p : Thunk (α × β)) (ε : Type _) [Estimator p ε] where
   inner : ε
 
+/-- The product of two thunks. -/
 def Thunk.prod (a : Thunk α) (b : Thunk β) : Thunk (α × β) := Thunk.mk fun _ => (a.get, b.get)
+
+@[simp] lemma Thunk.prod_get_fst : (Thunk.prod a b).get.1 = a.get := rfl
+@[simp] lemma Thunk.prod_get_snd : (Thunk.prod a b).get.2 = b.get := rfl
 
 instance [PartialOrder α] [DecidableRel ((· : α) < ·)] [PartialOrder β] {a : Thunk α} {b : Thunk β}
     (ε : Type _) [Estimator (a.prod b) ε] [∀ (p : α × β), WellFoundedGT { q // q ≤ p }] :
@@ -103,7 +109,8 @@ instance instEstimatorFst [PartialOrder α] [DecidableRel ((· : α) < ·)] [Par
     | none =>
       simp only [Option.map_none']
       exact fun w =>
-        eq_of_le_of_not_lt (Estimator.bound_le e.inner : bound (a.prod b) e.inner ≤ (a.get, b.get)).1 w
+        eq_of_le_of_not_lt
+          (Estimator.bound_le e.inner : bound (a.prod b) e.inner ≤ (a.get, b.get)).1 w
     | some e' => exact fun w => w
 
 open Estimator
