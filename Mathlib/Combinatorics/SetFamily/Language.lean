@@ -177,10 +177,32 @@ instance (Sys : Finset (Finset α)) [Accessible Sys] : Hereditary (toHereditaryL
   containsEmpty := toHereditaryLanguage_containsEmpty
   containsPrefix := toHereditaryLanguage_containsPrefix
 
-theorem mem_toHereditaryLanguage (hl : l ∈ toHereditaryLanguage Sys) :
+-- TODO: subject to change name
+theorem mem_toHereditaryLanguage {l : List α} (hl : l ∈ toHereditaryLanguage Sys) :
     l.toFinset ∈ Sys := by
   simp [toHereditaryLanguage] at hl
   rw [Set.mem_def] at hl
   exact hl.2 suffix_rfl
+
+-- TODO: subject to change name
+theorem mem_accessible :
+    ∃ l ∈ toHereditaryLanguage Sys, l.toFinset = s := by
+  apply induction_on_accessible hs₀ ⟨[], toHereditaryLanguage_containsEmpty, rfl⟩
+  simp only [forall_exists_index, and_imp]
+  intro a _ ha _ hs l hl₁ hl₂
+  exists a :: l
+  rw [union_comm, ← insert_eq, toFinset_cons, hl₂]
+  simp only [and_true]
+  simp only [toHereditaryLanguage] at *
+  rw [Set.mem_def] at *
+  simp only [← hl₂, mem_toFinset] at ha
+  simp only [nodup_cons, hl₁, and_true, ha, true_and]
+  intro l' hl'
+  rw [suffix_cons_iff] at hl'
+  apply hl'.elim <;> intro hl'
+  . simp only [hl', toFinset_cons, mem_toFinset, hl₂]
+    rw [union_comm, ← insert_eq] at hs
+    exact hs
+  . exact hl₁.2 hl'
 
 end Accessible
