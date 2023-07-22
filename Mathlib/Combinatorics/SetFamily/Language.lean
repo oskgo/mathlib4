@@ -177,4 +177,10 @@ instance (Sys : Finset (Finset α)) [Accessible Sys] : Hereditary (toHereditaryL
   containsEmpty := toHereditaryLanguage_containsEmpty
   containsPrefix := toHereditaryLanguage_containsPrefix
 
+theorem mem_toHereditaryLanguage (hl : l ∈ toHereditaryLanguage Sys) :
+    l.toFinset ∈ Sys := by
+  simp [toHereditaryLanguage] at hl
+  rw [Set.mem_def] at hl
+  exact hl.2 suffix_rfl
+
 end Accessible

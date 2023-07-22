@@ -297,9 +297,13 @@ theorem fromSystemToLanguage'_eq {S₁ S₂ : GreedoidSystem α}
   simp [fromSystemToLanguage', toHereditaryLanguage] at hS
   rw [Set.ext_iff] at hS
   simp only [Set.mem_def, and_congr_right_iff] at hS
+
   apply GreedoidSystem.eq_of_veq
   ext s; constructor <;> intro hs₁
-  . sorry
+  . apply induction_on_accessible hs₁ accessible_containsEmpty
+    intro a s ha hs₁ hs₂ hs₃
+
+    sorry
   . sorry
 
 def fromSystemToLanguage (S : GreedoidSystem α) : GreedoidLanguage α :=
@@ -424,12 +428,17 @@ theorem toFinset_mem_greedoidSystem_of_mem_greedoidLanguage
   (hrelated : relatedLanguageSystem L S)
   {l : List α} (hl : l ∈ L.language) :
     l.toFinset ∈ S.feasibleSet := by
-  sorry
+  simp only [(relatedLanguageSystem'_iff_relatedLanguageSystem.mpr hrelated).1,
+    fromLanguageToSystem', Language.toAccessibleSystem, mem_image]
+  exists l; simp only [Language.mem_toFinsetOfList, hl, and_self]
 
 theorem exists_word_mem_greedoidLanguage_of_mem_greedoidSystem
   (hrelated : relatedLanguageSystem L S)
   {s : Finset α} (hs : s ∈ S.feasibleSet) :
     ∃ l ∈ L.language, l.toFinset = s := by
-  sorry
+  simp only [(relatedLanguageSystem'_iff_relatedLanguageSystem.mpr hrelated).1,
+    fromLanguageToSystem', Language.toAccessibleSystem, mem_image,
+    Language.mem_toFinsetOfList] at hs
+  exact hs
 
 end Greedoid
