@@ -7,28 +7,16 @@ import Mathlib.Data.List.EditDistance.Bounds
 import Mathlib.Order.Estimator
 import Mathlib.Util.Time
 
-theorem List.getElem_mem (L : List α) (i : ℕ) (w : i < L.length) : L[i] ∈ L := by
-  simp only [getElem_eq_get]
-  exact get_mem L i w
-
-#find_home List.getElem_mem
-
-theorem List.length_left_le_append_length {xs ys : List α} : xs.length ≤ (xs ++ ys).length :=
-  List.length_le_of_sublist (sublist_append_left xs ys)
-
-theorem List.length_right_le_append_length {xs ys : List α} : ys.length ≤ (xs ++ ys).length :=
-  List.length_le_of_sublist (sublist_append_right xs ys)
-
-#find_home List.length_right_le_append_length
-
 theorem WithBot.le_unbot_iff [LE α] {a : α} {b : WithBot α} (h : b ≠ ⊥) :
     a ≤ WithBot.unbot b h ↔ (a : WithBot α) ≤ b := by
   match b, h with
-  | some _, _ => simp
+  | some _, _ => simp only [unbot_coe, coe_le_coe]
 
 theorem WithTop.untop_le_iff [LE α] {a : WithTop α} {b : α} (h : a ≠ ⊤) :
     WithTop.untop a h ≤ b ↔ a ≤ (b : WithBot α) :=
   @WithBot.le_unbot_iff αᵒᵈ _ _ _ _
+
+#find_home WithBot.le_unbot_iff
 
 section
 variable [LinearOrder α]
@@ -39,6 +27,8 @@ theorem List.maximum_ne_bot_of_length_pos {L : List α} (h : 0 < L.length) : L.m
 
 theorem List.minimum_ne_top_of_length_pos {L : List α} (h : 0 < L.length) : L.minimum ≠ ⊤ :=
   @List.maximum_ne_bot_of_length_pos αᵒᵈ _ _ h
+
+#find_home List.maximum_ne_bot_of_length_pos
 
 def List.maximum_of_length_pos {L : List α} (h : 0 < L.length) : α :=
   WithBot.unbot L.maximum (List.maximum_ne_bot_of_length_pos h)
@@ -76,7 +66,7 @@ theorem List.minimum_of_length_pos_le_of_mem {L : List α} (h : a ∈ L) (w : 0 
 theorem List.getElem_le_maximum_of_length_pos {L : List α} (w : i < L.length) :
     L[i] ≤ L.maximum_of_length_pos (Nat.zero_lt_of_lt w) := by
   apply List.le_maximum_of_length_pos_of_mem
-  exact getElem_mem L i w
+  exact get_mem L i w
 
 theorem List.minimum_of_length_pos_le_getElem {L : List α} (w : i < L.length) :
     L.minimum_of_length_pos (Nat.zero_lt_of_lt w) ≤ L[i] :=
@@ -128,7 +118,7 @@ instance estimator' : Estimator (Thunk.mk fun _ => (levenshtein C xs ys, ys.leng
     constructor
     · simp only [List.minimum_of_length_pos_le_iff]
       exact suffixLevenshtein_minimum_le_levenshtein_append _ _ _
-    · exact List.length_right_le_append_length
+    · exact List.length_le_of_sublist (List.sublist_append_right _ _)
   improve_spec e := by
     dsimp [EstimatorData.improve]
     match e.pre_rev, e.split, e.bound_eq, e.distances_eq with
