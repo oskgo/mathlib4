@@ -460,7 +460,7 @@ theorem toFinset_mem_greedoidSystem_of_mem_greedoidLanguage
     fromLanguageToSystem', Language.toAccessibleSystem, mem_image]
   exists l; simp only [Language.mem_toFinsetOfList, hl, and_self]
 
-theorem exists_word_mem_greedoidLanguage_of_mem_greedoidSystem
+theorem exists_list_mem_greedoidLanguage_of_mem_greedoidSystem
   (hrelated : relatedLanguageSystem L S)
   {s : Finset α} (hs : s ∈ S.feasibleSet) :
     ∃ l ∈ L.language, l.toFinset = s := by
