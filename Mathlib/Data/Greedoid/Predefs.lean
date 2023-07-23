@@ -218,6 +218,7 @@ theorem fromLanguageToSystem'_eq {L₁ L₂ : GreedoidLanguage α}
       tauto
     exact this ▸ hhead'₂
 
+/-- A function to change a `GreedoidLanguage` to `GreedoidSystem`. -/
 noncomputable def fromLanguageToSystem (L : GreedoidLanguage α) : GreedoidSystem α :=
   ⟨L.fromLanguageToSystem',
    fromLanguageToSystem'_containsEmpty,
@@ -240,6 +241,8 @@ variable {S : GreedoidSystem α}
 
 open Nat List Finset Language GreedoidLanguage
 
+/-- A helper function of `fromSystemToLanguage` to convert `GreedoidSystem` to `GreedoidLanguage`.
+    This converts `GreedoidSystem α` to `Language α` which is `Hereditary`. -/
 def fromSystemToLanguage' (S : GreedoidSystem α) := toHereditaryLanguage S.feasibleSet
 
 theorem fromSystemToLanguage'_nodup {l : List α} (hl : l ∈ S.fromSystemToLanguage') :
@@ -312,6 +315,7 @@ theorem fromSystemToLanguage'_eq {S₁ S₂ : GreedoidSystem α}
     rw [Set.mem_def] at hl₁
     exact hl₂ ▸ ((hS _ hl₁.1).mpr hl₁.2 suffix_rfl)
 
+/-- A function which converts `GreedoidSystem` to `GreedoidLanguage`. -/
 def fromSystemToLanguage (S : GreedoidSystem α) : GreedoidLanguage α :=
   ⟨S.fromSystemToLanguage',
    fromSystemToLanguage'_nodup,
@@ -410,9 +414,12 @@ instance {α : Type _} [DecidableEq α] [Fintype α] : Fintype (GreedoidLanguage
       simp [Function.LeftInverse], by
       simp [Function.RightInverse, Function.LeftInverse]⟩)
 
+/-- A helper property which relates `GreedoidLanguage` and `GreedoidSystem`. -/
 def relatedLanguageSystem' (L : GreedoidLanguage α) (S : GreedoidSystem α) :=
   S.feasibleSet = L.fromLanguageToSystem' ∧ L.language = S.fromSystemToLanguage'
 
+/-- A property which relates `GreedoidLanguage` and `GreedoidSystem`.
+    They are actually one-to-one. -/
 def relatedLanguageSystem (L : GreedoidLanguage α) (S : GreedoidSystem α) :=
   S = L.fromLanguageToSystem ∧ L = S.fromSystemToLanguage
 
