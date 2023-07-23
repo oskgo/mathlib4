@@ -1,6 +1,7 @@
 import Mathlib.Data.List.Basic
 import Mathlib.Data.List.TFAE
 import Mathlib.Data.List.Infix
+import Mathlib.Data.List.Lemmas
 import Mathlib.Data.Finset.Basic
 import Mathlib.Data.Finset.Card
 import Mathlib.Data.Fintype.Basic
@@ -384,8 +385,23 @@ theorem fromLanguageToSystem_fromSystemToLanguage_eq :
   simp only [mem_image, Language.mem_toFinsetOfList]
   rw [Set.mem_def]
   constructor <;> intro h
-  . sorry
-  . sorry
+  . induction' l with head l ih
+    . exact L.containsEmpty
+    . rw [nodup_cons] at h
+      have ⟨⟨h₁, h₂⟩, h₃⟩ := h; clear h
+      have ih : l ∈ L.language := ih ⟨h₂, by intro _ h; exact h₃ (suffix_cons_iff.mpr (Or.inr h))⟩
+      have ⟨l', hl'₁, hl'₂⟩ : ∃ l' ∈ L.language, l'.toFinset = (head :: l).toFinset := h₃ suffix_rfl
+      have ⟨head', hhead'₁, hhead'₂⟩ := L.exchangeAxiom hl'₁ ih (by
+        simp [← toFinset_card_of_nodup (L.nodup hl'₁), ← toFinset_card_of_nodup h₂, hl'₂, h₁])
+      have : head = head' := by
+        have := (nodup_cons.mp (L.nodup hhead'₂)).1
+        rw [← mem_toFinset, hl'₂, mem_toFinset, List.mem_cons] at hhead'₁
+        tauto
+      exact this ▸ hhead'₂
+  . exact ⟨L.nodup h, fun {l'} hl' => ⟨l', by
+      have ⟨l'', hl''⟩ := hl'
+      rw [← hl''] at h
+      exact L.containsPrefix h, rfl⟩⟩
 
 -- TODO: This instance should be under `GreedoidLanguage` namespace.
 instance {α : Type _} [DecidableEq α] [Fintype α] : Fintype (GreedoidLanguage α) :=
