@@ -5,30 +5,9 @@ Authors: Kim Liesinger
 -/
 import Mathlib.Data.List.EditDistance.Bounds
 import Mathlib.Order.Estimator
-import Mathlib.Util.Time
-
-theorem WithBot.le_unbot_iff [LE α] {a : α} {b : WithBot α} (h : b ≠ ⊥) :
-    a ≤ WithBot.unbot b h ↔ (a : WithBot α) ≤ b := by
-  match b, h with
-  | some _, _ => simp only [unbot_coe, coe_le_coe]
-
-theorem WithTop.untop_le_iff [LE α] {a : WithTop α} {b : α} (h : a ≠ ⊤) :
-    WithTop.untop a h ≤ b ↔ a ≤ (b : WithBot α) :=
-  @WithBot.le_unbot_iff αᵒᵈ _ _ _ _
-
-#find_home WithBot.le_unbot_iff
 
 section
 variable [LinearOrder α]
-
-theorem List.maximum_ne_bot_of_length_pos {L : List α} (h : 0 < L.length) : L.maximum ≠ ⊥ :=
-  match L, h with
-  | _ :: _, _ => by simp [List.maximum_cons]
-
-theorem List.minimum_ne_top_of_length_pos {L : List α} (h : 0 < L.length) : L.minimum ≠ ⊤ :=
-  @List.maximum_ne_bot_of_length_pos αᵒᵈ _ _ h
-
-#find_home List.maximum_ne_bot_of_length_pos
 
 def List.maximum_of_length_pos {L : List α} (h : 0 < L.length) : α :=
   WithBot.unbot L.maximum (List.maximum_ne_bot_of_length_pos h)

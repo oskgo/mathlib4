@@ -33,44 +33,88 @@ class Estimator [Preorder α] (a : Thunk α) (ε : Type _) extends EstimatorData
     | none => bound e = a.get
     | some e' => bound e < bound e'
 
-open EstimatorData
+open EstimatorData Set
+
+/--
+A trivial estimator.
+-/
+instance [Preorder α] (a : α) : Estimator (Thunk.pure a) { x // x = a } where
+  bound e := e
+  improve _ := none
+  bound_le e := e.property.le
+  improve_spec e := e.property
+
+example [Preorder α] (a : α) : WellFoundedGT (range (bound (Thunk.pure a) : { x // x = a } → α)) :=
+  inferInstance
 
 attribute [local instance] WellFoundedGT.toWellFoundedRelation
 
-/-- Improve an estimate until it satisfies a predicate, or stop if we reach the exact value. -/
-def Estimator.improveUntil [PartialOrder α] [∀ a : α, WellFoundedGT { x // x ≤ a }]
-    (a : Thunk α) (p : α → Bool) [Estimator a ε] (e : ε) : Option ε :=
-  if p (bound a e) then
-    return e
-  else
-    match improve a e, improve_spec e with
-    | none, _ => none
-    | some e', _ =>
-      Estimator.improveUntil a p e'
-termination_by Estimator.improveUntil p I e => (⟨_, bound_le e⟩ : { x // x ≤ a.get })
+def Estimator.improveUntilAux [PartialOrder α]
+    (a : Thunk α) (p : α → Bool) [Estimator a ε]
+    [WellFoundedGT (range (bound a : ε → α))]
+    (e : ε) (r : Bool) : Except (Option ε) ε :=
+    if p (bound a e) then
+      return e
+    else
+      match improve a e, improve_spec e with
+      | none, _ => .error <| if r then none else e
+      | some e', _ =>
+        improveUntilAux a p e' true
+termination_by Estimator.improveUntilAux p I e r => (⟨_, mem_range_self e⟩ : range (bound a))
 
-variable [PartialOrder α] [∀ a : α, WellFoundedGT { x // x ≤ a }]
+/--
+Improve an estimate until it satisfies a predicate,
+or else return the best available estimate, if any improvement was made.
+-/
+def Estimator.improveUntil [PartialOrder α]
+    (a : Thunk α) (p : α → Bool) [Estimator a ε] [WellFoundedGT (range (bound a : ε → α))] (e : ε) : Except (Option ε) ε :=
+  Estimator.improveUntilAux a p e false
+
+variable [PartialOrder α]
+
+/--
+If `Estimator.improveUntil a p e` returns `some e'`, then `bound a e'` satisfies `p`.
+Otherwise, that value `a` must not satisfy `p`.
+-/
+theorem Estimator.improveUntilAux_spec
+    (a : Thunk α) (p : α → Bool) [Estimator a ε] [WellFoundedGT (range (bound a : ε → α))] (e : ε) (r : Bool) :
+    match Estimator.improveUntilAux a p e r with
+    | .error _ => ¬ p a.get
+    | .ok e' => p (bound a e') := by
+  rw [Estimator.improveUntilAux]
+  by_cases h : p (bound a e)
+  · simp only [h]; exact h
+  · simp only [h]
+    match improve a e, improve_spec e with
+    | none, eq =>
+      simp only [Bool.not_eq_true]
+      rw [eq] at h
+      exact Bool.bool_eq_false h
+    | some e', _ =>
+      exact Estimator.improveUntilAux_spec a p e' true
+termination_by Estimator.improveUntilAux_spec p I e r => (⟨_, mem_range_self e⟩ : range (bound a))
 
 /--
 If `Estimator.improveUntil a p e` returns `some e'`, then `bound a e'` satisfies `p`.
 Otherwise, that value `a` must not satisfy `p`.
 -/
 theorem Estimator.improveUntil_spec
-    (a : Thunk α) (p : α → Bool) [Estimator a ε] (e : ε) :
+    (a : Thunk α) (p : α → Bool) [Estimator a ε] [WellFoundedGT (range (bound a : ε → α))] (e : ε) :
     match Estimator.improveUntil a p e with
-    | none => ¬ p a.get
-    | some e' => p (bound a e') := by
-  rw [Estimator.improveUntil]
-  split_ifs with h
-  · exact h
-  · match improve a e, improve_spec e with
-    | none, eq =>
-      simp only [Bool.not_eq_true]
-      rw [eq] at h
-      exact Bool.bool_eq_false h
-    | some e', _ =>
-      exact Estimator.improveUntil_spec a p e'
-termination_by Estimator.improveUntil_spec p I e => (⟨_, bound_le e⟩ : { x // x ≤ a.get })
+    | .error _ => ¬ p a.get
+    | .ok e' => p (bound a e') :=
+  Estimator.improveUntilAux_spec a p e false
+
+variable [∀ a : α, WellFoundedGT { x // x ≤ a }]
+
+def Subtype.orderEmbedding {p q : α → Prop} (h : ∀ a, p a → q a) : {x // p x} ↪o {x // q x} :=
+  { Subtype.impEmbedding _ _ h with
+    map_rel_iff' := by aesop }
+
+instance [Estimator a ε] : WellFoundedGT (range (bound a : ε → α)) :=
+  let f : range (bound a : ε → α) ↪o { x // x ≤ a.get } :=
+    Subtype.orderEmbedding (by rintro _ ⟨e, rfl⟩; exact Estimator.bound_le e)
+  f.wellFoundedGT
 
 /--
 An estimator for `(a, b)` can be turned into an estimator for `a`,
@@ -93,7 +137,10 @@ instance [PartialOrder α] [DecidableRel ((· : α) < ·)] [PartialOrder β] {a 
   bound e := (bound (a.prod b) e.inner).1
   improve e :=
     let bd := (bound (a.prod b) e.inner).1
-    Estimator.improveUntil (a.prod b) (fun p => bd < p.1) e.inner |>.map Estimator.fst.mk
+    Estimator.improveUntil (a.prod b) (fun p => bd < p.1) e.inner |>.toOption |>.map Estimator.fst.mk
+
+@[simp]
+lemma Except.toOption_error : Except.toOption (.error e : Except ε α) = none := rfl
 
 instance instEstimatorFst [PartialOrder α] [DecidableRel ((· : α) < ·)] [PartialOrder β]
     [∀ (p : α × β), WellFoundedGT { q // q ≤ p }]
@@ -106,12 +153,12 @@ instance instEstimatorFst [PartialOrder α] [DecidableRel ((· : α) < ·)] [Par
     revert this
     simp only [EstimatorData.improve, decide_eq_true_eq]
     match Estimator.improveUntil (a.prod b) _ _ with
-    | none =>
+    | .error _ =>
       simp only [Option.map_none']
       exact fun w =>
         eq_of_le_of_not_lt
           (Estimator.bound_le e.inner : bound (a.prod b) e.inner ≤ (a.get, b.get)).1 w
-    | some e' => exact fun w => w
+    | .ok e' => exact fun w => w
 
 open Estimator
 
@@ -171,8 +218,9 @@ partial def popWithBound (Q : EstimatorQueue β prio ε) :
   | [⟨b, e⟩] => some (⟨b, e⟩, [])
   | ⟨b₁, e₁⟩ :: ⟨b₂, e₂⟩ :: (t : EstimatorQueue β prio ε) =>
       match improveUntil (prio b₁) (bound (prio b₂) e₂ < ·) e₁ with
-      | none => some (⟨b₁, e₁⟩, ⟨b₂, e₂⟩ :: t)
-      | some e₁' => EstimatorQueue.popWithBound (⟨b₂, e₂⟩ :: t.push b₁ e₁')
+      | .error none => some (⟨b₁, e₁⟩, ⟨b₂, e₂⟩ :: t)
+      | .error (some e₁') => some (⟨b₁, e₁'⟩, ⟨b₂, e₂⟩ :: t)
+      | .ok e₁' => EstimatorQueue.popWithBound (⟨b₂, e₂⟩ :: t.push b₁ e₁')
 
 partial def popWithPriority (Q : EstimatorQueue β prio ε) :
     Option ((β × ℕ) × EstimatorQueue β prio ε) :=

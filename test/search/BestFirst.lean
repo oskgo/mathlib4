@@ -7,26 +7,25 @@ import Mathlib.Data.Nat.Sqrt
 We check that `bestFirstSearch` can find its way around a wall.
 -/
 
-open Lean ListM
+open Lean ListM Function
 
-def wall : Int × Int → Bool :=
+def Point := Int × Int
+deriving Repr
+
+def wall : Point → Bool :=
   fun ⟨x, y⟩ => x ≤ 3 || y ≤ 3 || x ≥ 20 || y ≥ 20 || (x ≥ 6 && y ≥ 6)
 
-def nbhd : Int × Int → ListM MetaM (Int × Int) :=
+def nbhd : Point → ListM MetaM Point :=
   fun ⟨x, y⟩ => ListM.ofList
       ([(x+1,y), (x-1,y), (x,y+1), (x,y-1)].filter wall)
 
-instance : Ord (Int × Int) where
-  compare p q :=
-    let rp := p.1^2 + p.2^2
-    let rq := q.1^2 + q.2^2
-    if rp < rq then .lt
-    else if rq < rp then .gt
-    else if p.1 < q.1 then .lt
-    else if q.1 < p.1 then .gt
-    else if p.2 < q.2 then .lt
-    else if q.2 < p.2 then .gt
-    else .eq
+def emb : Point → Nat ×ₗ (Int ×ₗ Int)
+  | (x, y) => (x.natAbs^2 + y.natAbs^2, x, y)
+
+lemma emb_injective : Injective emb :=
+  fun ⟨x, y⟩ ⟨w, z⟩ h => by injection h
+
+instance : LinearOrder Point := LinearOrder.lift' _ emb_injective
 
 /--
 info: [(10, 10),
@@ -125,31 +124,30 @@ info: [(10, 10),
  (10, 15),
  (8, 16),
  (7, 17),
- (13, 13),
- (12, 14),
  (9, 16),
  (8, 17),
- (11, 15),
- (9, 15),
+ (6, 18),
  (10, 16),
  (9, 17),
- (14, 13),
- (13, 14),
+ (9, 15),
+ (8, 18),
  (11, 16),
  (10, 17),
- (14, 14),
- (13, 15),
- (15, 13),
  (12, 16),
  (11, 17),
- (15, 14),
- (14, 15),
+ (11, 15),
+ (12, 15),
+ (13, 15),
+ (12, 14),
+ (13, 14),
+ (14, 14),
+ (13, 13),
+ (14, 13),
+ (15, 13),
  (16, 13),
+ (15, 14),
  (15, 12),
  (16, 12),
- (13, 16),
- (12, 17),
- (12, 15),
  (17, 12),
  (16, 11),
  (17, 11),
