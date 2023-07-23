@@ -5,6 +5,7 @@ Authors: Yaël Dillies
 -/
 import Mathlib.Data.Finset.Preimage
 import Mathlib.Data.Set.Intervals.UnorderedInterval
+import Mathlib.Data.Set.Intervals.Image
 
 #align_import order.locally_finite from "leanprover-community/mathlib"@"1d29de43a5ba4662dd33b5cfeecfc2a27a5a8a29"
 
