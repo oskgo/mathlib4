@@ -397,3 +397,51 @@ instance (priority := 99) [CuspFormClass F Γ k] : ModularFormClass F Γ k where
   bdd_at_infty _ _ := (CuspFormClass.zero_at_infty _ _).boundedAtFilter
 
 end CuspForm
+
+section HEq
+
+variable (F : Type _) (Γ : Subgroup SL(2, ℤ)) (k : ℤ)
+
+@[simps]
+def mcast {a b : ℤ} {Γ : Subgroup SL(2, ℤ)} (h : a = b) (f : ModularForm Γ a) :
+    ModularForm Γ b where
+  toFun := f
+  slash_action_eq' A := by subst h; exact f.slash_action_eq' A
+  holo' := f.holo'
+  bdd_at_infty' A := by subst h; exact f.bdd_at_infty' A
+
+theorem type_eq {a b : ℤ} (Γ : Subgroup SL(2, ℤ)) (h : a = b) :
+    ModularForm Γ a = ModularForm Γ b := by
+  subst h
+  rfl
+
+theorem cast_eq_mcast {a b : ℤ} {Γ : Subgroup SL(2, ℤ)} (h : a = b) (f : ModularForm Γ a) :
+    cast (type_eq Γ h) f = mcast h f := by
+  subst h
+  ext1
+  simp only [cast_eq, mcast_toFun]
+
+theorem heq_of_mcast_eq {Γ : Subgroup SL(2, ℤ)} (h : a = b)
+    {f : ModularForm Γ a} {g : ModularForm Γ b} (H : ∀ x, f x = g x) : HEq f g := by
+  apply heq_of_cast_eq (type_eq Γ h)
+  rw [cast_eq_mcast h]
+  ext1
+  simp [H]
+
+theorem heq_one_mul (k : ℤ) {Γ : Subgroup SL(2, ℤ)} (f : ModularForm Γ k) :
+    HEq ((1 : ModularForm Γ 0).mul f) f :=
+  heq_of_mcast_eq (zero_add k) fun _ => by simp
+
+theorem heq_mul_one (k : ℤ) {Γ : Subgroup SL(2, ℤ)} (f : ModularForm Γ k) :
+    HEq (f.mul (1 : ModularForm Γ 0)) f :=
+  heq_of_mcast_eq (add_zero k) fun _ => by simp
+
+theorem heq_mul_assoc {a b c : ℤ} (f : ModularForm Γ a) (g : ModularForm Γ b)
+    (h : ModularForm Γ c) : HEq ((f.mul g).mul h) (f.mul (g.mul h)) :=
+  heq_of_mcast_eq (add_assoc a b c) fun _ => by simp [mul_assoc]
+
+theorem heq_mul_comm (a b : ℤ) (f : ModularForm Γ a) (g : ModularForm Γ b) :
+    HEq (f.mul g) (g.mul f) :=
+  heq_of_mcast_eq (add_comm a b) fun _ => by simp [mul_comm]
+
+end HEq
