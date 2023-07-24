@@ -20,7 +20,6 @@ some inductive argument from the definition.
 Instead we need to look at the geodesic distance on the edit graph,
 and argue that every minimal path can be put in the form:
 "repeatedly: edit an initial character, then edit the suffix".)
-
 -/
 
 variable {C : Levenshtein.Cost α β δ}
