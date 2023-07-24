@@ -39,7 +39,9 @@ namespace Nondet
 
 variable {m : Type → Type} [Monad m] [MonadBacktrack σ m]
 
-instance : Inhabited (Nondet m α) := ⟨ListM.nil⟩
+def nil : Nondet m α := ListM.nil
+
+instance : Inhabited (Nondet m α) := ⟨nil⟩
 
 /--
 Bind a nondeterministic function over a nondeterministic value,
@@ -71,6 +73,27 @@ def monadLift (x : m α) : Nondet m α :=
 instance : MonadLift m (Nondet m) where
   monadLift := monadLift
 
+def cons' (x : m (Option (σ × α) × Nondet m α)) : Nondet m α := .squash do
+  match ← x with
+  | (none, l) => pure l
+  | (some (s, a), l) => do
+    return ListM.cons do pure (some (s, a), l)
+
+def cons (x : m (Option α × Nondet m α)) : Nondet m α := .squash do
+  match ← x with
+  | (none, l) => pure l
+  | (some a, l) => do
+    let s ← saveState
+    return ListM.cons do pure (some (s, a), l)
+
+def uncons' (L : Nondet m α) : m (Option ((σ × α) × Nondet m α)) := ListM.uncons L
+def uncons (L : Nondet m α) : m (Option (α × Nondet m α)) := do
+  match ← L.uncons' with
+  | none => pure none
+  | some ((_, a), l') => pure (some (a, l'))
+
+def iterate (f : m α) : Nondet m α := ListM.iterate (do let a ← f; pure (← saveState, a))
+
 /--
 Lift a list of monadic values to a nondeterministic value.
 We ensure that each monadic value is evaluated with the same backtrackable state.
@@ -96,6 +119,11 @@ def ofList [Alternative m] (L : List α) : Nondet m α := ofListM (L.map pure)
 Squash a monadic nondeterministic value to a nondeterministic value.
 -/
 def squash (L : m (Nondet m α)) : Nondet m α := ListM.squash L
+
+partial def liftM [Monad n] [MonadBacktrack σ n] [MonadLiftT m n] (l : Nondet m α) : Nondet n α :=
+  squash do match ← (uncons' l : m _) with
+    | none => return .nil
+    | some ((s, a), l') => return cons' do pure ((s, a), l'.liftM)
 
 /--
 Lift a list of monadic values in the monad to a nondeterministic value.
@@ -175,6 +203,23 @@ def toListM' (L : Nondet m α) : ListM m (σ × α) := L
 Convert a non-deterministic value into a lazy list, by discarding the backtrackable state.
 -/
 def toListM (L : Nondet m α) : ListM m α := ListM.map (fun (_, a) => a) L
+
+-- instance [MonadBacktrack σ m] : MonadBacktrack (σ × τ) (StateT τ m) where
+--   saveState t := do pure ((← saveState, t), t)
+--   restoreState := fun ⟨s, t⟩ _ => do pure (← restoreState s, t)
+
+def instMonadBacktrackStateT [MonadBacktrack σ m] : MonadBacktrack σ (StateT τ m) where
+  saveState t := do pure (← saveState, t)
+  restoreState := fun s t => do pure (← restoreState s, t)
+
+attribute [local instance] instMonadBacktrackStateT in
+partial def runState (L : Nondet (StateT τ m) α) (t : τ) : Nondet m (α × τ) :=
+  squash do return match ← (uncons' L).run t with
+    | (none, _) => ListM.nil
+    | (some ((s, a), L'), t') => ListM.cons' (s, a, t') (L'.runState t')
+
+attribute [local instance] instMonadBacktrackStateT in
+def runState' (l : Nondet (StateT τ m) α) (t : τ) : Nondet m α := runState l t |>.map (·.1)
 
 end Nondet
 

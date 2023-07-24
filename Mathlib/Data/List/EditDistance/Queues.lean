@@ -102,13 +102,14 @@ structure SearchNode where mk' ::
 
 namespace SearchNode
 
-def mk (history : Array (Name × Bool)) (goal : MVarId) : MetaM SearchNode := do
+def mk (history : Array (Name × Bool)) (goal : MVarId) (ctx : Option MetavarContext := none) :
+    MetaM SearchNode := do
   let type ← instantiateMVars (← goal.getType)
   match type.eq? with
   | none => failure
   | some (_, lhs, rhs) => pure <|
     { history := history
-      mctx := ← getMCtx
+      mctx := ← ctx.getDM getMCtx
       goal := goal
       type := type
       ppGoal := (← ppExpr type).pretty
@@ -116,8 +117,8 @@ def mk (history : Array (Name × Bool)) (goal : MVarId) : MetaM SearchNode := do
       rhs := ← tokenize rhs }
 
 def init (goal : MVarId) : MetaM SearchNode := mk #[] goal
-def push (n : SearchNode) (name : Name) (symm : Bool) (g : MVarId) :=
-  mk (n.history.push (name, symm)) g
+def push (n : SearchNode) (name : Name) (symm : Bool) (g : MVarId) (ctx : Option MetavarContext := none) :=
+  mk (n.history.push (name, symm)) g ctx
 
 instance : Ord SearchNode where
   compare := compareOn SearchNode.ppGoal
@@ -126,20 +127,18 @@ abbrev prio (n : SearchNode) : Thunk Nat := Thunk.mk fun _ => (levenshtein Leven
 abbrev estimator (n : SearchNode) : Type := LevenshteinEstimator Levenshtein.default n.lhs n.rhs
 
 def rewrite (n : SearchNode) (r : Mathlib.Tactic.Rewrites.RewriteResult) : MetaM SearchNode :=
-  withoutModifyingState do
-    withMCtx n.mctx do
-      n.push r.name r.symm (← n.goal.replaceTargetEq r.result.eNew r.result.eqProof)
+  withMCtx r.mctx do
+    let goal' ← n.goal.replaceTargetEq r.result.eNew r.result.eqProof
+    n.push r.name r.symm goal' (← getMCtx)
 
 def rewrites (lemmas : DiscrTree (Name × Bool × Nat) s × DiscrTree (Name × Bool × Nat) s)
     (n : SearchNode) : ListM MetaM SearchNode := .squash do
   IO.println <| "rewriting: " ++ n.ppGoal
-  withMCtx n.mctx do
-    let results := Mathlib.Tactic.Rewrites.rewritesCore lemmas n.goal n.type
-    -- let results ← results.force
-    -- IO.println <| s!"found {results.length} rewrites"
-    -- let results := ListM.ofList results
-    return results.mapM fun r => do
-      n.rewrite r
+  let results := Mathlib.Tactic.Rewrites.rewritesCore lemmas n.mctx n.goal n.type
+  -- let results ← results.force
+  -- let results := ListM.ofList results
+  return results.mapM fun r => do
+    n.rewrite r
 
 def search (n : SearchNode) : ListM MetaM SearchNode := .squash do
   let lemmas ← Mathlib.Tactic.Rewrites.rewriteLemmas.get
@@ -156,6 +155,9 @@ elab "rewrite_search" : tactic => do
   for r in results do
     IO.println <| "steps: " ++ s!"{r.history}"
     IO.println <| "goal: " ++ r.ppGoal
+
+-- set_option trace.Tactic.rewrites.lemmas true
+-- set_option trace.Tactic.rewrites true
 
 example (xs ys : List α) : (xs ++ ys).length = ys.length + xs.length := by
   rewrite_search
