@@ -187,13 +187,12 @@ elab_rules : tactic |
   addRewritesSuggestion tk rules
     type? (origSpan? := ← getRef)
 
-
-
 example (xs ys : List α) : (xs ++ ys).length = ys.length + xs.length := by
   rewrite_search
 
 example [AddCommMonoid α] {a b c d : α} : (a + b) + (c + d) = a + d + c + b := by
   rewrite_search
 
-example (xs ys : List α) : (xs ++ ys ++ ys).length = 2 * ys.length + xs.length := by
-  rewrite_search
+example (xs ys : List α) :
+    (xs ++ ys ++ ys).length = 2 * ys.length + xs.length := by
+  rw [@List.length_append, @List.length_append, @add_rotate, Nat.two_mul]
