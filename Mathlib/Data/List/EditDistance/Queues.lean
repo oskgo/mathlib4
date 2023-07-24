@@ -46,19 +46,18 @@ set_option maxHeartbeats 2000 in
 
 open Lean Meta
 
--- TODO proper implementation
-partial def splitParentheses (s : String) : List String :=
-  if s.startsWith "(" then
-    "(" :: splitParentheses (s.drop 1)
-  else if s.endsWith ")" then
-    splitParentheses (s.dropRight 1) ++ [")"]
+partial def splitDelimiters (s : String) : List String :=
+  if s.startsWith "(" || s.startsWith "[" then
+    s.take 1 :: splitDelimiters (s.drop 1)
+  else if s.endsWith ")" || s.endsWith "]" || s.endsWith "," then
+    splitDelimiters (s.dropRight 1) ++ [s.takeRight 1]
   else
     [s]
 
 def tokenize (e : Expr) : MetaM (List String) := do
   let s := (← ppExpr e).pretty
-  return s.toList.map (fun c => c.toString)
-  -- return s.splitOn.map splitParentheses |>.join
+  -- return s.toList.map (fun c => c.toString)
+  return s.splitOn.map splitDelimiters |>.join
 
 open Qq in
 #eval tokenize q(1 + (3 + 5))
@@ -99,25 +98,39 @@ structure SearchNode where mk' ::
   ppGoal : String
   lhs : List String
   rhs : List String
+  rfl? : Option Bool := none
+  dist? : Option Nat := none
 
 namespace SearchNode
 
 def mk (history : Array (Name × Bool)) (goal : MVarId) (ctx : Option MetavarContext := none) :
-    MetaM SearchNode := do
+    MetaM (Option SearchNode) := do
   let type ← instantiateMVars (← goal.getType)
   match type.eq? with
-  | none => failure
-  | some (_, lhs, rhs) => pure <|
-    { history := history
-      mctx := ← ctx.getDM getMCtx
-      goal := goal
-      type := type
-      ppGoal := (← ppExpr type).pretty
-      lhs := ← tokenize lhs
-      rhs := ← tokenize rhs }
+  | none => return none
+  | some (_, lhs, rhs) =>
+    let lhsTokens ← tokenize lhs
+    let rhsTokens ← tokenize rhs
+    return some
+      { history := history
+        mctx := ← ctx.getDM getMCtx
+        goal := goal
+        type := type
+        ppGoal := (← ppExpr type).pretty
+        lhs := lhsTokens
+        rhs := rhsTokens }
 
-def init (goal : MVarId) : MetaM SearchNode := mk #[] goal
-def push (n : SearchNode) (name : Name) (symm : Bool) (g : MVarId) (ctx : Option MetavarContext := none) :=
+def compute_rfl? (n : SearchNode) : MetaM SearchNode := withMCtx n.mctx do
+  if (← try? n.goal.rfl).isSome then
+    pure { n with mctx := ← getMCtx, rfl? := some true }
+  else
+    pure { n with rfl? := some false }
+
+def compute_dist? (n : SearchNode) : SearchNode :=
+  { n with dist? := some (levenshtein Levenshtein.default n.lhs n.rhs) }
+
+def init (goal : MVarId) : MetaM (Option SearchNode) := mk #[] goal
+def push (n : SearchNode) (name : Name) (symm : Bool) (g : MVarId) (ctx : Option MetavarContext := none) : MetaM (Option SearchNode) :=
   mk (n.history.push (name, symm)) g ctx
 
 instance : Ord SearchNode where
@@ -126,102 +139,61 @@ instance : Ord SearchNode where
 abbrev prio (n : SearchNode) : Thunk Nat := Thunk.mk fun _ => (levenshtein Levenshtein.default n.lhs n.rhs)
 abbrev estimator (n : SearchNode) : Type := LevenshteinEstimator Levenshtein.default n.lhs n.rhs
 
-def rewrite (n : SearchNode) (r : Mathlib.Tactic.Rewrites.RewriteResult) : MetaM SearchNode :=
+def rewrite (n : SearchNode) (r : Mathlib.Tactic.Rewrites.RewriteResult) : MetaM (Option SearchNode) :=
   withMCtx r.mctx do
     let goal' ← n.goal.replaceTargetEq r.result.eNew r.result.eqProof
     n.push r.name r.symm goal' (← getMCtx)
 
 def rewrites (lemmas : DiscrTree (Name × Bool × Nat) s × DiscrTree (Name × Bool × Nat) s)
     (n : SearchNode) : ListM MetaM SearchNode := .squash do
-  IO.println <| "rewriting: " ++ n.ppGoal
+  -- IO.println <| "rewriting: " ++ n.ppGoal
   let results := Mathlib.Tactic.Rewrites.rewritesCore lemmas n.mctx n.goal n.type
   -- let results ← results.force
   -- let results := ListM.ofList results
-  return results.mapM fun r => do
+  return results.filterMapM fun r => do
     n.rewrite r
 
 def search (n : SearchNode) : ListM MetaM SearchNode := .squash do
   let lemmas ← Mathlib.Tactic.Rewrites.rewriteLemmas.get
-  return bestFirstSearchCore SearchNode.prio SearchNode.estimator (rewrites lemmas) n
+  let search := bestFirstSearchCore SearchNode.prio SearchNode.estimator (rewrites lemmas) n
+  let search := search.mapM SearchNode.compute_rfl?
+  return search.takeUpToFirst fun n => n.rfl? = some true
 
 end SearchNode
 
 open Lean Elab Tactic
 
-elab "rewrite_search" : tactic => do
-  let init ← SearchNode.init (← getMainGoal)
-  let results := init.search
-  let results := results.take 200
-  for r in results do
-    IO.println <| "steps: " ++ s!"{r.history}"
-    IO.println <| "goal: " ++ r.ppGoal
+syntax "rewrite_search" : tactic
 
--- set_option trace.Tactic.rewrites.lemmas true
--- set_option trace.Tactic.rewrites true
+elab_rules : tactic |
+    `(tactic| rewrite_search%$tk) => do
+  let .some init ← SearchNode.init (← getMainGoal) | throwError "Goal is not an equality."
+  let results := init.search
+  let results := results.map fun r => r.compute_dist?
+  let results := results.takeUpToFirst (fun r => r.dist? = some 0)
+    |>.whileAtLeastHeartbeatsPercent 20
+  let results ← results.force
+  -- for r in results do
+  --   IO.println <| "steps: " ++ s!"{r.history}"
+  --   IO.println <| "goal: " ++ r.ppGoal
+  let min ← match results with
+  | [] => failure
+  | h :: t => pure <| t.foldl (init := h) fun r₁ r₂ => if r₁.dist?.getD 0 ≤ r₂.dist?.getD 0 then r₁ else r₂
+  -- IO.println <| "best: " ++ s!"{min.history}"
+  setMCtx min.mctx
+  replaceMainGoal [min.goal]
+  let rules ← min.history.toList.mapM fun ⟨n, s⟩ => do pure (← mkConstWithFreshMVarLevels n, s)
+  let type? := if min.rfl? = some true then none else some (← min.goal.getType)
+  addRewritesSuggestion tk rules
+    type? (origSpan? := ← getRef)
+
+
 
 example (xs ys : List α) : (xs ++ ys).length = ys.length + xs.length := by
   rewrite_search
 
+example [AddCommMonoid α] {a b c d : α} : (a + b) + (c + d) = a + d + c + b := by
+  rewrite_search
 
--- structure SearchState (σ : Type) where
---   s : σ
---   mctx : MetavarContext
---   goal : MVarId
---   ppGoal : String
-
--- def SearchState.init (s : σ) (goal : MVarId) : MetaM (SearchState σ) := do
---   pure <|
---   { s := s
---     mctx := ← getMCtx
---     goal := goal
---     ppGoal := (← ppExpr (← goal.getType)).pretty }
-
--- def SearchState.getType (state : SearchState σ) : MetaM Expr := withMCtx state.mctx do
---   instantiateMVars (← state.goal.getType)
-
--- -- def tokenizeGoal (state : SearchState σ) : MetaM (List String) := withMCtx state.mctx do
--- --   tokenize (← state.goal.getType)
-
--- -- @[reducible]
--- -- def GoalTargetQueue (target : SearchState σ) (tokens : List String) : Type :=
--- --   EditDistanceTargetQueue (fun p => p.1) (tokens, target)
-
--- -- def mkGoalQueue (data : SearchState σ) : MetaM (Σ tokens, GoalTargetQueue data tokens) := do
--- --   pure ⟨← tokenizeGoal data, ← Queue.empty⟩
-
--- def tokenizeEquality {σ : Type} (data : SearchState σ) : MetaM (List String × List String) :=
---   withMCtx data.mctx do
---     match (← data.goal.getType).eq? with
---     | some (_, lhs, rhs) =>
---       pure (← tokenize lhs, ← tokenize rhs)
---     | none => failure
-
--- @[reducible]
--- def EqualityQueue (σ β : Type) : Type :=
---   EditDistanceQueue (fun p : ((List String × List String) × SearchState σ) × β => p.1.1)
-
--- example : Queue MetaM (((List String × List String) × SearchState σ) × β) (EqualityQueue σ β) := inferInstance
-
--- def mkEqualityQueue : MetaM (EqualityQueue σ β) := Queue.empty
-
--- variable (lemmas : DiscrTree (Name × Bool × Nat) s × DiscrTree (Name × Bool × Nat) s)
-
--- def qux (s : SearchState (List (Name × Bool))) (r : Mathlib.Tactic.Rewrites.RewriteResult) : MetaM (SearchState (List (Name × Bool))) :=
---   withoutModifyingState do
---     withMCtx s.mctx do
---       let goal' ← s.goal.replaceTargetEq r.result.eNew r.result.eqProof
---       pure <|
---       { s := (r.name, r.symm) :: s.s
---         mctx := ← getMCtx
---         goal := goal'
---         ppGoal := (← ppExpr (← goal'.getType)).pretty }
-
--- def rewrites (state : (List String × List String) × SearchState (List (Name × Bool))) : ListM MetaM ((List String × List String) × SearchState (List (Name × Bool))) := .squash do
---   let foo := Mathlib.Tactic.Rewrites.rewritesCore lemmas state.2.goal (← state.2.getType)
---   return foo.mapM fun r => do
---     let s ← qux state.2 r
---     pure (← tokenizeEquality s, s)
-
--- -- We need this because `bestFirstSearchImpl` has an internal RBSet... blech.
--- instance : Ord ((List String × List String) × SearchState σ) where
---   compare s t := compare s.2.ppGoal t.2.ppGoal
+example (xs ys : List α) : (xs ++ ys ++ ys).length = 2 * ys.length + xs.length := by
+  rewrite_search

@@ -56,13 +56,13 @@ set_option linter.unusedVariables false in
 def BestFirstQueue (maxSize : Option Nat) := RBMap (BestFirstNode prio ε) (ListM m β) compare
 
 variable [Ord ω] [Ord α] {maxSize : Option Nat}
-variable [ToString ω]
+-- variable [ToString ω]
 
-def printPriorities (q : BestFirstQueue prio ε m β maxSize) (f : Unit → θ) : θ :=
-  let keys := RBMap.toList q |>.map (·.1.key)
-  let priorities := keys.map (fun a => (prio a).get)
-  let bounds := RBMap.toList q |>.map (fun a => (⟨a.1.key, a.1.estimator⟩ : Σ (a : α), ε a)) |>.map (fun p => bound (prio p.1) p.2)
-  dbgTrace (toString priorities ++ "\n" ++ toString bounds) f
+-- def printPriorities (q : BestFirstQueue prio ε m β maxSize) (f : Unit → θ) : θ :=
+--   let keys := RBMap.toList q |>.map (·.1.key)
+--   let priorities := keys.map (fun a => (prio a).get)
+--   let bounds := RBMap.toList q |>.map (fun a => (⟨a.1.key, a.1.estimator⟩ : Σ (a : α), ε a)) |>.map (fun p => bound (prio p.1) p.2)
+--   dbgTrace (toString priorities ++ "\n" ++ toString bounds) f
 
 
 namespace BestFirstQueue
@@ -134,7 +134,7 @@ def popWithPriority (q : BestFirstQueue prio ε m β maxSize) :
   | some (⟨a, e, b⟩, q') => pure (some (((a, b), bound (prio a) e), q'))
 
 def pop (q : BestFirstQueue prio ε m β maxSize) : m (Option ((α × β) × BestFirstQueue prio ε m β maxSize)) := do
-  match ← (printPriorities q (fun _ => q)).popWithBound with
+  match ← q.popWithBound with
   | none => pure none
   | some (⟨a, _, b⟩, q') => pure (some ((a, b), q'))
 
@@ -257,7 +257,7 @@ instance [Preorder α] [Unique α] : LocallyFiniteOrderTop α where
 
 variable [Monad m] [Alternative m] [LinearOrder α]
 
-variable [ToString α] -- FIXME remove
+-- variable [ToString α] -- FIXME remove
 
 def bestFirstSearch (f : α → ListM m α) (a : α)
     (maxQueued : Option Nat := none) (maxDepth : Option Nat := none) (removeDuplicates := true) :

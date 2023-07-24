@@ -53,3 +53,37 @@ def addRewriteSuggestion (ref : Syntax) (e : Expr) (symm : Bool)
     extraMsg := extraMsg ++ s!"\n-- {← PrettyPrinter.ppExpr type}"
   addSuggestion ref tac (suggestionForMessage? := tacMsg)
     (extraMsg := extraMsg) (origSpan? := origSpan?)
+
+open Lean.Parser.Tactic
+
+def Lean.Syntax.TSepArray.ofArray {k : SyntaxNodeKinds} {sep : String} (e : Array (TSyntax k)) :
+    Syntax.TSepArray k sep :=
+  e.foldl (init := .mk #[]) fun a r => a.push r
+
+open Lean.Syntax
+
+/-- Add a suggestion for `rw [h₁, ← h₂] at loc`. -/
+def addRewritesSuggestion (ref : Syntax) (rules : List (Expr × Bool))
+  (type? : Option Expr := none) (loc? : Option Expr := none)
+  (origSpan? : Option Syntax := none) :
+    TermElabM Unit := do
+  let rules_stx := TSepArray.ofArray <| ← rules.toArray.mapM fun ⟨e, symm⟩ => do
+    let t ← delabToRefinableSyntax e
+    if symm then `(rwRule| ← $t:term) else `(rwRule| $t:term)
+  let tac ← do
+    let loc ← loc?.mapM fun loc => do `(location| at $(← delab loc):term)
+    `(tactic| rw [$rules_stx,*] $(loc)?)
+
+  let mut tacMsg :=
+    let rulesMsg := MessageData.sbracket <| MessageData.joinSep
+      (rules.map fun ⟨e, symm⟩ => (if symm then "← " else "") ++ m!"{e}") ", "
+    if let some loc := loc? then
+      m!"rw {rulesMsg} at {loc}"
+    else
+      m!"rw {rulesMsg}"
+  let mut extraMsg := ""
+  if let some type := type? then
+    tacMsg := tacMsg ++ m!"\n-- {type}"
+    extraMsg := extraMsg ++ s!"\n-- {← PrettyPrinter.ppExpr type}"
+  addSuggestion ref tac (suggestionForMessage? := tacMsg)
+    (extraMsg := extraMsg) (origSpan? := origSpan?)
