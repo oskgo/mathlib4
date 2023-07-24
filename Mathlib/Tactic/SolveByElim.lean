@@ -3,7 +3,7 @@ Copyright (c) 2021 Scott Morrison. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Morrison, David Renshaw
 -/
-import Mathlib.Tactic.Backtracking
+import Mathlib.Tactic.Backtrack
 import Lean.Meta.Tactic.Apply
 import Mathlib.Lean.LocalContext
 import Mathlib.Tactic.Relation.Symm
@@ -33,8 +33,8 @@ calls to `apply` succeeded or failed.
 -/
 def applyTactics (cfg : ApplyConfig := {}) (transparency : TransparencyMode := .default)
     (lemmas : List Expr) :
-    MVarId → MetaM (List (MetaM (List MVarId))) :=
-  fun g => pure <|
+    MVarId → Nondet MetaM (List MVarId) :=
+  fun g => Nondet.ofListM <|
     lemmas.map fun e =>
       withTraceNode `Meta.Tactic.solveByElim (return m!"{·.emoji} trying to apply: {e}") do
         let goals ← withTransparency transparency (g.apply e cfg)
@@ -54,7 +54,7 @@ We use this in `apply_rules` and `apply_assumption` where backtracking is not ne
 def applyFirst (cfg : ApplyConfig := {}) (transparency : TransparencyMode := .default)
     (lemmas : List Expr) : MVarId → MetaM (List MVarId) :=
   fun g => do
-    (← applyTactics cfg transparency lemmas g).firstM (fun t => t)
+    (applyTactics cfg transparency lemmas g).firstM (fun t => pure (some t))
 
 /--
 Configuration structure to control the behaviour of `solve_by_elim`:
@@ -187,9 +187,9 @@ def elabContextLemmas (g : MVarId) (lemmas : List (TermElabM Expr)) (ctx : TermE
 
 /-- Returns the list of tactics corresponding to applying the available lemmas to the goal. -/
 def applyLemmas (cfg : Config) (lemmas : List (TermElabM Expr)) (ctx : TermElabM (List Expr))
-    (g : MVarId) : MetaM (List (MetaM (List MVarId))) := do
-let es ← elabContextLemmas g lemmas ctx
-applyTactics cfg.toApplyConfig cfg.transparency es g
+    (g : MVarId) : Nondet MetaM (List MVarId) := Nondet.squash do
+  let es ← elabContextLemmas g lemmas ctx
+  return applyTactics cfg.toApplyConfig cfg.transparency es g
 
 /-- Applies the first possible lemma to the goal. -/
 def applyFirstLemma (cfg : Config) (lemmas : List (TermElabM Expr)) (ctx : TermElabM (List Expr))

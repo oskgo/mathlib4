@@ -5,7 +5,7 @@ import Mathlib.Tactic.ApplyFun
 import Mathlib.Tactic.ApplyWith
 import Mathlib.Tactic.Attr.Core
 import Mathlib.Tactic.Attr.Register
-import Mathlib.Tactic.Backtracking
+import Mathlib.Tactic.Backtrack
 import Mathlib.Tactic.Basic
 import Mathlib.Tactic.ByContra
 import Mathlib.Tactic.Cache
@@ -85,6 +85,7 @@ import Mathlib.Tactic.Monotonicity.Attr
 import Mathlib.Tactic.Monotonicity.Basic
 import Mathlib.Tactic.Monotonicity.Lemmas
 import Mathlib.Tactic.NoncommRing
+import Mathlib.Tactic.Nondet
 import Mathlib.Tactic.Nontriviality
 import Mathlib.Tactic.Nontriviality.Core
 import Mathlib.Tactic.NormCast

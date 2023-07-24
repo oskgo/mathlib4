@@ -158,10 +158,14 @@ def ofList : List α → ListM m α
 /-- The empty `ListM`. -/
 abbrev empty : ListM m α := nil
 
-/-- Convert a `List` of values inside the monad into a `ListM`. -/
-def ofListM : List (m α) → ListM m α
+/--
+Convert a `List` of values inside the monad into a `ListM`.
+Skip any failing values.
+-/
+def ofListM [Alternative m] : List (m α) → ListM m α
   | [] => nil
-  | h :: t => cons ((fun x => (x, ofListM t)) <$> some <$> h)
+  | h :: t => cons do
+      pure (← some <$> h <|> pure none, ofListM t)
 #align tactic.mllist.m_of_list ListM.ofListM
 
 /-- Extract a list inside the monad from a `ListM`. -/
@@ -280,10 +284,20 @@ partial def append (xs ys : ListM m α) : ListM m α :=
   xs.cases' ys fun x xs => cons' x (append xs ys)
 #align tactic.mllist.append ListM.append
 
+/-- Concatenate monadic lazy lists and a thunk producing a monadic lazy list. -/
+partial def orElse {α : Type u} (L : ListM m α) (M : Unit → ListM m α): ListM m α :=
+  cons do match ← uncons L with
+  | none => return (none, M ())
+  | some (x, xs) => return (some x, orElse xs M)
+
 /-- Join a monadic lazy list of monadic lazy lists into a single monadic lazy list. -/
 partial def join (xs : ListM m (ListM m α)) : ListM m α :=
   xs.cases' {} fun x xs => append x (join xs)
 #align tactic.mllist.join ListM.join
+
+/-- Lift a list of monadic values inside the monadic to a monadic list, ignoring failures. -/
+def ofListM' [Monad m] [Alternative m] (L : m (List (m α))) : ListM m α :=
+  .squash (.ofListM <$> L)
 
 /-- Enumerate the elements of a monadic lazy list, starting at a specified offset. -/
 partial def enum_from (n : Nat) (xs : ListM m α) : ListM m (Nat × α) :=
@@ -338,6 +352,15 @@ joining the results. -/
 partial def bind (xs : ListM m α) (f : α → ListM m β) : ListM m β :=
   xs.cases' {} fun x xs => append (f x) (bind xs f)
 #align tactic.mllist.bind_ ListM.bind
+
+/-- If `L` is empty, return a default value `M`, otherwise bind a function `f` over each element. -/
+def bindOrElse [Monad m] (L : ListM m α) (f : α → ListM m β) (M : ListM m β) :
+    ListM m β :=
+  squash do match ← uncons L with
+  | none => return M
+  | some (x, xs) => match ← uncons (f x) with
+    | none => return xs.bind f
+    | some (y, ys) => return cons <| pure (some y, orElse ys fun _ => (xs.bind f))
 
 /-- Convert any value in the monad to the singleton monadic lazy list. -/
 def monadLift (x : m α) : ListM m α :=
@@ -398,7 +421,7 @@ partial def foldM (f : β → α → m β) (init : β) (L : ListM m α) : m β :
 
 /-- Folds a binary function across a monadic lazy list, from an initial starting value.
 This will run forever if the list is infinite. -/
-unsafe def fold (f : β → α → β) (init : β) (L : ListM m α) : m β :=
+def fold (f : β → α → β) (init : β) (L : ListM m α) : m β :=
   L.foldM (fun b a => pure (f b a)) init
 
 section Alternative
@@ -434,7 +457,7 @@ instance : Monad (ListM m) where
 
 instance : Alternative (ListM m) where
   failure := nil
-  orElse := fun L M => L.append (M ())
+  orElse := orElse
 
 instance : MonadLift m (ListM m) where
   monadLift := monadLift
