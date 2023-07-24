@@ -135,9 +135,9 @@ def rewrites (lemmas : DiscrTree (Name × Bool × Nat) s × DiscrTree (Name × B
   IO.println <| "rewriting: " ++ n.ppGoal
   withMCtx n.mctx do
     let results := Mathlib.Tactic.Rewrites.rewritesCore lemmas n.goal n.type
-    let results ← results.force
-    IO.println <| s!"found {results.length} rewrites"
-    let results := ListM.ofList results
+    -- let results ← results.force
+    -- IO.println <| s!"found {results.length} rewrites"
+    -- let results := ListM.ofList results
     return results.mapM fun r => do
       n.rewrite r
 
