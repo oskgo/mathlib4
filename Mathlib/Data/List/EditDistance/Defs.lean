@@ -48,15 +48,15 @@ structure Cost (α β : Type _) (δ : Type _) where
   substitute : α → β → δ
 
 /-- The default cost structure, for which all operations cost `1`. -/
-def default [DecidableEq α] : Cost α α ℕ :=
+def defaultCost [DecidableEq α] : Cost α α ℕ :=
   ⟨fun _ => 1, fun _ => 1, fun a b => if a = b then 0 else 1⟩
 
-instance [DecidableEq α] : Inhabited (Cost α α ℕ) := ⟨default⟩
+instance [DecidableEq α] : Inhabited (Cost α α ℕ) := ⟨defaultCost⟩
 
-@[simp] lemma defaultDelete [DecidableEq α] (a : α) : default.delete a = 1 := rfl
-@[simp] lemma defaultInsert [DecidableEq α] (a : α) : default.insert a = 1 := rfl
-@[simp] lemma defaultSubstitute [DecidableEq α] (a b : α) :
-    default.substitute a b = if a = b then 0 else 1 := rfl
+@[simp] lemma defaultCost_delete [DecidableEq α] (a : α) : defaultCost.delete a = 1 := rfl
+@[simp] lemma defaultCost_insert [DecidableEq α] (a : α) : defaultCost.insert a = 1 := rfl
+@[simp] lemma defaultCost_substitute [DecidableEq α] (a b : α) :
+    defaultCost.substitute a b = if a = b then 0 else 1 := rfl
 
 variable (C : Cost α β δ)
 
@@ -282,8 +282,9 @@ theorem levenshtein_cons_cons
   suffixLevenshtein_cons_cons_fst_get_zero _ _ _ _ _
 
 #guard
-  (suffixLevenshtein Levenshtein.default "kitten".toList "sitting".toList).1 = [3, 3, 4, 5, 6, 6, 7]
+  (suffixLevenshtein Levenshtein.defaultCost "kitten".toList "sitting".toList).1 =
+    [3, 3, 4, 5, 6, 6, 7]
 
-#guard levenshtein Levenshtein.default
+#guard levenshtein Levenshtein.defaultCost
   "but our fish said, 'no! no!'".toList
   "'put me down!' said the fish.".toList = 21

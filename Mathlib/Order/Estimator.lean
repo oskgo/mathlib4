@@ -8,6 +8,29 @@ import Mathlib.Data.Set.Image
 import Mathlib.Order.Hom.Basic
 import Mathlib.Lean.Thunk
 
+/-!
+# Improvable lower bounds.
+
+The typeclass `Estimator a ε`, where `a : Thunk α` and `ε : Type`,
+states that `e : ε` carries the data of a lower bound for `a.get`,
+in the form `bound_le : bound a e ≤ a.get`,
+along with a mechanism for asking for a better bound `improve e : Option ε`,
+satisfying
+```
+match improve e with
+| none => bound e = a.get
+| some e' => bound e < bound e'
+```
+i.e. it returns `none` if the current bound is already optimal,
+and otherwise a strictly better bound.
+
+(The value in `α` is hidden inside a `Thunk` to prevent evaluating it:
+the point of this typeclass is to work with cheap-to-compute lower bounds for expensive values.)
+
+An appropriate well-foundedness condition would then ensure that repeated improvements reach
+the exact value.
+-/
+
 /--
 Given `[EstimatorData a ε]`
 * a term `e : ε` can be interpreted via `bound a e : α` as a lower bound for `a`, and
@@ -21,8 +44,8 @@ class EstimatorData (a : Thunk α) (ε : Type _) where
 
 /--
 Given `[Estimator a ε]`
-* we have `bound a e ≤ a`, and
-* `improve a e` returns none iff `bound a e = a`, and otherwise it returns a strictly better bound.
+* we have `bound a e ≤ a.get`, and
+* `improve a e` returns none iff `bound a e = a.get`, and otherwise it returns a strictly better bound.
 -/
 class Estimator [Preorder α] (a : Thunk α) (ε : Type _) extends EstimatorData a ε where
   bound_le e : bound e ≤ a.get
@@ -40,9 +63,6 @@ instance [Preorder α] (a : α) : Estimator (Thunk.pure a) { x // x = a } where
   improve _ := none
   bound_le e := e.property.le
   improve_spec e := e.property
-
--- example [Preorder α] (a : α) : WellFoundedGT (range (bound (Thunk.pure a) : { x // x = a } → α)) :=
---   inferInstance
 
 attribute [local instance] WellFoundedGT.toWellFoundedRelation in
 def Estimator.improveUntilAux [PartialOrder α]
@@ -62,8 +82,9 @@ termination_by Estimator.improveUntilAux p I e r => (⟨_, mem_range_self e⟩ :
 Improve an estimate until it satisfies a predicate,
 or else return the best available estimate, if any improvement was made.
 -/
-def Estimator.improveUntil [PartialOrder α]
-    (a : Thunk α) (p : α → Bool) [Estimator a ε] [WellFoundedGT (range (bound a : ε → α))] (e : ε) : Except (Option ε) ε :=
+def Estimator.improveUntil [PartialOrder α] (a : Thunk α) (p : α → Bool)
+    [Estimator a ε] [WellFoundedGT (range (bound a : ε → α))] (e : ε) :
+    Except (Option ε) ε :=
   Estimator.improveUntilAux a p e false
 
 variable [PartialOrder α]
@@ -73,8 +94,8 @@ attribute [local instance] WellFoundedGT.toWellFoundedRelation in
 If `Estimator.improveUntil a p e` returns `some e'`, then `bound a e'` satisfies `p`.
 Otherwise, that value `a` must not satisfy `p`.
 -/
-theorem Estimator.improveUntilAux_spec
-    (a : Thunk α) (p : α → Bool) [Estimator a ε] [WellFoundedGT (range (bound a : ε → α))] (e : ε) (r : Bool) :
+theorem Estimator.improveUntilAux_spec (a : Thunk α) (p : α → Bool)
+    [Estimator a ε] [WellFoundedGT (range (bound a : ε → α))] (e : ε) (r : Bool) :
     match Estimator.improveUntilAux a p e r with
     | .error _ => ¬ p a.get
     | .ok e' => p (bound a e') := by
@@ -104,10 +125,6 @@ theorem Estimator.improveUntil_spec
 
 variable [∀ a : α, WellFoundedGT { x // x ≤ a }]
 
-def Subtype.orderEmbedding {p q : α → Prop} (h : ∀ a, p a → q a) : {x // p x} ↪o {x // q x} :=
-  { Subtype.impEmbedding _ _ h with
-    map_rel_iff' := by aesop }
-
 instance [Estimator a ε] : WellFoundedGT (range (bound a : ε → α)) :=
   let f : range (bound a : ε → α) ↪o { x // x ≤ a.get } :=
     Subtype.orderEmbedding (by rintro _ ⟨e, rfl⟩; exact Estimator.bound_le e)
@@ -129,9 +146,6 @@ instance [PartialOrder α] [DecidableRel ((· : α) < ·)] [PartialOrder β] {a 
   improve e :=
     let bd := (bound (a.prod b) e.inner).1
     Estimator.improveUntil (a.prod b) (fun p => bd < p.1) e.inner |>.toOption |>.map Estimator.fst.mk
-
-@[simp]
-lemma Except.toOption_error : Except.toOption (.error e : Except ε α) = none := rfl
 
 instance instEstimatorFst [PartialOrder α] [DecidableRel ((· : α) < ·)] [PartialOrder β]
     [∀ (p : α × β), WellFoundedGT { q // q ≤ p }]

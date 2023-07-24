@@ -9,9 +9,11 @@ import Mathlib.Order.Estimator
 section
 variable [LinearOrder α]
 
+/-- The maximum value in a non-empty `List`. -/
 def List.maximum_of_length_pos {L : List α} (h : 0 < L.length) : α :=
   WithBot.unbot L.maximum (List.maximum_ne_bot_of_length_pos h)
 
+/-- The minimum value in a non-empty `List`. -/
 def List.minimum_of_length_pos {L : List α} (h : 0 < L.length) : α :=
   @List.maximum_of_length_pos αᵒᵈ _ _ h
 
@@ -56,6 +58,18 @@ end
 variable [CanonicallyLinearOrderedAddMonoid δ]
     (C : Levenshtein.Cost α β δ) (xs : List α) (ys : List β)
 
+/--
+Data showing that the Levenshtein distance from `xs` to `ys`
+is bounded below by the minimum Levenshtein distance between some suffix of `xs`
+and a particular suffix of `ys`.
+
+This bound is (non-strict) monotone as we take longer suffixes of `ys`.
+
+This is an auxiliary definition for the later `LevenshteinEstimator`:
+this variant constructs a lower bound for the pair consisting of
+the Levenshtein distance from `xs` to `ys`,
+along with the length of `ys`.
+-/
 structure LevenshteinEstimator' : Type _ where
   pre_rev : List β
   suff : List β
@@ -67,7 +81,8 @@ structure LevenshteinEstimator' : Type _ where
     | [] => (distances.1[0]'(distances.2), ys.length)
     | _ => (List.minimum_of_length_pos distances.2, suff.length)
 
-instance : EstimatorData (Thunk.mk fun _ => (levenshtein C xs ys, ys.length)) (LevenshteinEstimator' C xs ys) where
+instance : EstimatorData (Thunk.mk fun _ => (levenshtein C xs ys, ys.length))
+    (LevenshteinEstimator' C xs ys) where
   bound e := e.bound
   improve e := match e.pre_rev, e.split with
     | [], _ => none
