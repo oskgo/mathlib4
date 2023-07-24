@@ -5,6 +5,7 @@ Authors: Kim Liesinger
 -/
 import Mathlib.Data.List.EditDistance.Estimator
 import Mathlib.Data.ListM.BestFirst
+import Mathlib.Order.Estimator.Queue
 
 /--
 Given `f : β → List α × List α`, this is a priority queue of `β`s which
@@ -195,4 +196,4 @@ example [AddCommMonoid α] {a b c d : α} : (a + b) + (c + d) = a + d + c + b :=
 
 example (xs ys : List α) :
     (xs ++ ys ++ ys).length = 2 * ys.length + xs.length := by
-  rw [@List.length_append, @List.length_append, @add_rotate, Nat.two_mul]
+  rewrite_search
