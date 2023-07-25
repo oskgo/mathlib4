@@ -5,7 +5,7 @@ Authors: Kim Liesinger
 -/
 import Mathlib.Data.List.EditDistance.Estimator
 import Mathlib.Data.ListM.BestFirst
-import Mathlib.Order.Estimator.Queue
+import Mathlib.Data.Nat.Interval
 
 /-!
 # The `rw_search` tactic
