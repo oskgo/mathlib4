@@ -328,7 +328,7 @@ theorem ascFactorial_lt_pow_add (n : ℕ) : ∀ {k : ℕ}, 2 ≤ k → n.ascFact
     refine'
       Nat.mul_lt_mul_of_le_of_lt le_rfl
         ((ascFactorial_le_pow_add n _).trans_lt
-          (pow_lt_pow_of_lt_left (lt_add_one _) (succ_pos _)))
+          (Nat.pow_lt_pow_of_lt_left (lt_add_one _) (succ_pos _)))
         (succ_pos _)
 #align nat.asc_factorial_lt_pow_add Nat.ascFactorial_lt_pow_add
 
