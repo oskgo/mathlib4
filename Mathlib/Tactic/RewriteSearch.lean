@@ -212,13 +212,3 @@ elab_rules : tactic |
   let type? := if min.rfl? = some true then none else some (← min.goal.getType)
   addRewritesSuggestion tk rules
     type? (origSpan? := ← getRef)
-
-example (xs ys : List α) : (xs ++ ys).length = ys.length + xs.length := by
-  rw_search
-
-example [AddCommMonoid α] {a b c d : α} : (a + b) + (c + d) = a + d + c + b := by
-  rw_search
-
-example (xs ys : List α) :
-    (xs ++ ys ++ ys).length = 2 * ys.length + xs.length := by
-  rw_search
