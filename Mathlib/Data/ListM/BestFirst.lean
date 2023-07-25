@@ -7,8 +7,6 @@ import Mathlib.Data.ListM.Basic
 import Mathlib.Order.Estimator
 import Mathlib.Data.Prod.Lex
 import Mathlib.Data.Finset.Preimage
--- import Mathlib.Data.Set.Intervals.UnorderedInterval
--- import Mathlib.Data.Set.Intervals.Image
 
 /-!
 # Best first search

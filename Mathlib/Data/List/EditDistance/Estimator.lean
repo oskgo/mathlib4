@@ -6,54 +6,22 @@ Authors: Kim Liesinger
 import Mathlib.Data.List.EditDistance.Bounds
 import Mathlib.Order.Estimator
 
-section
-variable [LinearOrder α]
+/-!
+# `Estimator` for Levenshtein distance.
 
-/-- The maximum value in a non-empty `List`. -/
-def List.maximum_of_length_pos {L : List α} (h : 0 < L.length) : α :=
-  WithBot.unbot L.maximum (List.maximum_ne_bot_of_length_pos h)
+The usual algorithm for computing Levenshtein distances
+provides successively better lower bounds for the Levenshtein distance as it runs,
+as proved in `Mathlib.Data.List.EditDistance.Bounds`.
 
-/-- The minimum value in a non-empty `List`. -/
-def List.minimum_of_length_pos {L : List α} (h : 0 < L.length) : α :=
-  @List.maximum_of_length_pos αᵒᵈ _ _ h
+In this file we package that fact as an instance of
+```
+Estimator (Thunk.mk fun _ => levenshtein C xs ys) (LevenshteinEstimator C xs ys)
+```
+allowing us to use the `Estimator` framework for Levenshtein distances.
 
-@[simp]
-lemma List.coe_maximum_of_length_pos {L : List α} (h : 0 < L.length) :
-    (L.maximum_of_length_pos h : α) = L.maximum :=
-  WithBot.coe_unbot _ _
-
-@[simp]
-lemma List.coe_minimum_of_length_pos {L : List α} (h : 0 < L.length) :
-    (L.minimum_of_length_pos h : α) = L.minimum :=
-  WithTop.coe_untop _ _
-
-theorem List.le_maximum_of_length_pos_iff {L : List α} (h : 0 < L.length) :
-    b ≤ List.maximum_of_length_pos h ↔ b ≤ L.maximum :=
-  WithBot.le_unbot_iff _
-
-theorem List.minimum_of_length_pos_le_iff {L : List α} (h : 0 < L.length) :
-    List.minimum_of_length_pos h ≤ b ↔ L.minimum ≤ b :=
-  @List.le_maximum_of_length_pos_iff αᵒᵈ _ _ _ h
-
-theorem List.le_maximum_of_length_pos_of_mem {L : List α} (h : a ∈ L) (w : 0 < L.length) :
-     a ≤ L.maximum_of_length_pos w := by
-  simp [List.le_maximum_of_length_pos_iff]
-  exact List.le_maximum_of_mem' h
-
-theorem List.minimum_of_length_pos_le_of_mem {L : List α} (h : a ∈ L) (w : 0 < L.length) :
-     L.minimum_of_length_pos w ≤ a :=
-  @List.le_maximum_of_length_pos_of_mem αᵒᵈ _ _ _ h _
-
-theorem List.getElem_le_maximum_of_length_pos {L : List α} (w : i < L.length) :
-    L[i] ≤ L.maximum_of_length_pos (Nat.zero_lt_of_lt w) := by
-  apply List.le_maximum_of_length_pos_of_mem
-  exact get_mem L i w
-
-theorem List.minimum_of_length_pos_le_getElem {L : List α} (w : i < L.length) :
-    L.minimum_of_length_pos (Nat.zero_lt_of_lt w) ≤ L[i] :=
-  @List.getElem_le_maximum_of_length_pos αᵒᵈ _ _ _ _
-
-end
+This is then used in the implementation of `rewrite_search`
+to avoid needing the entire edit distance calculation in unlikely search paths.
+-/
 
 variable [CanonicallyLinearOrderedAddMonoid δ]
     (C : Levenshtein.Cost α β δ) (xs : List α) (ys : List β)
