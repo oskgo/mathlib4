@@ -83,11 +83,17 @@ def pop (Q : EstimatorQueue β prio ε) : Option (β × EstimatorQueue β prio �
   | none => none
   | some (⟨b, _⟩, Q') => some (b, Q')
 
+/--
+Pop off all elements in the queue into a list, with their priorities.
+-/
 partial def toListWithPriority (Q : EstimatorQueue β prio ε) : List (β × ℕ) :=
   match Q.popWithPriority with
   | none => []
   | some (p, Q) => p :: Q.toListWithPriority
 
+/--
+Pop off all elements in the queue into a list.
+-/
 partial def toList (Q : EstimatorQueue β prio ε) : List β :=
   match Q.pop with
   | none => []
