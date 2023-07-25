@@ -155,7 +155,8 @@ def popWithPriority (q : BestFirstQueue prio ε m β maxSize) :
 /--
 Pop a `β` off the `ListM m β` with lowest priority.
 -/
-def pop (q : BestFirstQueue prio ε m β maxSize) : m (Option ((α × β) × BestFirstQueue prio ε m β maxSize)) := do
+def pop (q : BestFirstQueue prio ε m β maxSize) :
+    m (Option ((α × β) × BestFirstQueue prio ε m β maxSize)) := do
   match ← q.popWithBound with
   | none => pure none
   | some (⟨a, _, b⟩, q') => pure (some ((a, b), q'))
@@ -165,10 +166,11 @@ Convert a `BestFirstQueue` to a `ListM ((α × ω) × β)`, by popping off all e
 recording also the values in `ω` of the best current lower bounds.
 -/
 -- This is not used in the algorithms below, but can be useful for debugging.
-partial def toListMWithPriority (q : BestFirstQueue prio ε m β maxSize) : ListM m ((α × ω) × β) := .squash do
-  match ← q.popWithPriority with
-  | none => pure .nil
-  | some (p, q') => pure <| ListM.cons' p q'.toListMWithPriority
+partial def toListMWithPriority (q : BestFirstQueue prio ε m β maxSize) : ListM m ((α × ω) × β) :=
+  .squash do
+    match ← q.popWithPriority with
+    | none => pure .nil
+    | some (p, q') => pure <| ListM.cons' p q'.toListMWithPriority
 
 /--
 Convert a `BestFirstQueue` to a `ListM (α × β)`, by popping off all elements.
