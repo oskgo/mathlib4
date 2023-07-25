@@ -13,8 +13,8 @@ always returns the element `b : β` such that the pair `f b` is as close as poss
 -/
 @[reducible]
 def EditDistanceQueue (f : β → List α × List α) [DecidableEq α] : Type _ := EstimatorQueue β
-    (fun b => Thunk.mk fun _ => let ⟨xs, ys⟩ := f b; levenshtein Levenshtein.default xs ys)
-    (fun b => let ⟨xs, ys⟩ := f b; LevenshteinEstimator Levenshtein.default xs ys)
+    (fun b => Thunk.mk fun _ => let ⟨xs, ys⟩ := f b; levenshtein Levenshtein.defaultCost xs ys)
+    (fun b => let ⟨xs, ys⟩ := f b; LevenshteinEstimator Levenshtein.defaultCost xs ys)
 
 set_option maxHeartbeats 2000 in
 /-- info: [1, 4, 5] -/
@@ -34,8 +34,8 @@ always returns the element `b : β` such that `f b` is as close as possible to `
 def EditDistanceTargetQueue (f : β → List α) [DecidableEq α] (t : β) : Type _ :=
   let xs := f t
   EstimatorQueue β
-    (fun b => Thunk.mk fun _ => levenshtein Levenshtein.default xs (f b))
-    (fun b => LevenshteinEstimator Levenshtein.default xs (f b))
+    (fun b => Thunk.mk fun _ => levenshtein Levenshtein.defaultCost xs (f b))
+    (fun b => LevenshteinEstimator Levenshtein.defaultCost xs (f b))
 
 set_option maxHeartbeats 2000 in
 /-- info: [5, 13, 14] -/
