@@ -119,7 +119,6 @@ See note [reducible non-instances]. -/
 protected def Function.Injective.module [AddCommMonoid M₂] [SMul R M₂] (f : M₂ →+ M)
     (hf : Injective f) (smul : ∀ (c : R) (x), f (c • x) = c • f x) : Module R M₂ :=
   { hf.distribMulAction f smul with
-    smul := (· • ·)
     add_smul := fun c₁ c₂ x => hf <| by simp only [smul, f.map_add, add_smul]
     zero_smul := fun x => hf <| by simp only [smul, zero_smul, f.map_zero] }
 #align function.injective.module Function.Injective.module
@@ -128,7 +127,6 @@ protected def Function.Injective.module [AddCommMonoid M₂] [SMul R M₂] (f : 
 protected def Function.Surjective.module [AddCommMonoid M₂] [SMul R M₂] (f : M →+ M₂)
     (hf : Surjective f) (smul : ∀ (c : R) (x), f (c • x) = c • f x) : Module R M₂ :=
   { hf.distribMulAction f smul with
-    smul := (· • ·)
     add_smul := fun c₁ c₂ x => by
       rcases hf x with ⟨x, rfl⟩
       simp only [add_smul, ← smul, ← f.map_add]
@@ -146,7 +144,6 @@ def Function.Surjective.moduleLeft {R S M : Type _} [Semiring R] [AddCommMonoid 
     [Semiring S] [SMul S M] (f : R →+* S) (hf : Function.Surjective f)
     (hsmul : ∀ (c) (x : M), f c • x = c • x) : Module S M :=
   { hf.distribMulActionLeft f.toMonoidHom hsmul with
-    smul := (· • ·)
     zero_smul := fun x => by rw [← f.map_zero, hsmul, zero_smul]
     add_smul := hf.forall₂.mpr fun a b x => by simp only [← f.map_add, hsmul, add_smul] }
 #align function.surjective.module_left Function.Surjective.moduleLeft
@@ -158,12 +155,13 @@ variable {R} (M)
 See note [reducible non-instances]. -/
 @[reducible]
 def Module.compHom [Semiring S] (f : S →+* R) : Module S M :=
-  { MulActionWithZero.compHom M f.toMonoidWithZeroHom, DistribMulAction.compHom M (f : S →* R) with
-    smul := SMul.comp.smul f
+  { toDistribMulAction := DistribMulAction.compHom M (f : S →* R)
+    zero_smul := MulActionWithZero.compHom M f.toMonoidWithZeroHom|>.zero_smul
     -- Porting note: the `show f (r + s) • x = f r • x + f s • x ` wasn't needed in mathlib3.
     -- Somehow, now that `SMul` is heterogeneous, it can't unfold earlier fields of a definition for
     -- use in later fields.  See
     -- https://leanprover.zulipchat.com/#narrow/stream/287929-mathlib4/topic/Heterogeneous.20scalar.20multiplication
+    -- add_smul := fun _ _ _ => by simp [HSMul.hSMul,SMul.smul,add_smul]}
     add_smul := fun r s x => show f (r + s) • x = f r • x + f s • x by simp [add_smul] }
 #align module.comp_hom Module.compHom
 
