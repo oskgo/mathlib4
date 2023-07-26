@@ -478,11 +478,11 @@ def includeLeftRingHom : A →+* A ⊗[R] B where
   map_mul' := by simp
 #align algebra.tensor_product.include_left_ring_hom Algebra.TensorProduct.includeLeftRingHom
 
-variable {S : Type _} [CommSemiring S] [Algebra S A]
+variable {S : Type w} [CommSemiring S] [Algebra S A]
 
 instance leftAlgebra [SMulCommClass R S A] : Algebra S (A ⊗[R] B) :=
-  { TensorProduct.includeLeftRingHom.comp (algebraMap S A),
-    (by infer_instance : Module S (A ⊗[R] B)) with
+  { toSMul := leftModule.toSMul
+    toRingHom := TensorProduct.includeLeftRingHom.comp (algebraMap S A)
     commutes' := fun r x => by
       refine TensorProduct.induction_on x ?_ ?_ ?_
       · simp
