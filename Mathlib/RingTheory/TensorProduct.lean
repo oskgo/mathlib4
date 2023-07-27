@@ -422,11 +422,11 @@ nonrec theorem mul_assoc (x y z : A ⊗[R] B) : mul (mul x y) z = mul x (mul y z
 #align algebra.tensor_product.mul_assoc Algebra.TensorProduct.mul_assoc
 
 theorem one_mul (x : A ⊗[R] B) : mul (1 ⊗ₜ 1) x = x := by
-  refine TensorProduct.induction_on x ?_ ?_ ?_ <;> simp (config := { contextual := true })
+  refine TensorProduct.induction_on x ?_ ?_ ?_ <;> simp? (config := { contextual := true })
 #align algebra.tensor_product.one_mul Algebra.TensorProduct.one_mul
 
 theorem mul_one (x : A ⊗[R] B) : mul x (1 ⊗ₜ 1) = x := by
-  refine TensorProduct.induction_on x ?_ ?_ ?_ <;> simp (config := { contextual := true })
+  refine TensorProduct.induction_on x ?_ ?_ ?_ <;> simp? (config := { contextual := true })
 #align algebra.tensor_product.mul_one Algebra.TensorProduct.mul_one
 
 instance : One (A ⊗[R] B) where one := 1 ⊗ₜ 1
@@ -495,7 +495,7 @@ instance leftAlgebra [SMulCommClass R S A] : Algebra S (A ⊗[R] B) :=
         -- no longer works for some reason
     smul_def' := fun r x => by
       refine TensorProduct.induction_on x ?_ ?_ ?_
-      · simp [smul_zero]
+      · rw [smul_zero]; simp
       · intro a b
         dsimp
         rw [TensorProduct.smul_tmul', Algebra.smul_def r a, _root_.one_mul]
