@@ -281,8 +281,8 @@ theorem ascFactorial_of_sub {n k : ℕ} (h : k < n) :
     (n - k) * (n - k).ascFactorial k = (n - (k + 1)).ascFactorial (k + 1) := by
   let t := n - k.succ
   let ht : t = n - k.succ := rfl
-  suffices h' : n - k = t.succ by rw [← ht, h', succ_ascFactorial, ascFactorial_succ]
-  rw [ht, succ_eq_add_one, ← tsub_tsub_assoc (succ_le_of_lt h) (succ_pos _), succ_sub_one]
+  suffices h' : n - k = t.succ; · rw [← ht, h', succ_ascFactorial, ascFactorial_succ]
+  rw [ht, succ_eq_add_one, ← tsub_tsub_assoc (succ_le_of_lt h) (succ_pos _), Nat.add_one_sub_one]
 #align nat.asc_factorial_of_sub Nat.ascFactorial_of_sub
 
 theorem pow_succ_le_ascFactorial (n : ℕ) : ∀ k : ℕ, (n + 1) ^ k ≤ n.ascFactorial k

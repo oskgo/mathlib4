@@ -646,8 +646,8 @@ theorem isEmpty_iff_eq_nil {l : List α} : l.isEmpty ↔ l = [] := by cases l <;
 theorem length_dropLast : ∀ l : List α, length l.dropLast = length l - 1
   | [] | [_] => rfl
   | a::b::l => by
-    rw [dropLast, length_cons, length_cons, length_dropLast (b::l), succ_sub_one, length_cons,
-      succ_sub_one]
+    rw [dropLast, length_cons, length_cons, length_dropLast (b::l), Nat.add_one_sub_one,
+      length_cons, Nat.add_one_sub_one]
     simp
 #align list.length_init List.length_dropLast
 
