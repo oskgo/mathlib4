@@ -89,7 +89,7 @@ lemma measure_cdf [IsProbabilityMeasure μ] : (cdf μ).measure = μ := by
 
 end ExplicitMeasureArg
 
-lemma cdf_measure (f : StieltjesFunction) (hf0 : Tendsto f atBot (𝓝 0))
+lemma cdf_measure_stieltjesFunction (f : StieltjesFunction) (hf0 : Tendsto f atBot (𝓝 0))
     (hf1 : Tendsto f atTop (𝓝 1)) :
     cdf f.measure = f := by
   refine (cdf f.measure).eq_of_measure_of_tendsto_atBot f ?_ (tendsto_cdf_atBot _) hf0
@@ -102,11 +102,11 @@ end ProbabilityTheory
 open ProbabilityTheory
 
 /-- If two real probability distributions have the same cdf, they are equal. -/
-lemma MeasureTheory.Measure.ext_of_cdf (μ ν : Measure ℝ) [IsProbabilityMeasure μ]
+lemma MeasureTheory.Measure.eq_of_cdf (μ ν : Measure ℝ) [IsProbabilityMeasure μ]
     [IsProbabilityMeasure ν] (h : cdf μ = cdf ν) : μ = ν := by
   rw [← measure_cdf μ, ← measure_cdf ν, h]
 
-lemma MeasureTheory.Measure.ext_iff_cdf (μ ν : Measure ℝ) [IsProbabilityMeasure μ]
+@[simp] lemma MeasureTheory.Measure.cdf_eq_iff (μ ν : Measure ℝ) [IsProbabilityMeasure μ]
     [IsProbabilityMeasure ν] :
-    μ = ν ↔ cdf μ = cdf ν :=
-⟨fun h ↦ by rw [h], MeasureTheory.Measure.ext_of_cdf μ ν⟩
+    cdf μ = cdf ν ↔ μ = ν :=
+⟨MeasureTheory.Measure.eq_of_cdf μ ν, fun h ↦ by rw [h]⟩
