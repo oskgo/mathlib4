@@ -75,7 +75,7 @@ instance (hℓ : 0 < ℓ) : IsProbabilityMeasure (expDistrib ℓ hℓ) :=
     (tendsto_expCdf_atTop _ hℓ), sub_zero, ENNReal.ofReal_one]⟩
 
 lemma cdf_expDistrib (ℓ : ℝ) (hℓ : 0 < ℓ) : cdf (expDistrib ℓ hℓ) = expCdf ℓ hℓ :=
-  cdf_measure (expCdf ℓ hℓ) (tendsto_expCdf_atBot _ _) (tendsto_expCdf_atTop _ hℓ)
+  cdf_measure_stieltjesFunction (expCdf ℓ hℓ) (tendsto_expCdf_atBot _ _) (tendsto_expCdf_atTop _ hℓ)
 
 -- todo: f.measure is equal to withDensity of the derivative
 lemma expDistrib_eq_withDensity (ℓ : ℝ) (hℓ : 0 < ℓ) :
