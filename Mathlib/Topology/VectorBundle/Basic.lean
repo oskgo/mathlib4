@@ -14,7 +14,7 @@ import Mathlib.Topology.FiberBundle.Basic
 In this file we define (topological) vector bundles.
 
 Let `B` be the base space, let `F` be a normed space over a normed field `R`, and let
-`E : B → Type*` be a `FiberBundle` with fiber `F`, in which, for each `x`, the fiber `E x` is a
+`E : B → Type _` be a `FiberBundle` with fiber `F`, in which, for each `x`, the fiber `E x` is a
 topological vector space over `R`.
 
 To have a vector bundle structure on `Bundle.TotalSpace F E`, one should additionally have the
@@ -1020,7 +1020,7 @@ definition, instead of `Trivialization.continuousLinearEquivAt`, so that
 `ContinuousLinearMap.inCoordinates_eq`).
 
 This is the (second component of the) underlying function of a trivialization of the hom-bundle
-(see `hom_trivialization_at_apply`). However, note that `ContinuousLinearMap.inCoordinates` is
+(see `hom_trivializationAt_apply`). However, note that `ContinuousLinearMap.inCoordinates` is
 defined even when `x` and `y` live in different base sets.
 Therefore, it is also convenient when working with the hom-bundle between pulled back bundles.
 -/
