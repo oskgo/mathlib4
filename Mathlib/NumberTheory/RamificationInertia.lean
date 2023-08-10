@@ -486,7 +486,9 @@ theorem Quotient.algebraMap_quotient_of_ramificationIdx_neZero (x : R) :
 def powQuotSuccInclusion (i : ℕ) :
     Ideal.map (Ideal.Quotient.mk (P ^ e)) (P ^ (i + 1)) →ₗ[R ⧸ p]
     Ideal.map (Ideal.Quotient.mk (P ^ e)) (P ^ i) where
-  toFun x := ⟨x, Ideal.map_mono (Ideal.pow_le_pow i.le_succ) x.2⟩
+  toFun x := by
+    constructor
+    exact Ideal.map_mono (Ideal.pow_le_pow i.le_succ) x.2
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
 #align ideal.pow_quot_succ_inclusion Ideal.powQuotSuccInclusion
