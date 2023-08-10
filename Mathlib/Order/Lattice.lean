@@ -931,6 +931,7 @@ def Lattice.toLinearOrder (α : Type u) [Lattice α] [DecidableEq α]
     decidableEq := ‹_›,
     decidableLT := ‹_›,
     le_total := total_of (· ≤ ·),
+    compare := fun x y => compareOfLessAndEq x y
     max := (· ⊔ ·),
     max_def := by exact congr_fun₂ sup_eq_maxDefault,
     min := (· ⊓ ·),
