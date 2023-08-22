@@ -123,11 +123,11 @@ variable {x y : Sum α β}
   cases x <;> simp only [getRight?, isLeft, eq_self_iff_true]
 #align sum.get_right_eq_none_iff Sum.getRight?_eq_none_iff
 
-@[simp] lemma getLeft?_eq_some_iff {a : α} : x.getLeft? = a ↔ x = inl a := by
+@[simp] theorem getLeft?_eq_some_iff {a : α} : x.getLeft? = a ↔ x = inl a := by
   cases x <;> simp only [getLeft?, Option.some.injEq, inl.injEq]
 #align sum.get_left_eq_some_iff Sum.getLeft?_eq_some_iff
 
-@[simp] lemma getRight?_eq_some_iff {b : β} : x.getRight? = b ↔ x = inr b := by
+@[simp] theorem getRight?_eq_some_iff {b : β} : x.getRight? = b ↔ x = inr b := by
   cases x <;> simp only [getRight?, Option.some.injEq, inr.injEq]
 #align sum.get_right_eq_some_iff Sum.getRight?_eq_some_iff
 
@@ -463,6 +463,54 @@ theorem liftRel_swap_iff : LiftRel s r x.swap y.swap ↔ LiftRel r s x y :=
     rw [← swap_swap x, ← swap_swap y]
     exact h.swap, LiftRel.swap⟩
 #align sum.lift_rel_swap_iff Sum.liftRel_swap_iff
+
+theorem liftRel_def : LiftRel r s x y ↔ (∃ a, x = inl a ∧ ∃ c, y = inl c ∧ r a c) ∨
+(∃ b, x = inr b ∧ ∃ d, y = inr d ∧ s b d) := by
+refine' ⟨(fun H ↦ _), (fun H ↦ _)⟩
+· rcases H with (hac | hbd)
+  · exact Or.inl ⟨_, rfl, _, rfl, hac⟩
+  · exact Or.inr ⟨_, rfl, _, rfl, hbd⟩
+· rcases H with (⟨_, rfl, _, rfl, hac⟩ | ⟨_, rfl, _, rfl, hbd⟩)
+  · exact liftRel_inl_inl.mpr hac
+  · exact liftRel_inr_inr.mpr hbd
+
+theorem isLeft_of_liftRel (h : LiftRel r s x y) : x.isLeft = y.isLeft := by
+  cases h <;> rfl
+
+theorem isRight_eq_of_liftRel (h : LiftRel r s x y) : x.isRight = y.isRight := by
+  rw [← Sum.not_isLeft, isLeft_of_liftRel h, Sum.not_isLeft]
+
+theorem isLeft_of_liftRel_inl_fst (h : LiftRel r s (inl a) y) : y.isLeft :=
+  (isLeft_of_liftRel h).symm
+
+theorem isLeft_of_liftRel_inl_snd (h : LiftRel r s x (inl c)) : x.isLeft :=
+  isLeft_of_liftRel h
+
+theorem isRight_of_liftRel_inr_fst (h : LiftRel r s (inr b) y) : y.isRight :=
+  (isRight_eq_of_liftRel h).symm
+
+theorem isRight_of_liftRel_inr_snd (h : LiftRel r s x (inr d)) : x.isRight :=
+  isRight_eq_of_liftRel h
+
+variable {τ κ : Type*} {f : τ → Sum α β} {g : κ → Sum γ δ} {t : τ} {k : κ}
+
+theorem isLeft_apply_of_inl_fst (h : LiftRel r s (inl a) (g k)) : (g k).isLeft :=
+isLeft_of_liftRel_inl_fst h
+
+theorem isLeft_apply_of_inl_snd (h : LiftRel r s (f t) (inl c)) : (f t).isLeft :=
+isLeft_of_liftRel_inl_snd h
+
+theorem isRight_apply_of_inr_fst (h : LiftRel r s (inr b) (g k)) : (g k).isRight :=
+isRight_of_liftRel_inr_fst h
+
+theorem isRight_apply_of_inr_snd (h : LiftRel r s (f t) (inr d)) : (f t).isRight :=
+isRight_of_liftRel_inr_snd h
+
+theorem isLeft_apply_eq_of_LiftRel_apply (h : LiftRel r s (f t) y) :
+  (f t).isLeft = y.isLeft := isLeft_of_liftRel h
+
+theorem isRight_apply_eq_of_LiftRel_apply (h : LiftRel r s x (g k)) :
+  (g k).isRight = x.isRight := (isRight_eq_of_liftRel h).symm
 
 end LiftRel
 
