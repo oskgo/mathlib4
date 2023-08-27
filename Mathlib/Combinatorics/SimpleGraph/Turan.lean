@@ -67,6 +67,31 @@ def replaceVertex (s t : V) : SimpleGraph V where
     Sym2.toRel_prop, Set.mem_setOf_eq, Quotient.eq, Sym2.rel_iff, or_self, exists_eq_right_right,
     le_Prop_eq, sdiff_le_iff, IsEmpty.forall_iff, sup_of_le_right]; tauto
 
+theorem replaceVertex_self (s : V) : G.replaceVertex s s = G := by
+  rw [replaceVertex]
+  congr!
+  ext x y
+  rw [incidenceSet]
+  simp_all only [mem_neighborSet, SimpleGraph.irrefl, not_false_eq_true, Set.diff_singleton_eq_self,
+    Pi.sup_apply, Pi.sdiff_apply, Sym2.toRel_prop, Set.mem_setOf_eq, mem_edgeSet, Sym2.mem_iff,
+    Quotient.eq, Sym2.rel_iff, ge_iff_le, le_Prop_eq, forall_exists_index, and_imp, sdiff_le_iff,
+    sup_Prop_eq, true_and]
+  by_cases ha : Adj G x y
+  · simp_all only [true_and, iff_true]
+    change ⊤ \ _ ∨ _
+    simp only [top_sdiff', hnot_eq_compl, compl_iff_not]
+    rw [← imp_iff_not_or]
+    intro e
+    cases' e with z z
+    · use y; rw [z]; simpa
+    · use x; rw [z, adj_comm]; simpa
+  · simp_all only [false_and, sdiff_self, iff_false]
+    change ¬(False ∨ _)
+    simp only [false_or, not_exists, not_and]
+    intro b hb
+    push_neg
+    constructor <;> (intro e; contrapose! hb; simpa only [e, hb, adj_comm] using ha)
+
 /-- Clique-freeness is preserved by `replaceVertex`. -/
 theorem cliqueFree_of_replaceVertex_cliqueFree (s t : V) (h : G.CliqueFree r) :
     (G.replaceVertex s t).CliqueFree r := by
@@ -78,27 +103,87 @@ theorem cliqueFree_of_replaceVertex_cliqueFree (s t : V) (h : G.CliqueFree r) :
     ge_iff_le, le_Prop_eq, forall_exists_index, and_imp, sdiff_le_iff, sup_Prop_eq, ne_eq] at ha
   rw [not_cliqueFree_iff]
   by_cases mt : t ∈ Set.range f
-  · by_cases ms : s ∈ Set.range f
-    · sorry
-    · sorry
+  · obtain ⟨x, hx⟩ := mt
+    by_cases ms : s ∈ Set.range f
+    · obtain ⟨y, hy⟩ := ms
+      by_cases hst : s = t
+      · rw [hst, replaceVertex_self, not_cliqueFree_iff] at h
+        exact h
+      · replace ha := @ha x y
+        simp_all only [true_or, and_true, sdiff_self, true_and]
+        change False ∨ _ ↔ _ at ha
+        have vst : ∀ (v s t : V), (v = s ∨ t = s ∧ v = t) = (v = s) := by simp
+        have : ¬x = y := by intro a; simp_all only [not_true]
+        simp [vst, this] at ha
+    · use ⟨fun v => if v = x then s else f v, ?_⟩
+      swap
+      · intro a b
+        dsimp only
+        split_ifs
+        · simp_all
+        · intro; simp_all
+        · intro; simp_all
+        · apply hi
+      intro a b
+      simp only [Function.Embedding.coeFn_mk, top_adj, ne_eq]
+      split_ifs with h1 h2 h2
+      · simp_all
+      · rw [eq_comm] at h1 h2
+        subst h1
+        simp only [h2, iff_true]
+        have := (@ha x b).mpr h2
+        simp_all only [Set.mem_range, not_exists, true_or, and_true, sdiff_self, true_and]
+        change False ∨ _ at this
+        simp only [false_or] at this
+        have hv : ∀ (v t : V), (v = f b ∨ t = f b ∧ v = t) = (v = f b) := by simp
+        simp only [hv, exists_eq_right] at this
+        exact this.1
+      · rw [eq_comm] at h2
+        subst h2
+        simp only [h1, iff_true]
+        have := (@ha a x).mpr h1
+        simp_all only [Set.mem_range, not_exists, or_true, and_true, sdiff_self, true_and]
+        change False ∨ _ at this
+        simp only [false_or] at this
+        have hv : ∀ (v t : V), (t = f a ∧ v = t ∨ v = f a) = (v = f a) := by simp
+        simp only [hv, exists_eq_right] at this
+        exact this.1.symm
+      · rw [← @ha a b]
+        have ha : (t = f a) = False := by
+          have := (@hi a x).mt h1
+          rw [hx, eq_comm] at this
+          simpa
+        have hb : (t = f b) = False := by
+          have := (@hi b x).mt h2
+          rw [hx, eq_comm] at this
+          simpa
+        simp only [ha, hb, or_self, and_false, false_and, exists_false, or_false]
+        change _ ↔ _ \ ⊥
+        simp only [sdiff_bot]
   · use ⟨f, hi⟩
-    simp_all
+    simp_all only [Set.mem_range, not_exists, Function.Embedding.coeFn_mk, top_adj, ne_eq]
     intro a b
     rw [← @ha a b]
     have mta := eq_false (mt a)
-    rw [@eq_comm _ _ t] at mta
     have mtb := eq_false (mt b)
-    rw [@eq_comm _ _ t] at mtb
+    rw [@eq_comm _ _ t] at mta mtb
     simp only [mta, mtb, or_self, and_false, false_and, exists_false, or_false]
+    change _ ↔ _ \ ⊥
+    simp only [sdiff_bot]
 
-lemma one (v w : V) (ha : ¬G.Adj v w) (hd : G.degree v ≠ G.degree w) :
+/-- Membership in `turanSet` is preserved by `replaceVertex`. -/
+theorem mem_replaceVertex_of_mem_turanSet (s t : V) (h : G ∈ turanSet n r) :
+    (G.replaceVertex s t) ∈ turanSet n r := by
+  simp_all [turanSet, cliqueFree_of_replaceVertex_cliqueFree]
+
+lemma one (v w : V) (hm : G ∈ turanSet n r) (ha : ¬G.Adj v w) (hd : G.degree v ≠ G.degree w) :
     ¬G.IsTuranMaximal n r := by
   wlog hg : G.degree w < G.degree v generalizing v w
   · rw [adj_comm] at ha
     exact this w v ha hd.symm (hd.lt_or_lt.resolve_right hg)
   clear hd
   simp only [IsTuranMaximal, isMaxOn_iff, not_forall, Function.comp_apply, not_le]
-  use G.replaceVertex v w
+  use G.replaceVertex v w, G.mem_replaceVertex_of_mem_turanSet n r v w hm
   sorry
 
 variable {G}
