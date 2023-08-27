@@ -465,14 +465,14 @@ theorem liftRel_swap_iff : LiftRel s r x.swap y.swap ↔ LiftRel r s x y :=
 #align sum.lift_rel_swap_iff Sum.liftRel_swap_iff
 
 theorem liftRel_def : LiftRel r s x y ↔ (∃ a, x = inl a ∧ ∃ c, y = inl c ∧ r a c) ∨
-(∃ b, x = inr b ∧ ∃ d, y = inr d ∧ s b d) := by
-refine' ⟨(fun H ↦ _), (fun H ↦ _)⟩
-· rcases H with (hac | hbd)
-  · exact Or.inl ⟨_, rfl, _, rfl, hac⟩
-  · exact Or.inr ⟨_, rfl, _, rfl, hbd⟩
-· rcases H with (⟨_, rfl, _, rfl, hac⟩ | ⟨_, rfl, _, rfl, hbd⟩)
-  · exact liftRel_inl_inl.mpr hac
-  · exact liftRel_inr_inr.mpr hbd
+    (∃ b, x = inr b ∧ ∃ d, y = inr d ∧ s b d) := by
+  refine' ⟨(fun H ↦ _), (fun H ↦ _)⟩
+  · rcases H with (hac | hbd)
+    · exact Or.inl ⟨_, rfl, _, rfl, hac⟩
+    · exact Or.inr ⟨_, rfl, _, rfl, hbd⟩
+  · rcases H with (⟨_, rfl, _, rfl, hac⟩ | ⟨_, rfl, _, rfl, hbd⟩)
+    · exact liftRel_inl_inl.mpr hac
+    · exact liftRel_inr_inr.mpr hbd
 
 theorem isLeft_of_liftRel (h : LiftRel r s x y) : x.isLeft = y.isLeft := by
   cases h <;> rfl
