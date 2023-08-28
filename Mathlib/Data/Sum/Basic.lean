@@ -123,11 +123,11 @@ variable {x y : Sum α β}
   cases x <;> simp only [getRight?, isLeft, eq_self_iff_true]
 #align sum.get_right_eq_none_iff Sum.getRight?_eq_none_iff
 
-@[simp] theorem getLeft?_eq_some_iff {a : α} : x.getLeft? = a ↔ x = inl a := by
+@[simp] lemma getLeft?_eq_some_iff {a : α} : x.getLeft? = a ↔ x = inl a := by
   cases x <;> simp only [getLeft?, Option.some.injEq, inl.injEq]
 #align sum.get_left_eq_some_iff Sum.getLeft?_eq_some_iff
 
-@[simp] theorem getRight?_eq_some_iff {b : β} : x.getRight? = b ↔ x = inr b := by
+@[simp] lemma getRight?_eq_some_iff {b : β} : x.getRight? = b ↔ x = inr b := by
   cases x <;> simp only [getRight?, Option.some.injEq, inr.injEq]
 #align sum.get_right_eq_some_iff Sum.getRight?_eq_some_iff
 
@@ -162,11 +162,11 @@ theorem isRight_iff : x.isRight ↔ ∃ y, x = Sum.inr y := by cases x <;> simp
 end get
 
 theorem inl.inj_iff {a b} : (inl a : Sum α β) = inl b ↔ a = b :=
-  ⟨inl.inj, congr_arg _⟩
+⟨inl.inj, congr_arg _⟩
 #align sum.inl.inj_iff Sum.inl.inj_iff
 
 theorem inr.inj_iff {a b} : (inr a : Sum α β) = inr b ↔ a = b :=
-  ⟨inr.inj, congr_arg _⟩
+⟨inr.inj, congr_arg _⟩
 #align sum.inr.inj_iff Sum.inr.inj_iff
 
 theorem inl_ne_inr {a : α} {b : β} : inl a ≠ inr b :=
@@ -506,11 +506,11 @@ isRight_of_liftRel_inr_fst h
 theorem isRight_apply_of_inr_snd (h : LiftRel r s (f t) (inr d)) : (f t).isRight :=
 isRight_of_liftRel_inr_snd h
 
-theorem isLeft_apply_eq_of_LiftRel_apply (h : LiftRel r s (f t) y) :
-  (f t).isLeft = y.isLeft := isLeft_of_liftRel h
+theorem isLeft_apply_eq_of_LiftRel_apply (h : LiftRel r s (f t) y) : (f t).isLeft = y.isLeft :=
+isLeft_of_liftRel h
 
-theorem isRight_apply_eq_of_LiftRel_apply (h : LiftRel r s x (g k)) :
-  (g k).isRight = x.isRight := (isRight_eq_of_liftRel h).symm
+theorem isRight_apply_eq_of_LiftRel_apply (h : LiftRel r s x (g k)) : (g k).isRight = x.isRight :=
+(isRight_eq_of_liftRel h).symm
 
 end LiftRel
 
