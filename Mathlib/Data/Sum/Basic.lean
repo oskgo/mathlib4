@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Mario Carneiro, Yury G. Kudryashov
 -/
 import Mathlib.Logic.Function.Basic
+import Mathlib.Tactic.MkIffOfInductiveProp
 
 #align_import data.sum.basic from "leanprover-community/mathlib"@"bd9851ca476957ea4549eb19b40e7b5ade9428cc"
 
@@ -395,6 +396,7 @@ section LiftRel
 
 /-- Lifts pointwise two relations between `α` and `γ` and between `β` and `δ` to a relation between
 `α ⊕ β` and `γ ⊕ δ`. -/
+@[mk_iff liftRel_iff]
 inductive LiftRel (r : α → γ → Prop) (s : β → δ → Prop) : Sum α β → Sum γ δ → Prop
   | protected inl {a c} : r a c → LiftRel r s (inl a) (inl c)
   | protected inr {b d} : s b d → LiftRel r s (inr b) (inr d)
@@ -463,16 +465,6 @@ theorem liftRel_swap_iff : LiftRel s r x.swap y.swap ↔ LiftRel r s x y :=
     rw [← swap_swap x, ← swap_swap y]
     exact h.swap, LiftRel.swap⟩
 #align sum.lift_rel_swap_iff Sum.liftRel_swap_iff
-
-theorem liftRel_def : LiftRel r s x y ↔ (∃ a, x = inl a ∧ ∃ c, y = inl c ∧ r a c) ∨
-    (∃ b, x = inr b ∧ ∃ d, y = inr d ∧ s b d) := by
-  refine' ⟨(fun H ↦ _), (fun H ↦ _)⟩
-  · rcases H with (hac | hbd)
-    · exact Or.inl ⟨_, rfl, _, rfl, hac⟩
-    · exact Or.inr ⟨_, rfl, _, rfl, hbd⟩
-  · rcases H with (⟨_, rfl, _, rfl, hac⟩ | ⟨_, rfl, _, rfl, hbd⟩)
-    · exact liftRel_inl_inl.mpr hac
-    · exact liftRel_inr_inr.mpr hbd
 
 theorem isLeft_of_liftRel (h : LiftRel r s x y) : x.isLeft = y.isLeft := by
   cases h <;> rfl
