@@ -466,31 +466,31 @@ theorem liftRel_swap_iff : LiftRel s r x.swap y.swap ↔ LiftRel r s x y :=
     exact h.swap, LiftRel.swap⟩
 #align sum.lift_rel_swap_iff Sum.liftRel_swap_iff
 
-theorem isLeft_of_liftRel (h : LiftRel r s x y) : x.isLeft = y.isLeft := by
+theorem isLeft_eq_of_liftRel (h : LiftRel r s x y) : x.isLeft = y.isLeft := by
   cases h <;> rfl
 
 theorem isRight_eq_of_liftRel (h : LiftRel r s x y) : x.isRight = y.isRight := by
-  rw [← Sum.not_isLeft, isLeft_of_liftRel h, Sum.not_isLeft]
+  rw [← Sum.not_isLeft, isLeft_eq_of_liftRel h, Sum.not_isLeft]
 
-theorem isLeft_of_liftRel_inl_fst (h : LiftRel r s (inl a) y) : y.isLeft :=
-  (isLeft_of_liftRel h).symm
+theorem isLeft_eq_of_liftRel_inl_fst (h : LiftRel r s (inl a) y) : y.isLeft :=
+(isLeft_eq_of_liftRel h).symm
 
-theorem isLeft_of_liftRel_inl_snd (h : LiftRel r s x (inl c)) : x.isLeft :=
-  isLeft_of_liftRel h
+theorem isLeft_eq_of_liftRel_inl_snd (h : LiftRel r s x (inl c)) : x.isLeft :=
+isLeft_eq_of_liftRel h
 
 theorem isRight_of_liftRel_inr_fst (h : LiftRel r s (inr b) y) : y.isRight :=
-  (isRight_eq_of_liftRel h).symm
+(isRight_eq_of_liftRel h).symm
 
 theorem isRight_of_liftRel_inr_snd (h : LiftRel r s x (inr d)) : x.isRight :=
-  isRight_eq_of_liftRel h
+isRight_eq_of_liftRel h
 
 variable {τ κ : Type*} {f : τ → Sum α β} {g : κ → Sum γ δ} {t : τ} {k : κ}
 
 theorem isLeft_apply_of_inl_fst (h : LiftRel r s (inl a) (g k)) : (g k).isLeft :=
-isLeft_of_liftRel_inl_fst h
+isLeft_eq_of_liftRel_inl_fst h
 
 theorem isLeft_apply_of_inl_snd (h : LiftRel r s (f t) (inl c)) : (f t).isLeft :=
-isLeft_of_liftRel_inl_snd h
+isLeft_eq_of_liftRel_inl_snd h
 
 theorem isRight_apply_of_inr_fst (h : LiftRel r s (inr b) (g k)) : (g k).isRight :=
 isRight_of_liftRel_inr_fst h
@@ -499,7 +499,7 @@ theorem isRight_apply_of_inr_snd (h : LiftRel r s (f t) (inr d)) : (f t).isRight
 isRight_of_liftRel_inr_snd h
 
 theorem isLeft_apply_eq_of_LiftRel_apply (h : LiftRel r s (f t) y) : (f t).isLeft = y.isLeft :=
-isLeft_of_liftRel h
+isLeft_eq_of_liftRel h
 
 theorem isRight_apply_eq_of_LiftRel_apply (h : LiftRel r s x (g k)) : (g k).isRight = x.isRight :=
 (isRight_eq_of_liftRel h).symm
