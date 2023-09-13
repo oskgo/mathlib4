@@ -50,9 +50,8 @@ set_option autoImplicit false
 variable
   -- Let `M` be a finite-dimensional topological manifold without boundary over the pair `(E, H)`.
   {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] {H : Type*} [TopologicalSpace H]
-  (I : ModelWithCorners ℝ E H) {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [I.Boundaryless]
+  {I : ModelWithCorners ℝ E H} {M : Type*} [TopologicalSpace M] [ChartedSpace H M] [I.Boundaryless]
   [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E]
-variable {I}
 
 variable (I) in
 /-- A measure zero subset of an n-dimensional manifold $M$ is a subset $S ⊆ M$ such that
