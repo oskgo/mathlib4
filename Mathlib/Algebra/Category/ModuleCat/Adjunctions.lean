@@ -76,7 +76,7 @@ def ε : 𝟙_ (ModuleCat.{u} R) ⟶ (free R).obj (𝟙_ (Type u)) :=
 #align Module.free.ε ModuleCat.Free.ε
 
 @[simp]
-theorem ε_apply (r : R) : ε R r = Finsupp.single PUnit.unit r :=
+lemma ε_apply (r : R) : ε R r = Finsupp.single PUnit.unit r :=
   rfl
 #align Module.free.ε_apply ModuleCat.Free.ε_apply
 
@@ -85,7 +85,7 @@ def μ (α β : Type u) : (free R).obj α ⊗ (free R).obj β ≅ (free R).obj (
   (finsuppTensorFinsupp' R α β).toModuleIso
 #align Module.free.μ ModuleCat.Free.μ
 
-theorem μ_natural {X Y X' Y' : Type u} (f : X ⟶ Y) (g : X' ⟶ Y') :
+lemma μ_natural {X Y X' Y' : Type u} (f : X ⟶ Y) (g : X' ⟶ Y') :
     ((free R).map f ⊗ (free R).map g) ≫ (μ R Y Y').hom = (μ R X X').hom ≫ (free R).map (f ⊗ g) := by
   intros
   -- Porting note: broken ext
@@ -107,7 +107,7 @@ theorem μ_natural {X Y X' Y' : Type u} (f : X ⟶ Y) (g : X' ⟶ Y') :
     Finsupp.mapDomain_single, CategoryTheory.tensor_apply]
 #align Module.free.μ_natural ModuleCat.Free.μ_natural
 
-theorem left_unitality (X : Type u) :
+lemma left_unitality (X : Type u) :
     (λ_ ((free R).obj X)).hom =
       (ε R ⊗ 𝟙 ((free R).obj X)) ≫ (μ R (𝟙_ (Type u)) X).hom ≫ map (free R).obj (λ_ X).hom := by
   intros
@@ -128,7 +128,7 @@ theorem left_unitality (X : Type u) :
     Finsupp.mapDomain_single, CategoryTheory.leftUnitor_hom_apply, one_smul]
 #align Module.free.left_unitality ModuleCat.Free.left_unitality
 
-theorem right_unitality (X : Type u) :
+lemma right_unitality (X : Type u) :
     (ρ_ ((free R).obj X)).hom =
       (𝟙 ((free R).obj X) ⊗ ε R) ≫ (μ R X (𝟙_ (Type u))).hom ≫ map (free R).obj (ρ_ X).hom := by
   intros
@@ -149,7 +149,7 @@ theorem right_unitality (X : Type u) :
     Finsupp.mapDomain_single, CategoryTheory.rightUnitor_hom_apply, one_smul]
 #align Module.free.right_unitality ModuleCat.Free.right_unitality
 
-theorem associativity (X Y Z : Type u) :
+lemma associativity (X Y Z : Type u) :
     ((μ R X Y).hom ⊗ 𝟙 ((free R).obj Z)) ≫ (μ R (X ⊗ Y) Z).hom ≫ map (free R).obj (α_ X Y Z).hom =
       (α_ ((free R).obj X) ((free R).obj Y) ((free R).obj Z)).hom ≫
         (𝟙 ((free R).obj X) ⊗ (μ R Y Z).hom) ≫ (μ R X (Y ⊗ Z)).hom := by
@@ -302,7 +302,7 @@ instance : Linear R (Free R C) where
     congr; ext h s
     rw [Finsupp.sum_smul_index] <;> simp [Finsupp.smul_sum, mul_left_comm]
 
-theorem single_comp_single {X Y Z : C} (f : X ⟶ Y) (g : Y ⟶ Z) (r s : R) :
+lemma single_comp_single {X Y Z : C} (f : X ⟶ Y) (g : Y ⟶ Z) (r s : R) :
     (single f r ≫ single g s : Free.of R X ⟶ Free.of R Z) = single (f ≫ g) (r * s) := by
   dsimp [CategoryTheory.categoryFree]; simp
 #align category_theory.Free.single_comp_single CategoryTheory.Free.single_comp_single
@@ -368,7 +368,7 @@ def lift (F : C ⥤ D) : Free R C ⥤ D where
         simp [mul_comm r s, mul_smul]
 #align category_theory.Free.lift CategoryTheory.Free.lift
 
-theorem lift_map_single (F : C ⥤ D) {X Y : C} (f : X ⟶ Y) (r : R) :
+lemma lift_map_single (F : C ⥤ D) {X Y : C} (f : X ⟶ Y) (r : R) :
     (lift R F).map (single f r) = r • F.map f := by simp
 #align category_theory.Free.lift_map_single CategoryTheory.Free.lift_map_single
 

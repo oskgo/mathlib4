@@ -42,7 +42,7 @@ variable {X ι : Type*} {Y : ι → Type*} [TopologicalSpace X] [∀ i, Topologi
 
 namespace ContinuousMap
 
-theorem embedding_sigmaMk_comp [Nonempty X] :
+lemma embedding_sigmaMk_comp [Nonempty X] :
     Embedding (fun g : Σ i, C(X, Y i) ↦ (sigmaMk g.1).comp g.2) where
   toInducing := inducing_sigma.2
     ⟨fun i ↦ (sigmaMk i).inducing_comp embedding_sigmaMk.toInducing, fun i ↦
@@ -63,7 +63,7 @@ topological spaces is a composition of the embedding `ContinuousMap.sigmMk i : C
 some `i` and a continuous map `g : C(X, Y i)`. See also `Continuous.exists_lift_sigma` for a version
 with unbundled functions and `ContinuousMap.sigmaCodHomeomorph` for a homeomorphism defined using
 this fact. -/
-theorem exists_lift_sigma (f : C(X, Σ i, Y i)) : ∃ i g, f = (sigmaMk i).comp g :=
+lemma exists_lift_sigma (f : C(X, Σ i, Y i)) : ∃ i g, f = (sigmaMk i).comp g :=
   let ⟨i, g, hg, hfg⟩ := f.continuous.exists_lift_sigma
   ⟨i, ⟨g, hg⟩, FunLike.ext' hfg⟩
 

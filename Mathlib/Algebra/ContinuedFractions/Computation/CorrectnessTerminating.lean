@@ -75,7 +75,7 @@ protected def compExactValue (pconts conts : Pair K) (fr : K) : K :=
 variable [FloorRing K]
 
 /-- Just a computational lemma we need for the next main proof. -/
-protected theorem compExactValue_correctness_of_stream_eq_some_aux_comp {a : K} (b c : K)
+protected lemma compExactValue_correctness_of_stream_eq_some_aux_comp {a : K} (b c : K)
     (fract_a_ne_zero : Int.fract a ≠ 0) :
     ((⌊a⌋ : K) * b + c) / Int.fract a + b = (b * a + c) / Int.fract a := by
   field_simp [fract_a_ne_zero]
@@ -101,7 +101,7 @@ Now `(GeneralizedContinuedFraction.of v).convergents' 1 = 3 + 1/2`, and our frac
 position `2` is `0.5`. We hence have `v = 3 + 1/(2 + 0.5) = 3 + 1/2.5 = 3.4`. This computation
 corresponds exactly to the one using the recurrence equation in `compExactValue`.
 -/
-theorem compExactValue_correctness_of_stream_eq_some :
+lemma compExactValue_correctness_of_stream_eq_some :
     ∀ {ifp_n : IntFractPair K}, IntFractPair.stream v n = some ifp_n →
       v = compExactValue ((of v).continuantsAux n) ((of v).continuantsAux <| n + 1) ifp_n.fr := by
   let g := of v
@@ -215,7 +215,7 @@ open GeneralizedContinuedFraction (of_terminatedAt_n_iff_succ_nth_intFractPair_s
 
 /-- The convergent of `GeneralizedContinuedFraction.of v` at step `n - 1` is exactly `v` if the
 `IntFractPair.stream` of the corresponding continued fraction terminated at step `n`. -/
-theorem of_correctness_of_nth_stream_eq_none (nth_stream_eq_none : IntFractPair.stream v n = none) :
+lemma of_correctness_of_nth_stream_eq_none (nth_stream_eq_none : IntFractPair.stream v n = none) :
     v = (of v).convergents (n - 1) := by
   induction n with
   | zero => contradiction
@@ -244,7 +244,7 @@ theorem of_correctness_of_nth_stream_eq_none (nth_stream_eq_none : IntFractPair.
 /-- If `GeneralizedContinuedFraction.of v` terminated at step `n`, then the `n`th convergent is
 exactly `v`.
 -/
-theorem of_correctness_of_terminatedAt (terminated_at_n : (of v).TerminatedAt n) :
+lemma of_correctness_of_terminatedAt (terminated_at_n : (of v).TerminatedAt n) :
     v = (of v).convergents n :=
   have : IntFractPair.stream v (n + 1) = none :=
     of_terminatedAt_n_iff_succ_nth_intFractPair_stream_eq_none.1 terminated_at_n
@@ -254,7 +254,7 @@ theorem of_correctness_of_terminatedAt (terminated_at_n : (of v).TerminatedAt n)
 /-- If `GeneralizedContinuedFraction.of v` terminates, then there is `n : ℕ` such that the `n`th
 convergent is exactly `v`.
 -/
-theorem of_correctness_of_terminates (terminates : (of v).Terminates) :
+lemma of_correctness_of_terminates (terminates : (of v).Terminates) :
     ∃ n : ℕ, v = (of v).convergents n :=
   Exists.elim terminates fun n terminated_at_n =>
     Exists.intro n (of_correctness_of_terminatedAt terminated_at_n)
@@ -265,7 +265,7 @@ open Filter
 /-- If `GeneralizedContinuedFraction.of v` terminates, then its convergents will eventually always
 be `v`.
 -/
-theorem of_correctness_atTop_of_terminates (terminates : (of v).Terminates) :
+lemma of_correctness_atTop_of_terminates (terminates : (of v).Terminates) :
     ∀ᶠ n in atTop, v = (of v).convergents n := by
   rw [eventually_atTop]
   obtain ⟨n, terminated_at_n⟩ : ∃ n, (of v).TerminatedAt n

@@ -60,7 +60,7 @@ variable [Finite J]
 /-- This follows this proof from
 * Borceux, Handbook of categorical algebra 1, Theorem 2.13.4
 -/
-theorem colimitLimitToLimitColimit_injective :
+lemma colimitLimitToLimitColimit_injective :
     Function.Injective (colimitLimitToLimitColimit F) := by
   classical
     cases nonempty_fintype J
@@ -142,7 +142,7 @@ variable [FinCategory J]
 * Borceux, Handbook of categorical algebra 1, Theorem 2.13.4
 although with different names.
 -/
-theorem colimitLimitToLimitColimit_surjective :
+lemma colimitLimitToLimitColimit_surjective :
     Function.Surjective (colimitLimitToLimitColimit F) := by
   classical
     -- We begin with some element `x` in the limit (over J) over the colimits (over K),
@@ -381,7 +381,7 @@ noncomputable def colimitLimitIso (F : J ⥤ K ⥤ C) : colimit (limit F) ≅ li
 #align category_theory.limits.colimit_limit_iso CategoryTheory.Limits.colimitLimitIso
 
 @[reassoc (attr := simp)]
-theorem ι_colimitLimitIso_limit_π (F : J ⥤ K ⥤ C) (a) (b) :
+lemma ι_colimitLimitIso_limit_π (F : J ⥤ K ⥤ C) (a) (b) :
     colimit.ι (limit F) a ≫ (colimitLimitIso F).hom ≫ limit.π (colimit F.flip) b =
       (limit.π F b).app a ≫ (colimit.ι F.flip a).app b := by
   dsimp [colimitLimitIso]

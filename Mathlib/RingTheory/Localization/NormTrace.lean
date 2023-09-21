@@ -51,7 +51,7 @@ variable [Algebra Rₘ Sₘ] [Algebra R Sₘ] [IsScalarTower R Rₘ Sₘ] [IsSca
 
 open Algebra
 
-theorem Algebra.map_leftMulMatrix_localization {ι : Type*} [Fintype ι] [DecidableEq ι]
+lemma Algebra.map_leftMulMatrix_localization {ι : Type*} [Fintype ι] [DecidableEq ι]
     (b : Basis ι R S) (a : S) :
     (algebraMap R Rₘ).mapMatrix (leftMulMatrix b a) =
     leftMulMatrix (b.localizationLocalization Rₘ M Sₘ) (algebraMap S Sₘ a) := by
@@ -62,7 +62,7 @@ theorem Algebra.map_leftMulMatrix_localization {ι : Type*} [Fintype ι] [Decida
 /-- Let `S` be an extension of `R` and `Rₘ Sₘ` be localizations at `M` of `R S` respectively.
 Then the norm of `a : Sₘ` over `Rₘ` is the norm of `a : S` over `R` if `S` is free as `R`-module.
 -/
-theorem Algebra.norm_localization [Module.Free R S] [Module.Finite R S] (a : S) :
+lemma Algebra.norm_localization [Module.Free R S] [Module.Finite R S] (a : S) :
     Algebra.norm Rₘ (algebraMap S Sₘ a) = algebraMap R Rₘ (Algebra.norm R a) := by
   cases subsingleton_or_nontrivial R
   · haveI : Subsingleton Rₘ := Module.subsingleton R Rₘ
@@ -76,7 +76,7 @@ theorem Algebra.norm_localization [Module.Free R S] [Module.Finite R S] (a : S) 
 /-- Let `S` be an extension of `R` and `Rₘ Sₘ` be localizations at `M` of `R S` respectively.
 Then the trace of `a : Sₘ` over `Rₘ` is the trace of `a : S` over `R` if `S` is free as `R`-module.
 -/
-theorem Algebra.trace_localization [Module.Free R S] [Module.Finite R S] (a : S) :
+lemma Algebra.trace_localization [Module.Free R S] [Module.Finite R S] (a : S) :
     Algebra.trace Rₘ Sₘ (algebraMap S Sₘ a) = algebraMap R Rₘ (Algebra.trace R S a) := by
   cases subsingleton_or_nontrivial R
   · haveI : Subsingleton Rₘ := Module.subsingleton R Rₘ
@@ -97,7 +97,7 @@ variable [IsLocalization (Algebra.algebraMapSubmonoid S M) Sₘ]
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-theorem Algebra.traceMatrix_localizationLocalization (b : Basis ι R S) :
+lemma Algebra.traceMatrix_localizationLocalization (b : Basis ι R S) :
     Algebra.traceMatrix Rₘ (b.localizationLocalization Rₘ M Sₘ) =
       (algebraMap R Rₘ).mapMatrix (Algebra.traceMatrix R b) := by
   have : Module.Finite R S := Module.Finite.of_basis b
@@ -111,7 +111,7 @@ theorem Algebra.traceMatrix_localizationLocalization (b : Basis ι R S) :
 `b` be a `R`-basis of `S`. Then discriminant of the `Rₘ`-basis of `Sₘ` induced by `b` is the
 discriminant of `b`.
 -/
-theorem Algebra.discr_localizationLocalization (b : Basis ι R S) :
+lemma Algebra.discr_localizationLocalization (b : Basis ι R S) :
     Algebra.discr Rₘ (b.localizationLocalization Rₘ M Sₘ) =
     algebraMap R Rₘ (Algebra.discr R b) := by
   rw [Algebra.discr_def, Algebra.discr_def, RingHom.map_det,

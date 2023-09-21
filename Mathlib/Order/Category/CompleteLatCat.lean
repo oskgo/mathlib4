@@ -39,7 +39,7 @@ def of (α : Type*) [CompleteLattice α] : CompleteLatCat :=
 #align CompleteLat.of CompleteLatCat.of
 
 @[simp]
-theorem coe_of (α : Type*) [CompleteLattice α] : ↥(of α) = α :=
+lemma coe_of (α : Type*) [CompleteLattice α] : ↥(of α) = α :=
   rfl
 #align CompleteLat.coe_of CompleteLatCat.coe_of
 
@@ -91,7 +91,7 @@ def dualEquiv : CompleteLatCat ≌ CompleteLatCat where
 
 end CompleteLatCat
 
-theorem completeLatCat_dual_comp_forget_to_bddLatCat :
+lemma completeLatCat_dual_comp_forget_to_bddLatCat :
     CompleteLatCat.dual ⋙ forget₂ CompleteLatCat BddLatCat =
     forget₂ CompleteLatCat BddLatCat ⋙ BddLatCat.dual :=
   rfl

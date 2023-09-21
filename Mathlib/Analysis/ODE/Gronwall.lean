@@ -45,18 +45,18 @@ noncomputable def gronwallBound (δ K ε x : ℝ) : ℝ :=
   if K = 0 then δ + ε * x else δ * exp (K * x) + ε / K * (exp (K * x) - 1)
 #align gronwall_bound gronwallBound
 
-theorem gronwallBound_K0 (δ ε : ℝ) : gronwallBound δ 0 ε = fun x => δ + ε * x :=
+lemma gronwallBound_K0 (δ ε : ℝ) : gronwallBound δ 0 ε = fun x => δ + ε * x :=
   funext fun _ => if_pos rfl
 set_option linter.uppercaseLean3 false in
 #align gronwall_bound_K0 gronwallBound_K0
 
-theorem gronwallBound_of_K_ne_0 {δ K ε : ℝ} (hK : K ≠ 0) :
+lemma gronwallBound_of_K_ne_0 {δ K ε : ℝ} (hK : K ≠ 0) :
     gronwallBound δ K ε = fun x => δ * exp (K * x) + ε / K * (exp (K * x) - 1) :=
   funext fun _ => if_neg hK
 set_option linter.uppercaseLean3 false in
 #align gronwall_bound_of_K_ne_0 gronwallBound_of_K_ne_0
 
-theorem hasDerivAt_gronwallBound (δ K ε x : ℝ) :
+lemma hasDerivAt_gronwallBound (δ K ε x : ℝ) :
     HasDerivAt (gronwallBound δ K ε) (K * gronwallBound δ K ε x + ε) x := by
   by_cases hK : K = 0
   · subst K
@@ -70,30 +70,30 @@ theorem hasDerivAt_gronwallBound (δ K ε x : ℝ) :
     ring
 #align has_deriv_at_gronwall_bound hasDerivAt_gronwallBound
 
-theorem hasDerivAt_gronwallBound_shift (δ K ε x a : ℝ) :
+lemma hasDerivAt_gronwallBound_shift (δ K ε x a : ℝ) :
     HasDerivAt (fun y => gronwallBound δ K ε (y - a)) (K * gronwallBound δ K ε (x - a) + ε) x := by
   convert (hasDerivAt_gronwallBound δ K ε _).comp x ((hasDerivAt_id x).sub_const a) using 1
   rw [id, mul_one]
 #align has_deriv_at_gronwall_bound_shift hasDerivAt_gronwallBound_shift
 
-theorem gronwallBound_x0 (δ K ε : ℝ) : gronwallBound δ K ε 0 = δ := by
+lemma gronwallBound_x0 (δ K ε : ℝ) : gronwallBound δ K ε 0 = δ := by
   by_cases hK : K = 0
   · simp only [gronwallBound, if_pos hK, mul_zero, add_zero]
   · simp only [gronwallBound, if_neg hK, mul_zero, exp_zero, sub_self, mul_one,
       add_zero]
 #align gronwall_bound_x0 gronwallBound_x0
 
-theorem gronwallBound_ε0 (δ K x : ℝ) : gronwallBound δ K 0 x = δ * exp (K * x) := by
+lemma gronwallBound_ε0 (δ K x : ℝ) : gronwallBound δ K 0 x = δ * exp (K * x) := by
   by_cases hK : K = 0
   · simp only [gronwallBound_K0, hK, zero_mul, exp_zero, add_zero, mul_one]
   · simp only [gronwallBound_of_K_ne_0 hK, zero_div, zero_mul, add_zero]
 #align gronwall_bound_ε0 gronwallBound_ε0
 
-theorem gronwallBound_ε0_δ0 (K x : ℝ) : gronwallBound 0 K 0 x = 0 := by
+lemma gronwallBound_ε0_δ0 (K x : ℝ) : gronwallBound 0 K 0 x = 0 := by
   simp only [gronwallBound_ε0, zero_mul]
 #align gronwall_bound_ε0_δ0 gronwallBound_ε0_δ0
 
-theorem gronwallBound_continuous_ε (δ K x : ℝ) : Continuous fun ε => gronwallBound δ K ε x := by
+lemma gronwallBound_continuous_ε (δ K x : ℝ) : Continuous fun ε => gronwallBound δ K ε x := by
   by_cases hK : K = 0
   · simp only [gronwallBound_K0, hK]
     exact continuous_const.add (continuous_id.mul continuous_const)
@@ -110,7 +110,7 @@ is bounded by `gronwallBound δ K ε (x - a)` on `[a, b]`.
 
 See also `norm_le_gronwallBound_of_norm_deriv_right_le` for a version bounding `‖f x‖`,
 `f : ℝ → E`. -/
-theorem le_gronwallBound_of_liminf_deriv_right_le {f f' : ℝ → ℝ} {δ K ε : ℝ} {a b : ℝ}
+lemma le_gronwallBound_of_liminf_deriv_right_le {f f' : ℝ → ℝ} {δ K ε : ℝ} {a b : ℝ}
     (hf : ContinuousOn f (Icc a b))
     (hf' : ∀ x ∈ Ico a b, ∀ r, f' x < r → ∃ᶠ z in 𝓝[>] x, (z - x)⁻¹ * (f z - f x) < r)
     (ha : f a ≤ δ) (bound : ∀ x ∈ Ico a b, f' x ≤ K * f x + ε) :
@@ -136,7 +136,7 @@ theorem le_gronwallBound_of_liminf_deriv_right_le {f f' : ℝ → ℝ} {δ K ε 
 `f' x` at every point `x ∈ [a, b)`, and satisfies the inequalities `‖f a‖ ≤ δ`,
 `∀ x ∈ [a, b), ‖f' x‖ ≤ K * ‖f x‖ + ε`, then `‖f x‖` is bounded by `gronwallBound δ K ε (x - a)`
 on `[a, b]`. -/
-theorem norm_le_gronwallBound_of_norm_deriv_right_le {f f' : ℝ → E} {δ K ε : ℝ} {a b : ℝ}
+lemma norm_le_gronwallBound_of_norm_deriv_right_le {f f' : ℝ → E} {δ K ε : ℝ} {a b : ℝ}
     (hf : ContinuousOn f (Icc a b)) (hf' : ∀ x ∈ Ico a b, HasDerivWithinAt f (f' x) (Ici x) x)
     (ha : ‖f a‖ ≤ δ) (bound : ∀ x ∈ Ico a b, ‖f' x‖ ≤ K * ‖f x‖ + ε) :
     ∀ x ∈ Icc a b, ‖f x‖ ≤ gronwallBound δ K ε (x - a) :=
@@ -150,7 +150,7 @@ people call this Grönwall's inequality too.
 
 This version assumes all inequalities to be true in some time-dependent set `s t`,
 and assumes that the solutions never leave this set. -/
-theorem dist_le_of_approx_trajectories_ODE_of_mem_set {v : ℝ → E → E} {s : ℝ → Set E} {K : ℝ}
+lemma dist_le_of_approx_trajectories_ODE_of_mem_set {v : ℝ → E → E} {s : ℝ → Set E} {K : ℝ}
     (hv : ∀ t, ∀ᵉ (x ∈ s t) (y ∈ s t), dist (v t x) (v t y) ≤ K * dist x y)
     {f g f' g' : ℝ → E} {a b : ℝ} {εf εg δ : ℝ} (hf : ContinuousOn f (Icc a b))
     (hf' : ∀ t ∈ Ico a b, HasDerivWithinAt f (f' t) (Ici t) t)
@@ -177,7 +177,7 @@ can't grow faster than exponentially. This is a simple corollary of Grönwall's 
 people call this Grönwall's inequality too.
 
 This version assumes all inequalities to be true in the whole space. -/
-theorem dist_le_of_approx_trajectories_ODE {v : ℝ → E → E} {K : ℝ≥0}
+lemma dist_le_of_approx_trajectories_ODE {v : ℝ → E → E} {K : ℝ≥0}
     (hv : ∀ t, LipschitzWith K (v t)) {f g f' g' : ℝ → E} {a b : ℝ} {εf εg δ : ℝ}
     (hf : ContinuousOn f (Icc a b)) (hf' : ∀ t ∈ Ico a b, HasDerivWithinAt f (f' t) (Ici t) t)
     (f_bound : ∀ t ∈ Ico a b, dist (f' t) (v t (f t)) ≤ εf) (hg : ContinuousOn g (Icc a b))
@@ -196,7 +196,7 @@ people call this Grönwall's inequality too.
 
 This version assumes all inequalities to be true in some time-dependent set `s t`,
 and assumes that the solutions never leave this set. -/
-theorem dist_le_of_trajectories_ODE_of_mem_set {v : ℝ → E → E} {s : ℝ → Set E} {K : ℝ}
+lemma dist_le_of_trajectories_ODE_of_mem_set {v : ℝ → E → E} {s : ℝ → Set E} {K : ℝ}
     (hv : ∀ t, ∀ᵉ (x ∈ s t) (y ∈ s t), dist (v t x) (v t y) ≤ K * dist x y)
     {f g : ℝ → E} {a b : ℝ} {δ : ℝ} (hf : ContinuousOn f (Icc a b))
     (hf' : ∀ t ∈ Ico a b, HasDerivWithinAt f (v t (f t)) (Ici t) t) (hfs : ∀ t ∈ Ico a b, f t ∈ s t)
@@ -217,7 +217,7 @@ can't grow faster than exponentially. This is a simple corollary of Grönwall's 
 people call this Grönwall's inequality too.
 
 This version assumes all inequalities to be true in the whole space. -/
-theorem dist_le_of_trajectories_ODE {v : ℝ → E → E} {K : ℝ≥0} (hv : ∀ t, LipschitzWith K (v t))
+lemma dist_le_of_trajectories_ODE {v : ℝ → E → E} {K : ℝ≥0} (hv : ∀ t, LipschitzWith K (v t))
     {f g : ℝ → E} {a b : ℝ} {δ : ℝ} (hf : ContinuousOn f (Icc a b))
     (hf' : ∀ t ∈ Ico a b, HasDerivWithinAt f (v t (f t)) (Ici t) t) (hg : ContinuousOn g (Icc a b))
     (hg' : ∀ t ∈ Ico a b, HasDerivWithinAt g (v t (g t)) (Ici t) t) (ha : dist (f a) (g a) ≤ δ) :
@@ -231,7 +231,7 @@ set_option linter.uppercaseLean3 false in
 /-- There exists only one solution of an ODE \(\dot x=v(t, x)\) in a set `s ⊆ ℝ × E` with
 a given initial value provided that RHS is Lipschitz continuous in `x` within `s`,
 and we consider only solutions included in `s`. -/
-theorem ODE_solution_unique_of_mem_set {v : ℝ → E → E} {s : ℝ → Set E} {K : ℝ}
+lemma ODE_solution_unique_of_mem_set {v : ℝ → E → E} {s : ℝ → Set E} {K : ℝ}
     (hv : ∀ t, ∀ᵉ (x ∈ s t) (y ∈ s t), dist (v t x) (v t y) ≤ K * dist x y)
     {f g : ℝ → E} {a b : ℝ} (hf : ContinuousOn f (Icc a b))
     (hf' : ∀ t ∈ Ico a b, HasDerivWithinAt f (v t (f t)) (Ici t) t) (hfs : ∀ t ∈ Ico a b, f t ∈ s t)
@@ -244,7 +244,7 @@ set_option linter.uppercaseLean3 false in
 
 /-- There exists only one solution of an ODE \(\dot x=v(t, x)\) with
 a given initial value provided that RHS is Lipschitz continuous in `x`. -/
-theorem ODE_solution_unique {v : ℝ → E → E} {K : ℝ≥0} (hv : ∀ t, LipschitzWith K (v t))
+lemma ODE_solution_unique {v : ℝ → E → E} {K : ℝ≥0} (hv : ∀ t, LipschitzWith K (v t))
     {f g : ℝ → E} {a b : ℝ} (hf : ContinuousOn f (Icc a b))
     (hf' : ∀ t ∈ Ico a b, HasDerivWithinAt f (v t (f t)) (Ici t) t) (hg : ContinuousOn g (Icc a b))
     (hg' : ∀ t ∈ Ico a b, HasDerivWithinAt g (v t (g t)) (Ici t) t) (ha : f a = g a) :

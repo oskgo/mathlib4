@@ -53,7 +53,7 @@ def of (α : Type*) [PartialOrder α] [Fintype α] : FinPartOrd :=
 #align FinPartOrd.of FinPartOrd.of
 
 @[simp]
-theorem coe_of (α : Type*) [PartialOrder α] [Fintype α] : ↥(of α) = α := rfl
+lemma coe_of (α : Type*) [PartialOrder α] [Fintype α] : ↥(of α) = α := rfl
 #align FinPartOrd.coe_of FinPartOrd.coe_of
 
 instance : Inhabited FinPartOrd :=
@@ -108,7 +108,7 @@ def dualEquiv : FinPartOrd ≌ FinPartOrd :=
 
 end FinPartOrd
 
-theorem FinPartOrd_dual_comp_forget_to_partOrdCat :
+lemma FinPartOrd_dual_comp_forget_to_partOrdCat :
     FinPartOrd.dual ⋙ forget₂ FinPartOrd PartOrdCat =
       forget₂ FinPartOrd PartOrdCat ⋙ PartOrdCat.dual := rfl
 #align FinPartOrd_dual_comp_forget_to_PartOrd FinPartOrd_dual_comp_forget_to_partOrdCat

@@ -64,7 +64,7 @@ instance (priority := 100) hasFiniteLimits_of_hasLimits [HasLimits C] : HasFinit
 
 /-- We can always derive `HasFiniteLimits C` by providing limits at an
 arbitrary universe. -/
-theorem hasFiniteLimits_of_hasFiniteLimits_of_size
+lemma hasFiniteLimits_of_hasFiniteLimits_of_size
     (h : ∀ (J : Type w) {𝒥 : SmallCategory J} (_ : @FinCategory J 𝒥), HasLimitsOfShape J C) :
     HasFiniteLimits C where
   out := fun J hJ hhJ => by
@@ -109,7 +109,7 @@ instance (priority := 100) hasFiniteColimits_of_hasColimitsOfSize [HasColimitsOf
 
 /-- We can always derive `HasFiniteColimits C` by providing colimits at an
 arbitrary universe. -/
-theorem hasFiniteColimits_of_hasFiniteColimits_of_size
+lemma hasFiniteColimits_of_hasFiniteColimits_of_size
     (h : ∀ (J : Type w) {𝒥 : SmallCategory J} (_ : @FinCategory J 𝒥), HasColimitsOfShape J C) :
     HasFiniteColimits C where
   out := fun J hJ hhJ => by
@@ -254,14 +254,14 @@ instance hasColimitsOfShape_widePushoutShape (J : Type) [Finite J] [HasFiniteWid
 /-- Finite wide pullbacks are finite limits, so if `C` has all finite limits,
 it also has finite wide pullbacks
 -/
-theorem hasFiniteWidePullbacks_of_hasFiniteLimits [HasFiniteLimits C] : HasFiniteWidePullbacks C :=
+lemma hasFiniteWidePullbacks_of_hasFiniteLimits [HasFiniteLimits C] : HasFiniteWidePullbacks C :=
   ⟨fun _ _ => HasFiniteLimits.out _⟩
 #align category_theory.limits.has_finite_wide_pullbacks_of_has_finite_limits CategoryTheory.Limits.hasFiniteWidePullbacks_of_hasFiniteLimits
 
 /-- Finite wide pushouts are finite colimits, so if `C` has all finite colimits,
 it also has finite wide pushouts
 -/
-theorem hasFiniteWidePushouts_of_has_finite_limits [HasFiniteColimits C] :
+lemma hasFiniteWidePushouts_of_has_finite_limits [HasFiniteColimits C] :
     HasFiniteWidePushouts C :=
   ⟨fun _ _ => HasFiniteColimits.out _⟩
 #align category_theory.limits.has_finite_wide_pushouts_of_has_finite_limits CategoryTheory.Limits.hasFiniteWidePushouts_of_has_finite_limits

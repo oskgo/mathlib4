@@ -63,11 +63,11 @@ def completion.incl {V : SemiNormedGroupCat} : V ⟶ completion.obj V where
   bound' := ⟨1, fun v => by simp⟩
 #align SemiNormedGroup.Completion.incl SemiNormedGroupCat.completion.incl
 
-theorem completion.norm_incl_eq {V : SemiNormedGroupCat} {v : V} : ‖completion.incl v‖ = ‖v‖ :=
+lemma completion.norm_incl_eq {V : SemiNormedGroupCat} {v : V} : ‖completion.incl v‖ = ‖v‖ :=
   UniformSpace.Completion.norm_coe _
 #align SemiNormedGroup.Completion.norm_incl_eq SemiNormedGroupCat.completion.norm_incl_eq
 
-theorem completion.map_normNoninc {V W : SemiNormedGroupCat} {f : V ⟶ W} (hf : f.NormNoninc) :
+lemma completion.map_normNoninc {V W : SemiNormedGroupCat} {f : V ⟶ W} (hf : f.NormNoninc) :
     (completion.map f).NormNoninc :=
   NormedAddGroupHom.NormNoninc.normNoninc_iff_norm_le_one.2 <|
     (NormedAddGroupHom.norm_completion f).le.trans <|
@@ -89,7 +89,7 @@ def completion.mapHom (V W : SemiNormedGroupCat.{u}) :
 #align SemiNormedGroup.Completion.map_hom SemiNormedGroupCat.completion.mapHom
 
 -- @[simp] -- Porting note: removed simp since LHS simplifies and is not used
-theorem completion.map_zero (V W : SemiNormedGroupCat) : completion.map (0 : V ⟶ W) = 0 :=
+lemma completion.map_zero (V W : SemiNormedGroupCat) : completion.map (0 : V ⟶ W) = 0 :=
   -- Porting note: cannot see instances through concrete cats
   @AddMonoidHom.map_zero _ _ (_) (_) (completion.mapHom V W)
 #align SemiNormedGroup.Completion.map_zero SemiNormedGroupCat.completion.map_zero
@@ -125,12 +125,12 @@ def completion.lift {V W : SemiNormedGroupCat} [CompleteSpace W] [SeparatedSpace
   bound' := f.extension.bound'
 #align SemiNormedGroup.Completion.lift SemiNormedGroupCat.completion.lift
 
-theorem completion.lift_comp_incl {V W : SemiNormedGroupCat} [CompleteSpace W] [SeparatedSpace W]
+lemma completion.lift_comp_incl {V W : SemiNormedGroupCat} [CompleteSpace W] [SeparatedSpace W]
     (f : V ⟶ W) : completion.incl ≫ completion.lift f = f :=
   ext <| NormedAddGroupHom.extension_coe _
 #align SemiNormedGroup.Completion.lift_comp_incl SemiNormedGroupCat.completion.lift_comp_incl
 
-theorem completion.lift_unique {V W : SemiNormedGroupCat} [CompleteSpace W] [SeparatedSpace W]
+lemma completion.lift_unique {V W : SemiNormedGroupCat} [CompleteSpace W] [SeparatedSpace W]
     (f : V ⟶ W) (g : completion.obj V ⟶ W) : completion.incl ≫ g = f → g = completion.lift f :=
   fun h => (NormedAddGroupHom.extension_unique _ fun v => ((ext_iff.1 h) v).symm).symm
 #align SemiNormedGroup.Completion.lift_unique SemiNormedGroupCat.completion.lift_unique

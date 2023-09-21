@@ -26,36 +26,36 @@ open Polynomial
 variable {R A : Type*} [CommRing R] [CommRing A] [Algebra R A]
 
 @[simp]
-theorem aeval_T (x : A) (n : ℕ) : aeval x (T R n) = (T A n).eval x := by
+lemma aeval_T (x : A) (n : ℕ) : aeval x (T R n) = (T A n).eval x := by
   rw [aeval_def, eval₂_eq_eval_map, map_T]
 #align polynomial.chebyshev.aeval_T Polynomial.Chebyshev.aeval_T
 
 @[simp]
-theorem aeval_U (x : A) (n : ℕ) : aeval x (U R n) = (U A n).eval x := by
+lemma aeval_U (x : A) (n : ℕ) : aeval x (U R n) = (U A n).eval x := by
   rw [aeval_def, eval₂_eq_eval_map, map_U]
 #align polynomial.chebyshev.aeval_U Polynomial.Chebyshev.aeval_U
 
 @[simp]
-theorem algebraMap_eval_T (x : R) (n : ℕ) :
+lemma algebraMap_eval_T (x : R) (n : ℕ) :
     algebraMap R A ((T R n).eval x) = (T A n).eval (algebraMap R A x) := by
   rw [← aeval_algebraMap_apply_eq_algebraMap_eval, aeval_T]
 #align polynomial.chebyshev.algebra_map_eval_T Polynomial.Chebyshev.algebraMap_eval_T
 
 @[simp]
-theorem algebraMap_eval_U (x : R) (n : ℕ) :
+lemma algebraMap_eval_U (x : R) (n : ℕ) :
     algebraMap R A ((U R n).eval x) = (U A n).eval (algebraMap R A x) := by
   rw [← aeval_algebraMap_apply_eq_algebraMap_eval, aeval_U]
 #align polynomial.chebyshev.algebra_map_eval_U Polynomial.Chebyshev.algebraMap_eval_U
 
 -- Porting note: added type ascriptions to the statement
 @[simp, norm_cast]
-theorem complex_ofReal_eval_T : ∀ (x : ℝ) n, (((T ℝ n).eval x : ℝ) : ℂ) = (T ℂ n).eval (x : ℂ) :=
+lemma complex_ofReal_eval_T : ∀ (x : ℝ) n, (((T ℝ n).eval x : ℝ) : ℂ) = (T ℂ n).eval (x : ℂ) :=
   @algebraMap_eval_T ℝ ℂ _ _ _
 #align polynomial.chebyshev.complex_of_real_eval_T Polynomial.Chebyshev.complex_ofReal_eval_T
 
 -- Porting note: added type ascriptions to the statement
 @[simp, norm_cast]
-theorem complex_ofReal_eval_U : ∀ (x : ℝ) n, (((U ℝ n).eval x : ℝ) : ℂ) = (U ℂ n).eval (x : ℂ) :=
+lemma complex_ofReal_eval_U : ∀ (x : ℝ) n, (((U ℝ n).eval x : ℝ) : ℂ) = (U ℂ n).eval (x : ℂ) :=
   @algebraMap_eval_U ℝ ℂ _ _ _
 #align polynomial.chebyshev.complex_of_real_eval_U Polynomial.Chebyshev.complex_ofReal_eval_U
 
@@ -71,7 +71,7 @@ variable (θ : ℂ)
 /-- The `n`-th Chebyshev polynomial of the first kind evaluates on `cos θ` to the
 value `cos (n * θ)`. -/
 @[simp]
-theorem T_complex_cos : ∀ n, (T ℂ n).eval (cos θ) = cos (n * θ)
+lemma T_complex_cos : ∀ n, (T ℂ n).eval (cos θ) = cos (n * θ)
   | 0 => by simp only [T_zero, eval_one, Nat.cast_zero, zero_mul, cos_zero]
   | 1 => by simp only [eval_X, one_mul, T_one, Nat.cast_one]
   | n + 2 => by
@@ -88,7 +88,7 @@ theorem T_complex_cos : ∀ n, (T ℂ n).eval (cos θ) = cos (n * θ)
 /-- The `n`-th Chebyshev polynomial of the second kind evaluates on `cos θ` to the
 value `sin ((n + 1) * θ) / sin θ`. -/
 @[simp]
-theorem U_complex_cos (n : ℕ) : (U ℂ n).eval (cos θ) * sin θ = sin ((n + 1) * θ) := by
+lemma U_complex_cos (n : ℕ) : (U ℂ n).eval (cos θ) * sin θ = sin ((n + 1) * θ) := by
   induction' n with d hd
   · simp [U_zero, eval_one, zero_add, one_mul, Nat.zero_eq, CharP.cast_eq_zero]
   · rw [U_eq_X_mul_U_add_T]
@@ -113,13 +113,13 @@ variable (θ : ℝ) (n : ℕ)
 /-- The `n`-th Chebyshev polynomial of the first kind evaluates on `cos θ` to the
 value `cos (n * θ)`. -/
 @[simp]
-theorem T_real_cos : (T ℝ n).eval (cos θ) = cos (n * θ) := by exact_mod_cast T_complex_cos θ n
+lemma T_real_cos : (T ℝ n).eval (cos θ) = cos (n * θ) := by exact_mod_cast T_complex_cos θ n
 #align polynomial.chebyshev.T_real_cos Polynomial.Chebyshev.T_real_cos
 
 /-- The `n`-th Chebyshev polynomial of the second kind evaluates on `cos θ` to the
 value `sin ((n + 1) * θ) / sin θ`. -/
 @[simp]
-theorem U_real_cos : (U ℝ n).eval (cos θ) * sin θ = sin ((n + 1) * θ) := by
+lemma U_real_cos : (U ℝ n).eval (cos θ) * sin θ = sin ((n + 1) * θ) := by
   exact_mod_cast U_complex_cos θ n
 #align polynomial.chebyshev.U_real_cos Polynomial.Chebyshev.U_real_cos
 

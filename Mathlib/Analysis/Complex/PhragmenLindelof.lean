@@ -61,7 +61,7 @@ variable {E : Type*} [NormedAddCommGroup E]
 
 /-- An auxiliary lemma that combines two double exponential estimates into a similar estimate
 on the difference of the functions. -/
-theorem isBigO_sub_exp_exp {a : ℝ} {f g : ℂ → E} {l : Filter ℂ} {u : ℂ → ℝ}
+lemma isBigO_sub_exp_exp {a : ℝ} {f g : ℂ → E} {l : Filter ℂ} {u : ℂ → ℝ}
     (hBf : ∃ c < a, ∃ B, f =O[l] fun z => expR (B * expR (c * |u z|)))
     (hBg : ∃ c < a, ∃ B, g =O[l] fun z => expR (B * expR (c * |u z|))) :
     ∃ c < a, ∃ B, (f - g) =O[l] fun z => expR (B * expR (c * |u z|)) := by
@@ -81,7 +81,7 @@ set_option linter.uppercaseLean3 false in
 
 /-- An auxiliary lemma that combines two “exponential of a power” estimates into a similar estimate
 on the difference of the functions. -/
-theorem isBigO_sub_exp_rpow {a : ℝ} {f g : ℂ → E} {l : Filter ℂ}
+lemma isBigO_sub_exp_rpow {a : ℝ} {f g : ℂ → E} {l : Filter ℂ}
     (hBf : ∃ c < a, ∃ B, f =O[comap Complex.abs atTop ⊓ l] fun z => expR (B * abs z ^ c))
     (hBg : ∃ c < a, ∃ B, g =O[comap Complex.abs atTop ⊓ l] fun z => expR (B * abs z ^ c)) :
     ∃ c < a, ∃ B, (f - g) =O[comap Complex.abs atTop ⊓ l] fun z => expR (B * abs z ^ c) := by
@@ -119,7 +119,7 @@ Then `‖f z‖` is bounded by the same constant on the closed strip
 `{z : ℂ | a ≤ im z ≤ b}`. Moreover, it suffices to verify the second assumption
 only for sufficiently large values of `|re z|`.
 -/
-theorem horizontal_strip (hfd : DiffContOnCl ℂ f (im ⁻¹' Ioo a b))
+lemma horizontal_strip (hfd : DiffContOnCl ℂ f (im ⁻¹' Ioo a b))
     (hB : ∃ c < π / (b - a), ∃ B,
       f =O[comap (Abs.abs ∘ re) atTop ⊓ 𝓟 (im ⁻¹' Ioo a b)] fun z ↦ expR (B * expR (c * |z.re|)))
     (hle_a : ∀ z : ℂ, im z = a → ‖f z‖ ≤ C) (hle_b : ∀ z, im z = b → ‖f z‖ ≤ C) (hza : a ≤ im z)
@@ -237,7 +237,7 @@ Let `f : ℂ → E` be a function such that
 
 Then `f` is equal to zero on the closed strip `{z : ℂ | a ≤ im z ≤ b}`.
 -/
-theorem eq_zero_on_horizontal_strip (hd : DiffContOnCl ℂ f (im ⁻¹' Ioo a b))
+lemma eq_zero_on_horizontal_strip (hd : DiffContOnCl ℂ f (im ⁻¹' Ioo a b))
     (hB : ∃ c < π / (b - a), ∃ B,
       f =O[comap (Abs.abs ∘ re) atTop ⊓ 𝓟 (im ⁻¹' Ioo a b)] fun z ↦ expR (B * expR (c * |z.re|)))
     (ha : ∀ z : ℂ, z.im = a → f z = 0) (hb : ∀ z : ℂ, z.im = b → f z = 0) :
@@ -256,7 +256,7 @@ Let `f g : ℂ → E` be functions such that
 
 Then `f` is equal to `g` on the closed strip `{z : ℂ | a ≤ im z ≤ b}`.
 -/
-theorem eqOn_horizontal_strip {g : ℂ → E} (hdf : DiffContOnCl ℂ f (im ⁻¹' Ioo a b))
+lemma eqOn_horizontal_strip {g : ℂ → E} (hdf : DiffContOnCl ℂ f (im ⁻¹' Ioo a b))
     (hBf : ∃ c < π / (b - a), ∃ B,
       f =O[comap (Abs.abs ∘ re) atTop ⊓ 𝓟 (im ⁻¹' Ioo a b)] fun z ↦ expR (B * expR (c * |z.re|)))
     (hdg : DiffContOnCl ℂ g (im ⁻¹' Ioo a b))
@@ -283,7 +283,7 @@ Then `‖f z‖` is bounded by the same constant on the closed strip
 `{z : ℂ | a ≤ re z ≤ b}`. Moreover, it suffices to verify the second assumption
 only for sufficiently large values of `|im z|`.
 -/
-theorem vertical_strip (hfd : DiffContOnCl ℂ f (re ⁻¹' Ioo a b))
+lemma vertical_strip (hfd : DiffContOnCl ℂ f (re ⁻¹' Ioo a b))
     (hB : ∃ c < π / (b - a), ∃ B,
       f =O[comap (Abs.abs ∘ im) atTop ⊓ 𝓟 (re ⁻¹' Ioo a b)] fun z ↦ expR (B * expR (c * |z.im|)))
     (hle_a : ∀ z : ℂ, re z = a → ‖f z‖ ≤ C) (hle_b : ∀ z, re z = b → ‖f z‖ ≤ C) (hza : a ≤ re z)
@@ -312,7 +312,7 @@ Let `f : ℂ → E` be a function such that
 
 Then `f` is equal to zero on the closed strip `{z : ℂ | a ≤ re z ≤ b}`.
 -/
-theorem eq_zero_on_vertical_strip (hd : DiffContOnCl ℂ f (re ⁻¹' Ioo a b))
+lemma eq_zero_on_vertical_strip (hd : DiffContOnCl ℂ f (re ⁻¹' Ioo a b))
     (hB : ∃ c < π / (b - a), ∃ B,
       f =O[comap (Abs.abs ∘ im) atTop ⊓ 𝓟 (re ⁻¹' Ioo a b)] fun z ↦ expR (B * expR (c * |z.im|)))
     (ha : ∀ z : ℂ, re z = a → f z = 0) (hb : ∀ z : ℂ, re z = b → f z = 0) :
@@ -331,7 +331,7 @@ Let `f g : ℂ → E` be functions such that
 
 Then `f` is equal to `g` on the closed strip `{z : ℂ | a ≤ re z ≤ b}`.
 -/
-theorem eqOn_vertical_strip {g : ℂ → E} (hdf : DiffContOnCl ℂ f (re ⁻¹' Ioo a b))
+lemma eqOn_vertical_strip {g : ℂ → E} (hdf : DiffContOnCl ℂ f (re ⁻¹' Ioo a b))
     (hBf : ∃ c < π / (b - a), ∃ B,
       f =O[comap (Abs.abs ∘ im) atTop ⊓ 𝓟 (re ⁻¹' Ioo a b)] fun z ↦ expR (B * expR (c * |z.im|)))
     (hdg : DiffContOnCl ℂ g (re ⁻¹' Ioo a b))
@@ -355,7 +355,7 @@ theorem eqOn_vertical_strip {g : ℂ → E} (hdf : DiffContOnCl ℂ f (re ⁻¹'
 * `‖f z‖` is bounded from above by a constant `C` on the boundary of the first quadrant.
 
 Then `‖f z‖` is bounded from above by the same constant on the closed first quadrant. -/
-nonrec theorem quadrant_I (hd : DiffContOnCl ℂ f (Ioi 0 ×ℂ Ioi 0))
+nonrec lemma quadrant_I (hd : DiffContOnCl ℂ f (Ioi 0 ×ℂ Ioi 0))
     (hB : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 (Ioi 0 ×ℂ Ioi 0)] fun z => expR (B * abs z ^ c))
     (hre : ∀ x : ℝ, 0 ≤ x → ‖f x‖ ≤ C) (him : ∀ x : ℝ, 0 ≤ x → ‖f (x * I)‖ ≤ C) (hz_re : 0 ≤ z.re)
@@ -425,7 +425,7 @@ set_option linter.uppercaseLean3 false in
 * `f` is equal to zero on the boundary of the first quadrant.
 
 Then `f` is equal to zero on the closed first quadrant. -/
-theorem eq_zero_on_quadrant_I (hd : DiffContOnCl ℂ f (Ioi 0 ×ℂ Ioi 0))
+lemma eq_zero_on_quadrant_I (hd : DiffContOnCl ℂ f (Ioi 0 ×ℂ Ioi 0))
     (hB : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 (Ioi 0 ×ℂ Ioi 0)] fun z => expR (B * abs z ^ c))
     (hre : ∀ x : ℝ, 0 ≤ x → f x = 0) (him : ∀ x : ℝ, 0 ≤ x → f (x * I) = 0) :
@@ -444,7 +444,7 @@ set_option linter.uppercaseLean3 false in
 * `f` is equal to `g` on the boundary of the first quadrant.
 
 Then `f` is equal to `g` on the closed first quadrant. -/
-theorem eqOn_quadrant_I (hdf : DiffContOnCl ℂ f (Ioi 0 ×ℂ Ioi 0))
+lemma eqOn_quadrant_I (hdf : DiffContOnCl ℂ f (Ioi 0 ×ℂ Ioi 0))
     (hBf : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 (Ioi 0 ×ℂ Ioi 0)] fun z => expR (B * abs z ^ c))
     (hdg : DiffContOnCl ℂ g (Ioi 0 ×ℂ Ioi 0))
@@ -466,7 +466,7 @@ set_option linter.uppercaseLean3 false in
 * `‖f z‖` is bounded from above by a constant `C` on the boundary of the second quadrant.
 
 Then `‖f z‖` is bounded from above by the same constant on the closed second quadrant. -/
-theorem quadrant_II (hd : DiffContOnCl ℂ f (Iio 0 ×ℂ Ioi 0))
+lemma quadrant_II (hd : DiffContOnCl ℂ f (Iio 0 ×ℂ Ioi 0))
     (hB : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 (Iio 0 ×ℂ Ioi 0)] fun z => expR (B * abs z ^ c))
     (hre : ∀ x : ℝ, x ≤ 0 → ‖f x‖ ≤ C) (him : ∀ x : ℝ, 0 ≤ x → ‖f (x * I)‖ ≤ C) (hz_re : z.re ≤ 0)
@@ -494,7 +494,7 @@ set_option linter.uppercaseLean3 false in
 * `f` is equal to zero on the boundary of the second quadrant.
 
 Then `f` is equal to zero on the closed second quadrant. -/
-theorem eq_zero_on_quadrant_II (hd : DiffContOnCl ℂ f (Iio 0 ×ℂ Ioi 0))
+lemma eq_zero_on_quadrant_II (hd : DiffContOnCl ℂ f (Iio 0 ×ℂ Ioi 0))
     (hB : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 (Iio 0 ×ℂ Ioi 0)] fun z => expR (B * abs z ^ c))
     (hre : ∀ x : ℝ, x ≤ 0 → f x = 0) (him : ∀ x : ℝ, 0 ≤ x → f (x * I) = 0) :
@@ -513,7 +513,7 @@ set_option linter.uppercaseLean3 false in
 * `f` is equal to `g` on the boundary of the second quadrant.
 
 Then `f` is equal to `g` on the closed second quadrant. -/
-theorem eqOn_quadrant_II (hdf : DiffContOnCl ℂ f (Iio 0 ×ℂ Ioi 0))
+lemma eqOn_quadrant_II (hdf : DiffContOnCl ℂ f (Iio 0 ×ℂ Ioi 0))
     (hBf : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 (Iio 0 ×ℂ Ioi 0)] fun z => expR (B * abs z ^ c))
     (hdg : DiffContOnCl ℂ g (Iio 0 ×ℂ Ioi 0))
@@ -534,7 +534,7 @@ set_option linter.uppercaseLean3 false in
 * `‖f z‖` is bounded from above by a constant `C` on the boundary of the third quadrant.
 
 Then `‖f z‖` is bounded from above by the same constant on the closed third quadrant. -/
-theorem quadrant_III (hd : DiffContOnCl ℂ f (Iio 0 ×ℂ Iio 0))
+lemma quadrant_III (hd : DiffContOnCl ℂ f (Iio 0 ×ℂ Iio 0))
     (hB : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 (Iio 0 ×ℂ Iio 0)] fun z => expR (B * abs z ^ c))
     (hre : ∀ x : ℝ, x ≤ 0 → ‖f x‖ ≤ C) (him : ∀ x : ℝ, x ≤ 0 → ‖f (x * I)‖ ≤ C) (hz_re : z.re ≤ 0)
@@ -567,7 +567,7 @@ set_option linter.uppercaseLean3 false in
 * `f` is equal to zero on the boundary of the third quadrant.
 
 Then `f` is equal to zero on the closed third quadrant. -/
-theorem eq_zero_on_quadrant_III (hd : DiffContOnCl ℂ f (Iio 0 ×ℂ Iio 0))
+lemma eq_zero_on_quadrant_III (hd : DiffContOnCl ℂ f (Iio 0 ×ℂ Iio 0))
     (hB : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 (Iio 0 ×ℂ Iio 0)] fun z => expR (B * abs z ^ c))
     (hre : ∀ x : ℝ, x ≤ 0 → f x = 0) (him : ∀ x : ℝ, x ≤ 0 → f (x * I) = 0) :
@@ -585,7 +585,7 @@ set_option linter.uppercaseLean3 false in
 * `f` is equal to `g` on the boundary of the third quadrant.
 
 Then `f` is equal to `g` on the closed third quadrant. -/
-theorem eqOn_quadrant_III (hdf : DiffContOnCl ℂ f (Iio 0 ×ℂ Iio 0))
+lemma eqOn_quadrant_III (hdf : DiffContOnCl ℂ f (Iio 0 ×ℂ Iio 0))
     (hBf : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 (Iio 0 ×ℂ Iio 0)] fun z => expR (B * abs z ^ c))
     (hdg : DiffContOnCl ℂ g (Iio 0 ×ℂ Iio 0))
@@ -606,7 +606,7 @@ set_option linter.uppercaseLean3 false in
 * `‖f z‖` is bounded from above by a constant `C` on the boundary of the fourth quadrant.
 
 Then `‖f z‖` is bounded from above by the same constant on the closed fourth quadrant. -/
-theorem quadrant_IV (hd : DiffContOnCl ℂ f (Ioi 0 ×ℂ Iio 0))
+lemma quadrant_IV (hd : DiffContOnCl ℂ f (Ioi 0 ×ℂ Iio 0))
     (hB : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 (Ioi 0 ×ℂ Iio 0)] fun z => expR (B * abs z ^ c))
     (hre : ∀ x : ℝ, 0 ≤ x → ‖f x‖ ≤ C) (him : ∀ x : ℝ, x ≤ 0 → ‖f (x * I)‖ ≤ C) (hz_re : 0 ≤ z.re)
@@ -637,7 +637,7 @@ set_option linter.uppercaseLean3 false in
 * `f` is equal to zero on the boundary of the fourth quadrant.
 
 Then `f` is equal to zero on the closed fourth quadrant. -/
-theorem eq_zero_on_quadrant_IV (hd : DiffContOnCl ℂ f (Ioi 0 ×ℂ Iio 0))
+lemma eq_zero_on_quadrant_IV (hd : DiffContOnCl ℂ f (Ioi 0 ×ℂ Iio 0))
     (hB : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 (Ioi 0 ×ℂ Iio 0)] fun z => expR (B * abs z ^ c))
     (hre : ∀ x : ℝ, 0 ≤ x → f x = 0) (him : ∀ x : ℝ, x ≤ 0 → f (x * I) = 0) :
@@ -656,7 +656,7 @@ set_option linter.uppercaseLean3 false in
 * `f` is equal to `g` on the boundary of the fourth quadrant.
 
 Then `f` is equal to `g` on the closed fourth quadrant. -/
-theorem eqOn_quadrant_IV (hdf : DiffContOnCl ℂ f (Ioi 0 ×ℂ Iio 0))
+lemma eqOn_quadrant_IV (hdf : DiffContOnCl ℂ f (Ioi 0 ×ℂ Iio 0))
     (hBf : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 (Ioi 0 ×ℂ Iio 0)] fun z => expR (B * abs z ^ c))
     (hdg : DiffContOnCl ℂ g (Ioi 0 ×ℂ Iio 0))
@@ -684,7 +684,7 @@ set_option linter.uppercaseLean3 false in
 
 Then `‖f z‖` is bounded from above by the same constant on the closed right half-plane.
 See also `PhragmenLindelof.right_half_plane_of_bounded_on_real` for a stronger version. -/
-theorem right_half_plane_of_tendsto_zero_on_real (hd : DiffContOnCl ℂ f {z | 0 < z.re})
+lemma right_half_plane_of_tendsto_zero_on_real (hd : DiffContOnCl ℂ f {z | 0 < z.re})
     (hexp : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 {z | 0 < z.re}] fun z => expR (B * abs z ^ c))
     (hre : Tendsto (fun x : ℝ => f x) atTop (𝓝 0)) (him : ∀ x : ℝ, ‖f (x * I)‖ ≤ C)
@@ -757,7 +757,7 @@ theorem right_half_plane_of_tendsto_zero_on_real (hd : DiffContOnCl ℂ f {z | 0
 
 Then `‖f z‖` is bounded from above by `C` on the closed right half-plane.
 See also `PhragmenLindelof.right_half_plane_of_tendsto_zero_on_real` for a weaker version. -/
-theorem right_half_plane_of_bounded_on_real (hd : DiffContOnCl ℂ f {z | 0 < z.re})
+lemma right_half_plane_of_bounded_on_real (hd : DiffContOnCl ℂ f {z | 0 < z.re})
     (hexp : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 {z | 0 < z.re}] fun z => expR (B * abs z ^ c))
     (hre : IsBoundedUnder (· ≤ ·) atTop fun x : ℝ => ‖f x‖) (him : ∀ x : ℝ, ‖f (x * I)‖ ≤ C)
@@ -801,7 +801,7 @@ theorem right_half_plane_of_bounded_on_real (hd : DiffContOnCl ℂ f {z | 0 < z.
   for any natural `n`, `exp (n * x) * ‖f x‖` tends to zero as `x → ∞`.
 
 Then `f` is equal to zero on the closed right half-plane. -/
-theorem eq_zero_on_right_half_plane_of_superexponential_decay (hd : DiffContOnCl ℂ f {z | 0 < z.re})
+lemma eq_zero_on_right_half_plane_of_superexponential_decay (hd : DiffContOnCl ℂ f {z | 0 < z.re})
     (hexp : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 {z | 0 < z.re}] fun z => expR (B * abs z ^ c))
     (hre : SuperpolynomialDecay atTop expR fun x => ‖f x‖) (him : ∃ C, ∀ x : ℝ, ‖f (x * I)‖ ≤ C) :
@@ -858,7 +858,7 @@ that
   for any natural `n`, `exp (n * x) * ‖f x - g x‖` tends to zero as `x → ∞`.
 
 Then `f` is equal to `g` on the closed right half-plane. -/
-theorem eqOn_right_half_plane_of_superexponential_decay {g : ℂ → E}
+lemma eqOn_right_half_plane_of_superexponential_decay {g : ℂ → E}
     (hfd : DiffContOnCl ℂ f {z | 0 < z.re}) (hgd : DiffContOnCl ℂ g {z | 0 < z.re})
     (hfexp : ∃ c < (2 : ℝ), ∃ B,
       f =O[comap Complex.abs atTop ⊓ 𝓟 {z | 0 < z.re}] fun z => expR (B * abs z ^ c))

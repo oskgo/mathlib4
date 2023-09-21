@@ -62,7 +62,7 @@ def esymm (s : Multiset R) (n : ℕ) : R :=
   ((s.powersetLen n).map Multiset.prod).sum
 #align multiset.esymm Multiset.esymm
 
-theorem _root_.Finset.esymm_map_val {σ} (f : σ → R) (s : Finset σ) (n : ℕ) :
+lemma _root_.Finset.esymm_map_val {σ} (f : σ → R) (s : Finset σ) (n : ℕ) :
     (s.val.map f).esymm n = (s.powersetLen n).sum fun t => t.prod f := by
   simp only [esymm, powersetLen_map, ← Finset.map_val_val_powersetLen, map_map]
   rfl
@@ -95,7 +95,7 @@ def symmetricSubalgebra [CommSemiring R] : Subalgebra R (MvPolynomial σ R) wher
 variable {σ R}
 
 @[simp]
-theorem mem_symmetricSubalgebra [CommSemiring R] (p : MvPolynomial σ R) :
+lemma mem_symmetricSubalgebra [CommSemiring R] (p : MvPolynomial σ R) :
     p ∈ symmetricSubalgebra σ R ↔ p.IsSymmetric :=
   Iff.rfl
 #align mv_polynomial.mem_symmetric_subalgebra MvPolynomial.mem_symmetricSubalgebra
@@ -107,35 +107,35 @@ section CommSemiring
 variable [CommSemiring R] [CommSemiring S] {φ ψ : MvPolynomial σ R}
 
 @[simp]
-theorem C (r : R) : IsSymmetric (C r : MvPolynomial σ R) :=
+lemma C (r : R) : IsSymmetric (C r : MvPolynomial σ R) :=
   (symmetricSubalgebra σ R).algebraMap_mem r
 set_option linter.uppercaseLean3 false in
 #align mv_polynomial.is_symmetric.C MvPolynomial.IsSymmetric.C
 
 @[simp]
-theorem zero : IsSymmetric (0 : MvPolynomial σ R) :=
+lemma zero : IsSymmetric (0 : MvPolynomial σ R) :=
   (symmetricSubalgebra σ R).zero_mem
 #align mv_polynomial.is_symmetric.zero MvPolynomial.IsSymmetric.zero
 
 @[simp]
-theorem one : IsSymmetric (1 : MvPolynomial σ R) :=
+lemma one : IsSymmetric (1 : MvPolynomial σ R) :=
   (symmetricSubalgebra σ R).one_mem
 #align mv_polynomial.is_symmetric.one MvPolynomial.IsSymmetric.one
 
-theorem add (hφ : IsSymmetric φ) (hψ : IsSymmetric ψ) : IsSymmetric (φ + ψ) :=
+lemma add (hφ : IsSymmetric φ) (hψ : IsSymmetric ψ) : IsSymmetric (φ + ψ) :=
   (symmetricSubalgebra σ R).add_mem hφ hψ
 #align mv_polynomial.is_symmetric.add MvPolynomial.IsSymmetric.add
 
-theorem mul (hφ : IsSymmetric φ) (hψ : IsSymmetric ψ) : IsSymmetric (φ * ψ) :=
+lemma mul (hφ : IsSymmetric φ) (hψ : IsSymmetric ψ) : IsSymmetric (φ * ψ) :=
   (symmetricSubalgebra σ R).mul_mem hφ hψ
 #align mv_polynomial.is_symmetric.mul MvPolynomial.IsSymmetric.mul
 
-theorem smul (r : R) (hφ : IsSymmetric φ) : IsSymmetric (r • φ) :=
+lemma smul (r : R) (hφ : IsSymmetric φ) : IsSymmetric (r • φ) :=
   (symmetricSubalgebra σ R).smul_mem hφ r
 #align mv_polynomial.is_symmetric.smul MvPolynomial.IsSymmetric.smul
 
 @[simp]
-theorem map (hφ : IsSymmetric φ) (f : R →+* S) : IsSymmetric (map f φ) := fun e => by
+lemma map (hφ : IsSymmetric φ) (f : R →+* S) : IsSymmetric (map f φ) := fun e => by
   rw [← map_rename, hφ]
 #align mv_polynomial.is_symmetric.map MvPolynomial.IsSymmetric.map
 
@@ -145,11 +145,11 @@ section CommRing
 
 variable [CommRing R] {φ ψ : MvPolynomial σ R}
 
-theorem neg (hφ : IsSymmetric φ) : IsSymmetric (-φ) :=
+lemma neg (hφ : IsSymmetric φ) : IsSymmetric (-φ) :=
   (symmetricSubalgebra σ R).neg_mem hφ
 #align mv_polynomial.is_symmetric.neg MvPolynomial.IsSymmetric.neg
 
-theorem sub (hφ : IsSymmetric φ) (hψ : IsSymmetric ψ) : IsSymmetric (φ - ψ) :=
+lemma sub (hφ : IsSymmetric φ) (hψ : IsSymmetric ψ) : IsSymmetric (φ - ψ) :=
   (symmetricSubalgebra σ R).sub_mem hφ hψ
 #align mv_polynomial.is_symmetric.sub MvPolynomial.IsSymmetric.sub
 
@@ -170,38 +170,38 @@ def esymm (n : ℕ) : MvPolynomial σ R :=
 
 /-- The `n`th elementary symmetric `MvPolynomial σ R` is obtained by evaluating the
 `n`th elementary symmetric at the `Multiset` of the monomials -/
-theorem esymm_eq_multiset_esymm : esymm σ R = (Finset.univ.val.map X).esymm := by
+lemma esymm_eq_multiset_esymm : esymm σ R = (Finset.univ.val.map X).esymm := by
   refine' funext fun n => (Finset.esymm_map_val X _ n).symm
 #align mv_polynomial.esymm_eq_multiset_esymm MvPolynomial.esymm_eq_multiset_esymm
 
-theorem aeval_esymm_eq_multiset_esymm [Algebra R S] (f : σ → S) (n : ℕ) :
+lemma aeval_esymm_eq_multiset_esymm [Algebra R S] (f : σ → S) (n : ℕ) :
     aeval f (esymm σ R n) = (Finset.univ.val.map f).esymm n := by
   simp_rw [esymm, aeval_sum, aeval_prod, aeval_X, Finset.esymm_map_val]
 #align mv_polynomial.aeval_esymm_eq_multiset_esymm MvPolynomial.aeval_esymm_eq_multiset_esymm
 
 /-- We can define `esymm σ R n` by summing over a subtype instead of over `powerset_len`. -/
-theorem esymm_eq_sum_subtype (n : ℕ) :
+lemma esymm_eq_sum_subtype (n : ℕ) :
     esymm σ R n = ∑ t : { s : Finset σ // s.card = n }, ∏ i in (t : Finset σ), X i :=
   sum_subtype _ (fun _ => mem_powerset_len_univ_iff) _
 #align mv_polynomial.esymm_eq_sum_subtype MvPolynomial.esymm_eq_sum_subtype
 
 /-- We can define `esymm σ R n` as a sum over explicit monomials -/
-theorem esymm_eq_sum_monomial (n : ℕ) :
+lemma esymm_eq_sum_monomial (n : ℕ) :
     esymm σ R n = ∑ t in powersetLen n univ, monomial (∑ i in t, Finsupp.single i 1) 1 := by
   simp_rw [monomial_sum_one]
   rfl
 #align mv_polynomial.esymm_eq_sum_monomial MvPolynomial.esymm_eq_sum_monomial
 
 @[simp]
-theorem esymm_zero : esymm σ R 0 = 1 := by
+lemma esymm_zero : esymm σ R 0 = 1 := by
   simp only [esymm, powersetLen_zero, sum_singleton, prod_empty]
 #align mv_polynomial.esymm_zero MvPolynomial.esymm_zero
 
-theorem map_esymm (n : ℕ) (f : R →+* S) : map f (esymm σ R n) = esymm σ S n := by
+lemma map_esymm (n : ℕ) (f : R →+* S) : map f (esymm σ R n) = esymm σ S n := by
   simp_rw [esymm, map_sum, map_prod, map_X]
 #align mv_polynomial.map_esymm MvPolynomial.map_esymm
 
-theorem rename_esymm (n : ℕ) (e : σ ≃ τ) : rename e (esymm σ R n) = esymm τ R n :=
+lemma rename_esymm (n : ℕ) (e : σ ≃ τ) : rename e (esymm σ R n) = esymm τ R n :=
   calc
     rename e (esymm σ R n) = ∑ x in powersetLen n univ, ∏ i in x, X (e i) := by
       simp_rw [esymm, map_sum, map_prod, rename_X]
@@ -213,12 +213,12 @@ theorem rename_esymm (n : ℕ) (e : σ ≃ τ) : rename e (esymm σ R n) = esymm
     _ = ∑ t in powersetLen n univ, ∏ i in t, X i := by rw [Finset.map_univ_equiv]
 #align mv_polynomial.rename_esymm MvPolynomial.rename_esymm
 
-theorem esymm_isSymmetric (n : ℕ) : IsSymmetric (esymm σ R n) := by
+lemma esymm_isSymmetric (n : ℕ) : IsSymmetric (esymm σ R n) := by
   intro
   rw [rename_esymm]
 #align mv_polynomial.esymm_is_symmetric MvPolynomial.esymm_isSymmetric
 
-theorem support_esymm'' (n : ℕ) [DecidableEq σ] [Nontrivial R] :
+lemma support_esymm'' (n : ℕ) [DecidableEq σ] [Nontrivial R] :
     (esymm σ R n).support =
       (powersetLen n (univ : Finset σ)).biUnion fun t =>
         (Finsupp.single (∑ i : σ in t, Finsupp.single i 1) (1 : R)).support := by
@@ -243,7 +243,7 @@ theorem support_esymm'' (n : ℕ) [DecidableEq σ] [Nontrivial R] :
   all_goals intro x y; simp [Finsupp.support_single_disjoint]
 #align mv_polynomial.support_esymm'' MvPolynomial.support_esymm''
 
-theorem support_esymm' (n : ℕ) [DecidableEq σ] [Nontrivial R] :
+lemma support_esymm' (n : ℕ) [DecidableEq σ] [Nontrivial R] :
     (esymm σ R n).support =
       (powersetLen n (univ : Finset σ)).biUnion fun t => {∑ i : σ in t, Finsupp.single i 1} := by
   rw [support_esymm'']
@@ -252,14 +252,14 @@ theorem support_esymm' (n : ℕ) [DecidableEq σ] [Nontrivial R] :
   exact Finsupp.support_single_ne_zero _ one_ne_zero
 #align mv_polynomial.support_esymm' MvPolynomial.support_esymm'
 
-theorem support_esymm (n : ℕ) [DecidableEq σ] [Nontrivial R] :
+lemma support_esymm (n : ℕ) [DecidableEq σ] [Nontrivial R] :
     (esymm σ R n).support =
       (powersetLen n (univ : Finset σ)).image fun t => ∑ i : σ in t, Finsupp.single i 1 := by
   rw [support_esymm']
   exact biUnion_singleton
 #align mv_polynomial.support_esymm MvPolynomial.support_esymm
 
-theorem degrees_esymm [Nontrivial R] (n : ℕ) (hpos : 0 < n) (hn : n ≤ Fintype.card σ) :
+lemma degrees_esymm [Nontrivial R] (n : ℕ) (hpos : 0 < n) (hn : n ≤ Fintype.card σ) :
     (esymm σ R n).degrees = (univ : Finset σ).val := by
   classical
     have :
@@ -293,19 +293,19 @@ def psum (n : ℕ) : MvPolynomial σ R := ∑ i, X i ^ n
 lemma psum_def (n : ℕ) : psum σ R n = ∑ i, X i ^ n := rfl
 
 @[simp]
-theorem psum_zero : psum σ R 0 = Fintype.card σ := by
+lemma psum_zero : psum σ R 0 = Fintype.card σ := by
   simp only [psum, _root_.pow_zero, ← cast_card]
   exact rfl
 
 @[simp]
-theorem psum_one : psum σ R 1 = ∑ i, X i := by
+lemma psum_one : psum σ R 1 = ∑ i, X i := by
   simp only [psum, _root_.pow_one]
 
 @[simp]
-theorem rename_psum (n : ℕ) (e : σ ≃ τ) : rename e (psum σ R n) = psum τ R n := by
+lemma rename_psum (n : ℕ) (e : σ ≃ τ) : rename e (psum σ R n) = psum τ R n := by
   simp_rw [psum, map_sum, map_pow, rename_X, e.sum_comp (X · ^ n)]
 
-theorem psum_isSymmetric (n : ℕ) : IsSymmetric (psum σ R n) := rename_psum _ _ n
+lemma psum_isSymmetric (n : ℕ) : IsSymmetric (psum σ R n) := rename_psum _ _ n
 
 end PowerSum
 

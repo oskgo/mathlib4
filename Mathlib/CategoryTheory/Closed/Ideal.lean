@@ -53,7 +53,7 @@ attribute [nolint docBlame] ExponentialIdeal.exp_closed
 /-- To show `i` is an exponential ideal it suffices to show that `A ⟹ iB` is "in" `D` for any `A` in
 `C` and `B` in `D`.
 -/
-theorem ExponentialIdeal.mk' (h : ∀ (B : D) (A : C), (A ⟹ i.obj B) ∈ i.essImage) :
+lemma ExponentialIdeal.mk' (h : ∀ (B : D) (A : C), (A ⟹ i.obj B) ∈ i.essImage) :
     ExponentialIdeal i :=
   ⟨fun hB A => by
     rcases hB with ⟨B', ⟨iB'⟩⟩
@@ -91,7 +91,7 @@ def exponentialIdealReflective (A : C) [Reflective i] [ExponentialIdeal i] :
 /-- Given a natural isomorphism `i ⋙ exp A ⋙ leftAdjoint i ⋙ i ≅ i ⋙ exp A`, we can show `i`
 is an exponential ideal.
 -/
-theorem ExponentialIdeal.mk_of_iso [Reflective i]
+lemma ExponentialIdeal.mk_of_iso [Reflective i]
     (h : ∀ A : C, i ⋙ exp A ⋙ leftAdjoint i ⋙ i ≅ i ⋙ exp A) : ExponentialIdeal i := by
   apply ExponentialIdeal.mk'
   intro B A
@@ -109,7 +109,7 @@ variable (i : D ⥤ C)
 -- Porting note: this used to be used as a local instance,
 -- now it can instead be used as a have when needed
 -- we assume HasFiniteProducts D as a hypothesis below
-theorem reflective_products [HasFiniteProducts C] [Reflective i] : HasFiniteProducts D :=
+lemma reflective_products [HasFiniteProducts C] [Reflective i] : HasFiniteProducts D :=
   ⟨fun _ => hasLimitsOfShape_of_reflective i⟩
 #align category_theory.reflective_products CategoryTheory.reflective_products
 
@@ -201,7 +201,7 @@ noncomputable def bijection (A B : C) (X : D) :
     _ ≃ ((leftAdjoint i).obj A ⨯ (leftAdjoint i).obj B ⟶ X) := (equivOfFullyFaithful _).symm
 #align category_theory.bijection CategoryTheory.bijection
 
-theorem bijection_symm_apply_id (A B : C) :
+lemma bijection_symm_apply_id (A B : C) :
     (bijection i A B _).symm (𝟙 _) = prodComparison _ _ _ := by
   -- Porting note: added
   have : PreservesLimits i := (Adjunction.ofRightAdjoint i).rightAdjointPreservesLimits
@@ -225,7 +225,7 @@ theorem bijection_symm_apply_id (A B : C) :
     apply (Adjunction.ofRightAdjoint i).unit.naturality
 #align category_theory.bijection_symm_apply_id CategoryTheory.bijection_symm_apply_id
 
-theorem bijection_natural (A B : C) (X X' : D) (f : (leftAdjoint i).obj (A ⨯ B) ⟶ X) (g : X ⟶ X') :
+lemma bijection_natural (A B : C) (X X' : D) (f : (leftAdjoint i).obj (A ⨯ B) ⟶ X) (g : X ⟶ X') :
     bijection i _ _ _ (f ≫ g) = bijection i _ _ _ f ≫ g := by
   dsimp [bijection]
   -- Porting note: added
@@ -242,7 +242,7 @@ theorem bijection_natural (A B : C) (X X' : D) (f : (leftAdjoint i).obj (A ⨯ B
 The bijection allows us to show that `prodComparison L A B` is an isomorphism, where the inverse
 is the forward map of the identity morphism.
 -/
-theorem prodComparison_iso (A B : C) : IsIso (prodComparison (leftAdjoint i) A B) :=
+lemma prodComparison_iso (A B : C) : IsIso (prodComparison (leftAdjoint i) A B) :=
   ⟨⟨bijection i _ _ _ (𝟙 _), by
       rw [← (bijection i _ _ _).injective.eq_iff, bijection_natural, ← bijection_symm_apply_id,
         Equiv.apply_symm_apply, id_comp],

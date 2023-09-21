@@ -65,7 +65,7 @@ open Finpartition Finpartition.IsEquipartition
 variable {hP G ε}
 
 /-- The increment partition has a prescribed (very big) size in terms of the original partition. -/
-theorem card_increment (hPα : P.parts.card * 16 ^ P.parts.card ≤ card α) (hPG : ¬P.IsUniform G ε) :
+lemma card_increment (hPα : P.parts.card * 16 ^ P.parts.card ≤ card α) (hPG : ¬P.IsUniform G ε) :
     (increment hP G ε).parts.card = stepBound P.parts.card := by
   have hPα' : stepBound P.parts.card ≤ card α :=
     (mul_le_mul_left' (pow_le_pow_of_le_left' (by norm_num) _) _).trans hPα
@@ -80,7 +80,7 @@ theorem card_increment (hPα : P.parts.card * 16 ^ P.parts.card ≤ card α) (hP
   rw [filter_card_add_filter_neg_card_eq_card, card_attach]
 #align szemeredi_regularity.card_increment SzemerediRegularity.card_increment
 
-theorem increment_isEquipartition (hP : P.IsEquipartition) (G : SimpleGraph α) (ε : ℝ) :
+lemma increment_isEquipartition (hP : P.IsEquipartition) (G : SimpleGraph α) (ε : ℝ) :
     (increment hP G ε).IsEquipartition := by
   simp_rw [IsEquipartition, Set.equitableOn_iff_exists_eq_eq_add_one]
   refine' ⟨m, fun A hA => _⟩
@@ -89,7 +89,7 @@ theorem increment_isEquipartition (hP : P.IsEquipartition) (G : SimpleGraph α) 
   exact card_eq_of_mem_parts_chunk hA
 #align szemeredi_regularity.increment_is_equipartition SzemerediRegularity.increment_isEquipartition
 
-private theorem distinct_pairs_increment :
+private lemma distinct_pairs_increment :
     (P.parts.offDiag.attach.biUnion fun UV =>
       (chunk hP G ε (mem_offDiag.1 UV.2).1).parts ×ˢ
       (chunk hP G ε (mem_offDiag.1 UV.2).2.1).parts) ⊆
@@ -110,7 +110,7 @@ private noncomputable def pairContrib (G : SimpleGraph α) (ε : ℝ) (hP : P.Is
   ∑ i in (chunk hP G ε (mem_offDiag.1 x.2).1).parts ×ˢ (chunk hP G ε (mem_offDiag.1 x.2).2.1).parts,
     (G.edgeDensity i.fst i.snd : ℚ) ^ 2
 
-theorem offDiag_pairs_le_increment_energy :
+lemma offDiag_pairs_le_increment_energy :
     ∑ x in P.parts.offDiag.attach, pairContrib G ε hP x / ((increment hP G ε).parts.card : ℚ) ^ 2 ≤
     (increment hP G ε).energy G := by
   simp_rw [pairContrib, ← sum_div]
@@ -130,7 +130,7 @@ theorem offDiag_pairs_le_increment_energy :
           Finpartition.le _ huv₂.2 hb)
 #align szemeredi_regularity.off_diag_pairs_le_increment_energy SzemerediRegularity.offDiag_pairs_le_increment_energy
 
-theorem pairContrib_lower_bound [Nonempty α] (x : { i // i ∈ P.parts.offDiag }) (hε₁ : ε ≤ 1)
+lemma pairContrib_lower_bound [Nonempty α] (x : { i // i ∈ P.parts.offDiag }) (hε₁ : ε ≤ 1)
     (hPα : P.parts.card * 16 ^ P.parts.card ≤ card α) (hPε : ↑100 ≤ ↑4 ^ P.parts.card * ε ^ 5) :
     ((G.edgeDensity x.1.1 x.1.2 : ℝ) ^ 2 - ε ^ 5 / ↑25 +
       if G.IsUniform ε x.1.1 x.1.2 then (0 : ℝ) else ε ^ 4 / 3) ≤
@@ -143,7 +143,7 @@ theorem pairContrib_lower_bound [Nonempty α] (x : { i // i ∈ P.parts.offDiag 
   · exact edgeDensity_chunk_not_uniform hPα hPε hε₁ (mem_offDiag.1 x.2).2.2 h
 #align szemeredi_regularity.pair_contrib_lower_bound SzemerediRegularity.pairContrib_lower_bound
 
-theorem uniform_add_nonuniform_eq_offDiag_pairs [Nonempty α] (hε₁ : ε ≤ 1) (hP₇ : 7 ≤ P.parts.card)
+lemma uniform_add_nonuniform_eq_offDiag_pairs [Nonempty α] (hε₁ : ε ≤ 1) (hP₇ : 7 ≤ P.parts.card)
     (hPα : P.parts.card * 16 ^ P.parts.card ≤ card α) (hPε : ↑100 ≤ ↑4 ^ P.parts.card * ε ^ 5)
     (hPG : ¬P.IsUniform G ε) :
     (∑ x in P.parts.offDiag, (G.edgeDensity x.1 x.2 : ℝ) ^ 2 +
@@ -186,7 +186,7 @@ theorem uniform_add_nonuniform_eq_offDiag_pairs [Nonempty α] (hε₁ : ε ≤ 1
 #align szemeredi_regularity.uniform_add_nonuniform_eq_off_diag_pairs SzemerediRegularity.uniform_add_nonuniform_eq_offDiag_pairs
 
 /-- The increment partition has energy greater than the original one by a known fixed amount. -/
-theorem energy_increment [Nonempty α] (hP : P.IsEquipartition) (hP₇ : 7 ≤ P.parts.card)
+lemma energy_increment [Nonempty α] (hP : P.IsEquipartition) (hP₇ : 7 ≤ P.parts.card)
     (hε : ↑100 < ↑4 ^ P.parts.card * ε ^ 5) (hPα : P.parts.card * 16 ^ P.parts.card ≤ card α)
     (hPG : ¬P.IsUniform G ε) (hε₁ : ε ≤ 1) :
     ↑(P.energy G) + ε ^ 5 / 4 ≤ (increment hP G ε).energy G := by

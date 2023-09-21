@@ -39,7 +39,7 @@ find a new partition `Q` of `s` where each part has size `m` or `m + 1`, every p
 union of parts of `Q` plus at most `m` extra elements, there are `b` parts of size `m + 1` and
 (provided `m > 0`, because a partition does not have parts of size `0`) there are `a` parts of size
 `m` and hence `a + b` parts in total. -/
-theorem equitabilise_aux (hs : a * m + b * (m + 1) = s.card) :
+lemma equitabilise_aux (hs : a * m + b * (m + 1) = s.card) :
     ∃ Q : Finpartition s,
       (∀ x : Finset α, x ∈ Q.parts → x.card = m ∨ x.card = m + 1) ∧
         (∀ x, x ∈ P.parts → (x \ (Q.parts.filter fun y => y ⊆ x).biUnion id).card ≤ m) ∧
@@ -150,23 +150,23 @@ noncomputable def equitabilise : Finpartition s :=
 
 variable {h}
 
-theorem card_eq_of_mem_parts_equitabilise :
+lemma card_eq_of_mem_parts_equitabilise :
     t ∈ (P.equitabilise h).parts → t.card = m ∨ t.card = m + 1 :=
   (P.equitabilise_aux h).choose_spec.1 _
 #align finpartition.card_eq_of_mem_parts_equitabilise Finpartition.card_eq_of_mem_parts_equitabilise
 
-theorem equitabilise_isEquipartition : (P.equitabilise h).IsEquipartition :=
+lemma equitabilise_isEquipartition : (P.equitabilise h).IsEquipartition :=
   Set.equitableOn_iff_exists_eq_eq_add_one.2 ⟨m, fun _ => card_eq_of_mem_parts_equitabilise⟩
 #align finpartition.equitabilise_is_equipartition Finpartition.equitabilise_isEquipartition
 
 variable (P h)
 
-theorem card_filter_equitabilise_big :
+lemma card_filter_equitabilise_big :
     ((P.equitabilise h).parts.filter fun u : Finset α => u.card = m + 1).card = b :=
   (P.equitabilise_aux h).choose_spec.2.2
 #align finpartition.card_filter_equitabilise_big Finpartition.card_filter_equitabilise_big
 
-theorem card_filter_equitabilise_small (hm : m ≠ 0) :
+lemma card_filter_equitabilise_small (hm : m ≠ 0) :
     ((P.equitabilise h).parts.filter fun u : Finset α => u.card = m).card = a := by
   refine' (mul_eq_mul_right_iff.1 <| (add_left_inj (b * (m + 1))).1 _).resolve_right hm
   rw [h, ← (P.equitabilise h).sum_card_parts]
@@ -185,14 +185,14 @@ theorem card_filter_equitabilise_small (hm : m ≠ 0) :
   exact (hb i h).symm.trans (ha i h)
 #align finpartition.card_filter_equitabilise_small Finpartition.card_filter_equitabilise_small
 
-theorem card_parts_equitabilise (hm : m ≠ 0) : (P.equitabilise h).parts.card = a + b := by
+lemma card_parts_equitabilise (hm : m ≠ 0) : (P.equitabilise h).parts.card = a + b := by
   rw [← filter_true_of_mem fun x => card_eq_of_mem_parts_equitabilise, filter_or, card_union_eq,
     P.card_filter_equitabilise_small _ hm, P.card_filter_equitabilise_big]
   -- Porting note: was `infer_instance`
   exact disjoint_filter.2 fun x _ h₀ h₁ => Nat.succ_ne_self m <| h₁.symm.trans h₀
 #align finpartition.card_parts_equitabilise Finpartition.card_parts_equitabilise
 
-theorem card_parts_equitabilise_subset_le :
+lemma card_parts_equitabilise_subset_le :
     t ∈ P.parts → (t \ ((P.equitabilise h).parts.filter fun u => u ⊆ t).biUnion id).card ≤ m :=
   (Classical.choose_spec <| P.equitabilise_aux h).2.1 t
 #align finpartition.card_parts_equitabilise_subset_le Finpartition.card_parts_equitabilise_subset_le
@@ -200,7 +200,7 @@ theorem card_parts_equitabilise_subset_le :
 variable (s)
 
 /-- We can find equipartitions of arbitrary size. -/
-theorem exists_equipartition_card_eq (hn : n ≠ 0) (hs : n ≤ s.card) :
+lemma exists_equipartition_card_eq (hn : n ≠ 0) (hs : n ≤ s.card) :
     ∃ P : Finpartition s, P.IsEquipartition ∧ P.parts.card = n := by
   rw [← pos_iff_ne_zero] at hn
   have : (n - s.card % n) * (s.card / n) + s.card % n * (s.card / n + 1) = s.card := by

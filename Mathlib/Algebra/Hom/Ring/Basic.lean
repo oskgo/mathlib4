@@ -32,7 +32,7 @@ section
 variable {_ : NonAssocSemiring α} {_ : NonAssocSemiring β} (f : α →+* β) {x y : α}
 
 /-- `f : α →+* β` has a trivial codomain iff its range is `{0}`. -/
-theorem codomain_trivial_iff_range_eq_singleton_zero : (0 : β) = 1 ↔ Set.range f = {0} :=
+lemma codomain_trivial_iff_range_eq_singleton_zero : (0 : β) = 1 ↔ Set.range f = {0} :=
   f.codomain_trivial_iff_range_trivial.trans
     ⟨fun h =>
       Set.ext fun y => ⟨fun ⟨x, hx⟩ => by simp [← hx, h x], fun hy => ⟨0, by simpa using hy.symm⟩⟩,
@@ -45,11 +45,11 @@ section Semiring
 
 variable [Semiring α] [Semiring β]
 
-theorem isUnit_map (f : α →+* β) {a : α} : IsUnit a → IsUnit (f a) :=
+lemma isUnit_map (f : α →+* β) {a : α} : IsUnit a → IsUnit (f a) :=
   IsUnit.map f
 #align ring_hom.is_unit_map RingHom.isUnit_map
 
-protected theorem map_dvd (f : α →+* β) {a b : α} : a ∣ b → f a ∣ f b :=
+protected lemma map_dvd (f : α →+* β) {a b : α} : a ∣ b → f a ∣ f b :=
   map_dvd f
 #align ring_hom.map_dvd RingHom.map_dvd
 
@@ -58,7 +58,7 @@ end Semiring
 end RingHom
 
 /-- Pullback `IsDomain` instance along an injective function. -/
-protected theorem Function.Injective.isDomain [Ring α] [IsDomain α] [Ring β] (f : β →+* α)
+protected lemma Function.Injective.isDomain [Ring α] [IsDomain α] [Ring β] (f : β →+* α)
     (hf : Injective f) : IsDomain β := by
   haveI := pullback_nonzero f f.map_zero f.map_one
   haveI := IsRightCancelMulZero.to_noZeroDivisors α

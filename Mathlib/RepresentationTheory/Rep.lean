@@ -74,46 +74,46 @@ set_option linter.uppercaseLean3 false in
 #align Rep.of Rep.of
 
 @[simp]
-theorem coe_of {V : Type u} [AddCommGroup V] [Module k V] (ρ : G →* V →ₗ[k] V) :
+lemma coe_of {V : Type u} [AddCommGroup V] [Module k V] (ρ : G →* V →ₗ[k] V) :
     (of ρ : Type u) = V :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.coe_of Rep.coe_of
 
 @[simp]
-theorem of_ρ {V : Type u} [AddCommGroup V] [Module k V] (ρ : G →* V →ₗ[k] V) : (of ρ).ρ = ρ :=
+lemma of_ρ {V : Type u} [AddCommGroup V] [Module k V] (ρ : G →* V →ₗ[k] V) : (of ρ).ρ = ρ :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.of_ρ Rep.of_ρ
 
-theorem Action_ρ_eq_ρ {A : Rep k G} : Action.ρ A = A.ρ :=
+lemma Action_ρ_eq_ρ {A : Rep k G} : Action.ρ A = A.ρ :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.Action_ρ_eq_ρ Rep.Action_ρ_eq_ρ
 
 /-- Allows us to apply lemmas about the underlying `ρ`, which would take an element `g : G` rather
 than `g : MonCat.of G` as an argument. -/
-theorem of_ρ_apply {V : Type u} [AddCommGroup V] [Module k V] (ρ : Representation k G V)
+lemma of_ρ_apply {V : Type u} [AddCommGroup V] [Module k V] (ρ : Representation k G V)
     (g : MonCat.of G) : (Rep.of ρ).ρ g = ρ (g : G) :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.of_ρ_apply Rep.of_ρ_apply
 
 @[simp]
-theorem ρ_inv_self_apply {G : Type u} [Group G] (A : Rep k G) (g : G) (x : A) :
+lemma ρ_inv_self_apply {G : Type u} [Group G] (A : Rep k G) (g : G) (x : A) :
     A.ρ g⁻¹ (A.ρ g x) = x :=
   show (A.ρ g⁻¹ * A.ρ g) x = x by rw [← map_mul, inv_mul_self, map_one, LinearMap.one_apply]
 set_option linter.uppercaseLean3 false in
 #align Rep.ρ_inv_self_apply Rep.ρ_inv_self_apply
 
 @[simp]
-theorem ρ_self_inv_apply {G : Type u} [Group G] {A : Rep k G} (g : G) (x : A) :
+lemma ρ_self_inv_apply {G : Type u} [Group G] {A : Rep k G} (g : G) (x : A) :
     A.ρ g (A.ρ g⁻¹ x) = x :=
   show (A.ρ g * A.ρ g⁻¹) x = x by rw [← map_mul, mul_inv_self, map_one, LinearMap.one_apply]
 set_option linter.uppercaseLean3 false in
 #align Rep.ρ_self_inv_apply Rep.ρ_self_inv_apply
 
-theorem hom_comm_apply {A B : Rep k G} (f : A ⟶ B) (g : G) (x : A) :
+lemma hom_comm_apply {A B : Rep k G} (f : A ⟶ B) (g : G) (x : A) :
     f.hom (A.ρ g x) = B.ρ g (f.hom x) :=
   LinearMap.ext_iff.1 (f.comm g) x
 set_option linter.uppercaseLean3 false in
@@ -129,7 +129,7 @@ set_option linter.uppercaseLean3 false in
 
 variable {k G}
 
-theorem trivial_def {V : Type u} [AddCommGroup V] [Module k V] (g : G) (v : V) :
+lemma trivial_def {V : Type u} [AddCommGroup V] [Module k V] (g : G) (v : V) :
     (trivial k G V).ρ g v = v :=
   rfl
 set_option linter.uppercaseLean3 false in
@@ -144,7 +144,7 @@ noncomputable instance : PreservesColimits (forget₂ (Rep k G) (ModuleCat.{u} k
 
 /- Porting note: linter complains `simp` unfolds some types in the LHS, so
 have removed `@[simp]`. -/
-theorem MonoidalCategory.braiding_hom_apply {A B : Rep k G} (x : A) (y : B) :
+lemma MonoidalCategory.braiding_hom_apply {A B : Rep k G} (x : A) (y : B) :
     Action.Hom.hom (β_ A B).hom (TensorProduct.tmul k x y) = TensorProduct.tmul k y x :=
   rfl
 set_option linter.uppercaseLean3 false in
@@ -152,7 +152,7 @@ set_option linter.uppercaseLean3 false in
 
 /- Porting note: linter complains `simp` unfolds some types in the LHS, so
 have removed `@[simp]`. -/
-theorem MonoidalCategory.braiding_inv_apply {A B : Rep k G} (x : A) (y : B) :
+lemma MonoidalCategory.braiding_inv_apply {A B : Rep k G} (x : A) (y : B) :
     Action.Hom.hom (β_ A B).inv (TensorProduct.tmul k y x) = TensorProduct.tmul k x y :=
   rfl
 set_option linter.uppercaseLean3 false in
@@ -172,13 +172,13 @@ set_option linter.uppercaseLean3 false in
 variable {k G}
 
 @[simp]
-theorem linearization_obj_ρ (X : Action (Type u) (MonCat.of G)) (g : G) (x : X.V →₀ k) :
+lemma linearization_obj_ρ (X : Action (Type u) (MonCat.of G)) (g : G) (x : X.V →₀ k) :
     ((linearization k G).obj X).ρ g x = Finsupp.lmapDomain k k (X.ρ g) x :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.linearization_obj_ρ Rep.linearization_obj_ρ
 
-theorem linearization_of (X : Action (Type u) (MonCat.of G)) (g : G) (x : X.V) :
+lemma linearization_of (X : Action (Type u) (MonCat.of G)) (g : G) (x : X.V) :
     ((linearization k G).obj X).ρ g (Finsupp.single x (1 : k))
       = Finsupp.single (X.ρ g x) (1 : k) := by
   rw [linearization_obj_ρ, Finsupp.lmapDomain_apply, Finsupp.mapDomain_single]
@@ -186,33 +186,33 @@ set_option linter.uppercaseLean3 false in
 #align Rep.linearization_of Rep.linearization_of
 
 -- Porting note: helps fixing `linearizationTrivialIso` since change in behaviour of ext
-theorem linearization_single (X : Action (Type u) (MonCat.of G)) (g : G) (x : X.V) (r : k) :
+lemma linearization_single (X : Action (Type u) (MonCat.of G)) (g : G) (x : X.V) (r : k) :
     ((linearization k G).obj X).ρ g (Finsupp.single x r) = Finsupp.single (X.ρ g x) r :=
   by rw [linearization_obj_ρ, Finsupp.lmapDomain_apply, Finsupp.mapDomain_single]
 
 variable {X Y : Action (Type u) (MonCat.of G)} (f : X ⟶ Y)
 
 @[simp]
-theorem linearization_map_hom : ((linearization k G).map f).hom = Finsupp.lmapDomain k k f.hom :=
+lemma linearization_map_hom : ((linearization k G).map f).hom = Finsupp.lmapDomain k k f.hom :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.linearization_map_hom Rep.linearization_map_hom
 
-theorem linearization_map_hom_single (x : X.V) (r : k) :
+lemma linearization_map_hom_single (x : X.V) (r : k) :
     ((linearization k G).map f).hom (Finsupp.single x r) = Finsupp.single (f.hom x) r :=
   Finsupp.mapDomain_single
 set_option linter.uppercaseLean3 false in
 #align Rep.linearization_map_hom_single Rep.linearization_map_hom_single
 
 @[simp]
-theorem linearization_μ_hom (X Y : Action (Type u) (MonCat.of G)) :
+lemma linearization_μ_hom (X Y : Action (Type u) (MonCat.of G)) :
     ((linearization k G).μ X Y).hom = (finsuppTensorFinsupp' k X.V Y.V).toLinearMap :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.linearization_μ_hom Rep.linearization_μ_hom
 
 @[simp]
-theorem linearization_μ_inv_hom (X Y : Action (Type u) (MonCat.of G)) :
+lemma linearization_μ_inv_hom (X Y : Action (Type u) (MonCat.of G)) :
     (inv ((linearization k G).μ X Y)).hom = (finsuppTensorFinsupp' k X.V Y.V).symm.toLinearMap := by
 -- Porting note: broken proof was
 /-simp_rw [← Action.forget_map, Functor.map_inv, Action.forget_map, linearization_μ_hom]
@@ -225,13 +225,13 @@ set_option linter.uppercaseLean3 false in
 #align Rep.linearization_μ_inv_hom Rep.linearization_μ_inv_hom
 
 @[simp]
-theorem linearization_ε_hom : (linearization k G).ε.hom = Finsupp.lsingle PUnit.unit :=
+lemma linearization_ε_hom : (linearization k G).ε.hom = Finsupp.lsingle PUnit.unit :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.linearization_ε_hom Rep.linearization_ε_hom
 
 @[simp]
-theorem linearization_ε_inv_hom_apply (r : k) :
+lemma linearization_ε_inv_hom_apply (r : k) :
     (inv (linearization k G).ε).hom (Finsupp.single PUnit.unit r) = r :=
   IsIso.hom_inv_id_apply (linearization k G).ε r
 set_option linter.uppercaseLean3 false in
@@ -296,7 +296,7 @@ noncomputable def leftRegularHom (A : Rep k G) (x : A) : Rep.ofMulAction k G G �
 set_option linter.uppercaseLean3 false in
 #align Rep.left_regular_hom Rep.leftRegularHom
 
-theorem leftRegularHom_apply {A : Rep k G} (x : A) :
+lemma leftRegularHom_apply {A : Rep k G} (x : A) :
     (leftRegularHom A x).hom (Finsupp.single 1 1) = x := by
   rw [leftRegularHom_hom, Finsupp.lift_apply, Finsupp.sum_single_index, one_smul,
     A.ρ.map_one, LinearMap.one_apply]
@@ -332,7 +332,7 @@ noncomputable def leftRegularHomEquiv (A : Rep k G) : (Rep.ofMulAction k G G ⟶
 set_option linter.uppercaseLean3 false in
 #align Rep.left_regular_hom_equiv Rep.leftRegularHomEquiv
 
-theorem leftRegularHomEquiv_symm_single {A : Rep k G} (x : A) (g : G) :
+lemma leftRegularHomEquiv_symm_single {A : Rep k G} (x : A) (g : G) :
     ((leftRegularHomEquiv A).symm x).hom (Finsupp.single g 1) = A.ρ g x := by
   rw [leftRegularHomEquiv_symm_apply, leftRegularHom_hom, Finsupp.lift_apply,
     Finsupp.sum_single_index, one_smul]
@@ -365,7 +365,7 @@ protected def ihom (A : Rep k G) : Rep k G ⥤ Rep k G where
 set_option linter.uppercaseLean3 false in
 #align Rep.ihom Rep.ihom
 
-@[simp] theorem ihom_obj_ρ_apply {A B : Rep k G} (g : G) (x : A →ₗ[k] B) :
+@[simp] lemma ihom_obj_ρ_apply {A B : Rep k G} (g : G) (x : A →ₗ[k] B) :
     ((Rep.ihom A).obj B).ρ g x = B.ρ g ∘ₗ x ∘ₗ A.ρ g⁻¹ :=
   rfl
 set_option linter.uppercaseLean3 false in
@@ -406,14 +406,14 @@ variable {A B C}
 
 /-- Porting note: if we generate this with `@[simps]` the linter complains some types in the LHS
 simplify. -/
-theorem homEquiv_apply_hom (f : A ⊗ B ⟶ C) :
+lemma homEquiv_apply_hom (f : A ⊗ B ⟶ C) :
     (homEquiv A B C f).hom = (TensorProduct.curry f.hom).flip := rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.hom_equiv_apply_hom Rep.homEquiv_apply_hom
 
 /-- Porting note: if we generate this with `@[simps]` the linter complains some types in the LHS
 simplify. -/
-theorem homEquiv_symm_apply_hom (f : B ⟶ (Rep.ihom A).obj C) :
+lemma homEquiv_symm_apply_hom (f : B ⟶ (Rep.ihom A).obj C) :
     ((homEquiv A B C).symm f).hom = TensorProduct.uncurry k A B C f.hom.flip := rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.hom_equiv_symm_apply_hom Rep.homEquiv_symm_apply_hom
@@ -430,19 +430,19 @@ instance : MonoidalClosed (Rep k G) where
           fun _ => LinearMap.ext fun _ => rfl) })}}
 
 @[simp]
-theorem ihom_obj_ρ_def (A B : Rep k G) : ((ihom A).obj B).ρ = ((Rep.ihom A).obj B).ρ :=
+lemma ihom_obj_ρ_def (A B : Rep k G) : ((ihom A).obj B).ρ = ((Rep.ihom A).obj B).ρ :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.ihom_obj_ρ_def Rep.ihom_obj_ρ_def
 
 @[simp]
-theorem homEquiv_def (A B C : Rep k G) : (ihom.adjunction A).homEquiv B C = Rep.homEquiv A B C :=
+lemma homEquiv_def (A B C : Rep k G) : (ihom.adjunction A).homEquiv B C = Rep.homEquiv A B C :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.hom_equiv_def Rep.homEquiv_def
 
 @[simp]
-theorem ihom_ev_app_hom (A B : Rep k G) :
+lemma ihom_ev_app_hom (A B : Rep k G) :
     Action.Hom.hom ((ihom.ev A).app B)
       = TensorProduct.uncurry k A (A →ₗ[k] B) B LinearMap.id.flip := by
   ext; rfl
@@ -451,7 +451,7 @@ set_option linter.uppercaseLean3 false in
 
 /- Porting note: needs extra heartbeats. -/
 set_option maxHeartbeats 240000 in
-@[simp] theorem ihom_coev_app_hom (A B : Rep k G) :
+@[simp] lemma ihom_coev_app_hom (A B : Rep k G) :
     Action.Hom.hom ((ihom.coev A).app B) = (TensorProduct.mk k _ _).flip :=
   LinearMap.ext fun _ => LinearMap.ext fun _ => rfl
 set_option linter.uppercaseLean3 false in
@@ -478,28 +478,28 @@ set_option linter.uppercaseLean3 false in
 variable {A B C}
 
 @[simp]
-theorem MonoidalClosed.linearHomEquiv_hom (f : A ⊗ B ⟶ C) :
+lemma MonoidalClosed.linearHomEquiv_hom (f : A ⊗ B ⟶ C) :
     (MonoidalClosed.linearHomEquiv A B C f).hom = (TensorProduct.curry f.hom).flip :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.monoidal_closed.linear_hom_equiv_hom Rep.MonoidalClosed.linearHomEquiv_hom
 
 @[simp]
-theorem MonoidalClosed.linearHomEquivComm_hom (f : A ⊗ B ⟶ C) :
+lemma MonoidalClosed.linearHomEquivComm_hom (f : A ⊗ B ⟶ C) :
     (MonoidalClosed.linearHomEquivComm A B C f).hom = TensorProduct.curry f.hom :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.monoidal_closed.linear_hom_equiv_comm_hom Rep.MonoidalClosed.linearHomEquivComm_hom
 
 @[simp]
-theorem MonoidalClosed.linearHomEquiv_symm_hom (f : B ⟶ A ⟶[Rep k G] C) :
+lemma MonoidalClosed.linearHomEquiv_symm_hom (f : B ⟶ A ⟶[Rep k G] C) :
     ((MonoidalClosed.linearHomEquiv A B C).symm f).hom = TensorProduct.uncurry k A B C f.hom.flip :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.monoidal_closed.linear_hom_equiv_symm_hom Rep.MonoidalClosed.linearHomEquiv_symm_hom
 
 @[simp]
-theorem MonoidalClosed.linearHomEquivComm_symm_hom (f : A ⟶ B ⟶[Rep k G] C) :
+lemma MonoidalClosed.linearHomEquivComm_symm_hom (f : A ⟶ B ⟶[Rep k G] C) :
     ((MonoidalClosed.linearHomEquivComm A B C).symm f).hom
       = TensorProduct.uncurry k A B C f.hom :=
   TensorProduct.ext' fun _ _ => rfl
@@ -521,12 +521,12 @@ def repOfTprodIso : Rep.of (ρ.tprod τ) ≅ Rep.of ρ ⊗ Rep.of τ :=
 set_option linter.uppercaseLean3 false in
 #align representation.Rep_of_tprod_iso Representation.repOfTprodIso
 
-theorem repOfTprodIso_apply (x : TensorProduct k V W) : (repOfTprodIso ρ τ).hom.hom x = x :=
+lemma repOfTprodIso_apply (x : TensorProduct k V W) : (repOfTprodIso ρ τ).hom.hom x = x :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align representation.Rep_of_tprod_iso_apply Representation.repOfTprodIso_apply
 
-theorem repOfTprodIso_inv_apply (x : TensorProduct k V W) : (repOfTprodIso ρ τ).inv.hom x = x :=
+lemma repOfTprodIso_inv_apply (x : TensorProduct k V W) : (repOfTprodIso ρ τ).inv.hom x = x :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align representation.Rep_of_tprod_iso_inv_apply Representation.repOfTprodIso_inv_apply
@@ -552,7 +552,7 @@ example : MonoidalLinear k (Rep k G) := by infer_instance
 noncomputable section
 
 /-- Auxiliary lemma for `toModuleMonoidAlgebra`. -/
-theorem to_Module_monoidAlgebra_map_aux {k G : Type*} [CommRing k] [Monoid G] (V W : Type*)
+lemma to_Module_monoidAlgebra_map_aux {k G : Type*} [CommRing k] [Monoid G] (V W : Type*)
     [AddCommGroup V] [AddCommGroup W] [Module k V] [Module k W] (ρ : G →* V →ₗ[k] V)
     (σ : G →* W →ₗ[k] W) (f : V →ₗ[k] W) (w : ∀ g : G, f.comp (ρ g) = (σ g).comp f)
     (r : MonoidAlgebra k G) (x : V) :
@@ -592,13 +592,13 @@ def ofModuleMonoidAlgebra : ModuleCat.{u} (MonoidAlgebra k G) ⥤ Rep k G where
 set_option linter.uppercaseLean3 false in
 #align Rep.of_Module_monoid_algebra Rep.ofModuleMonoidAlgebra
 
-theorem ofModuleMonoidAlgebra_obj_coe (M : ModuleCat.{u} (MonoidAlgebra k G)) :
+lemma ofModuleMonoidAlgebra_obj_coe (M : ModuleCat.{u} (MonoidAlgebra k G)) :
     (ofModuleMonoidAlgebra.obj M : Type u) = RestrictScalars k (MonoidAlgebra k G) M :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align Rep.of_Module_monoid_algebra_obj_coe Rep.ofModuleMonoidAlgebra_obj_coe
 
-theorem ofModuleMonoidAlgebra_obj_ρ (M : ModuleCat.{u} (MonoidAlgebra k G)) :
+lemma ofModuleMonoidAlgebra_obj_ρ (M : ModuleCat.{u} (MonoidAlgebra k G)) :
     (ofModuleMonoidAlgebra.obj M).ρ = Representation.ofModule M :=
   rfl
 set_option linter.uppercaseLean3 false in
@@ -636,7 +636,7 @@ def counitIso (M : ModuleCat.{u} (MonoidAlgebra k G)) :
 set_option linter.uppercaseLean3 false in
 #align Rep.counit_iso Rep.counitIso
 
-theorem unit_iso_comm (V : Rep k G) (g : G) (x : V) :
+lemma unit_iso_comm (V : Rep k G) (g : G) (x : V) :
     unitIsoAddEquiv ((V.ρ g).toFun x) = ((ofModuleMonoidAlgebra.obj
       (toModuleMonoidAlgebra.obj V)).ρ g).toFun (unitIsoAddEquiv x) := by
   dsimp [unitIsoAddEquiv, ofModuleMonoidAlgebra, toModuleMonoidAlgebra]

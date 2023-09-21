@@ -34,7 +34,7 @@ instance NeZero.one : NeZero (1 : M₀) := ⟨by
 #align ne_zero.one NeZero.one
 
 /-- Pullback a `Nontrivial` instance along a function sending `0` to `0` and `1` to `1`. -/
-theorem pullback_nonzero [Zero M₀'] [One M₀'] (f : M₀' → M₀) (zero : f 0 = 0) (one : f 1 = 1) :
+lemma pullback_nonzero [Zero M₀'] [One M₀'] (f : M₀' → M₀) (zero : f 0 = 0) (one : f 1 = 1) :
     Nontrivial M₀' :=
   ⟨⟨0, 1, mt (congr_arg f) <| by
     rw [zero, one]
@@ -46,13 +46,13 @@ section GroupWithZero
 variable [GroupWithZero G₀] {a b c g h x : G₀}
 
 -- Porting note: used `simpa` to prove `False` in lean3
-theorem inv_ne_zero (h : a ≠ 0) : a⁻¹ ≠ 0 := fun a_eq_0 => by
+lemma inv_ne_zero (h : a ≠ 0) : a⁻¹ ≠ 0 := fun a_eq_0 => by
   have := mul_inv_cancel h
   simp only [a_eq_0, mul_zero, zero_ne_one] at this
 #align inv_ne_zero inv_ne_zero
 
 @[simp]
-theorem inv_mul_cancel (h : a ≠ 0) : a⁻¹ * a = 1 :=
+lemma inv_mul_cancel (h : a ≠ 0) : a⁻¹ * a = 1 :=
   calc
     a⁻¹ * a = a⁻¹ * a * a⁻¹ * a⁻¹⁻¹ := by simp [inv_ne_zero h]
     _ = a⁻¹ * a⁻¹⁻¹ := by simp [h]

@@ -26,7 +26,7 @@ open Real intervalIntegral MeasureTheory Set Filter
 open scoped Topology
 
 /-- `exp (-b * x)` is integrable on `(a, ∞)`. -/
-theorem exp_neg_integrableOn_Ioi (a : ℝ) {b : ℝ} (h : 0 < b) :
+lemma exp_neg_integrableOn_Ioi (a : ℝ) {b : ℝ} (h : 0 < b) :
     IntegrableOn (fun x : ℝ => exp (-b * x)) (Ioi a) := by
   have : Tendsto (fun x => -exp (-b * x) / b) atTop (𝓝 (-0 / b)) := by
     refine' Tendsto.div_const (Tendsto.neg _) _
@@ -37,7 +37,7 @@ theorem exp_neg_integrableOn_Ioi (a : ℝ) {b : ℝ} (h : 0 < b) :
 
 /-- If `f` is continuous on `[a, ∞)`, and is `O (exp (-b * x))` at `∞` for some `b > 0`, then
 `f` is integrable on `(a, ∞)`. -/
-theorem integrable_of_isBigO_exp_neg {f : ℝ → ℝ} {a b : ℝ} (h0 : 0 < b)
+lemma integrable_of_isBigO_exp_neg {f : ℝ → ℝ} {a b : ℝ} (h0 : 0 < b)
     (h1 : ContinuousOn f (Ici a)) (h2 : f =O[atTop] fun x => exp (-b * x)) :
     IntegrableOn f (Ioi a) := by
   cases' h2.isBigOWith with c h3

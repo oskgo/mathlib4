@@ -77,19 +77,19 @@ def eComp (X Y Z : C) : ((X ⟶[V] Y) ⊗ Y ⟶[V] Z) ⟶ X ⟶[V] Z :=
 
 -- We don't just use `restate_axiom` here; that would leave `V` as an implicit argument.
 @[reassoc (attr := simp)]
-theorem e_id_comp (X Y : C) :
+lemma e_id_comp (X Y : C) :
     (λ_ (X ⟶[V] Y)).inv ≫ (eId V X ⊗ 𝟙 _) ≫ eComp V X X Y = 𝟙 (X ⟶[V] Y) :=
   EnrichedCategory.id_comp X Y
 #align category_theory.e_id_comp CategoryTheory.e_id_comp
 
 @[reassoc (attr := simp)]
-theorem e_comp_id (X Y : C) :
+lemma e_comp_id (X Y : C) :
     (ρ_ (X ⟶[V] Y)).inv ≫ (𝟙 _ ⊗ eId V Y) ≫ eComp V X Y Y = 𝟙 (X ⟶[V] Y) :=
   EnrichedCategory.comp_id X Y
 #align category_theory.e_comp_id CategoryTheory.e_comp_id
 
 @[reassoc (attr := simp)]
-theorem e_assoc (W X Y Z : C) :
+lemma e_assoc (W X Y Z : C) :
     (α_ _ _ _).inv ≫ (eComp V W X Y ⊗ 𝟙 _) ≫ eComp V W Y Z =
       (𝟙 _ ⊗ eComp V X Y Z) ≫ eComp V W X Z :=
   EnrichedCategory.assoc W X Y Z
@@ -204,12 +204,12 @@ def ForgetEnrichment.to (X : ForgetEnrichment W C) : C :=
 #align category_theory.forget_enrichment.to CategoryTheory.ForgetEnrichment.to
 
 @[simp]
-theorem ForgetEnrichment.to_of (X : C) : ForgetEnrichment.to W (ForgetEnrichment.of W X) = X :=
+lemma ForgetEnrichment.to_of (X : C) : ForgetEnrichment.to W (ForgetEnrichment.of W X) = X :=
   rfl
 #align category_theory.forget_enrichment.to_of CategoryTheory.ForgetEnrichment.to_of
 
 @[simp]
-theorem ForgetEnrichment.of_to (X : ForgetEnrichment W C) :
+lemma ForgetEnrichment.of_to (X : ForgetEnrichment W C) :
     ForgetEnrichment.of W (ForgetEnrichment.to W X) = X :=
   rfl
 #align category_theory.forget_enrichment.of_to CategoryTheory.ForgetEnrichment.of_to
@@ -239,33 +239,33 @@ def ForgetEnrichment.homTo {X Y : ForgetEnrichment W C} (f : X ⟶ Y) :
 #align category_theory.forget_enrichment.hom_to CategoryTheory.ForgetEnrichment.homTo
 
 @[simp]
-theorem ForgetEnrichment.homTo_homOf {X Y : C} (f : 𝟙_ W ⟶ X ⟶[W] Y) :
+lemma ForgetEnrichment.homTo_homOf {X Y : C} (f : 𝟙_ W ⟶ X ⟶[W] Y) :
     ForgetEnrichment.homTo W (ForgetEnrichment.homOf W f) = f :=
   rfl
 #align category_theory.forget_enrichment.hom_to_hom_of CategoryTheory.ForgetEnrichment.homTo_homOf
 
 @[simp]
-theorem ForgetEnrichment.homOf_homTo {X Y : ForgetEnrichment W C} (f : X ⟶ Y) :
+lemma ForgetEnrichment.homOf_homTo {X Y : ForgetEnrichment W C} (f : X ⟶ Y) :
     ForgetEnrichment.homOf W (ForgetEnrichment.homTo W f) = f :=
   rfl
 #align category_theory.forget_enrichment.hom_of_hom_to CategoryTheory.ForgetEnrichment.homOf_homTo
 
 /-- The identity in the "underlying" category of an enriched category. -/
 @[simp]
-theorem forgetEnrichment_id (X : ForgetEnrichment W C) :
+lemma forgetEnrichment_id (X : ForgetEnrichment W C) :
     ForgetEnrichment.homTo W (𝟙 X) = eId W (ForgetEnrichment.to W X : C) :=
   Category.id_comp _
 #align category_theory.forget_enrichment_id CategoryTheory.forgetEnrichment_id
 
 @[simp]
-theorem forgetEnrichment_id' (X : C) :
+lemma forgetEnrichment_id' (X : C) :
     ForgetEnrichment.homOf W (eId W X) = 𝟙 (ForgetEnrichment.of W X : C) :=
   (forgetEnrichment_id W (ForgetEnrichment.of W X)).symm
 #align category_theory.forget_enrichment_id' CategoryTheory.forgetEnrichment_id'
 
 /-- Composition in the "underlying" category of an enriched category. -/
 @[simp]
-theorem forgetEnrichment_comp {X Y Z : ForgetEnrichment W C} (f : X ⟶ Y) (g : Y ⟶ Z) :
+lemma forgetEnrichment_comp {X Y Z : ForgetEnrichment W C} (f : X ⟶ Y) (g : Y ⟶ Z) :
     ForgetEnrichment.homTo W (f ≫ g) =
       ((λ_ (𝟙_ W)).inv ≫ (ForgetEnrichment.homTo W f ⊗ ForgetEnrichment.homTo W g)) ≫
         eComp W _ _ _ :=

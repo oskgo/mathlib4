@@ -53,12 +53,12 @@ section NeImp
 
 variable {r : α → α → Prop}
 
-theorem IsRefl.reflexive [IsRefl α r] : Reflexive r := fun x ↦ IsRefl.refl x
+lemma IsRefl.reflexive [IsRefl α r] : Reflexive r := fun x ↦ IsRefl.refl x
 #align is_refl.reflexive IsRefl.reflexive
 
 /-- To show a reflexive relation `r : α → α → Prop` holds over `x y : α`,
 it suffices to show it holds when `x ≠ y`. -/
-theorem Reflexive.rel_of_ne_imp (h : Reflexive r) {x y : α} (hr : x ≠ y → r x y) : r x y := by
+lemma Reflexive.rel_of_ne_imp (h : Reflexive r) {x y : α} (hr : x ≠ y → r x y) : r x y := by
   by_cases hxy : x = y
   · exact hxy ▸ h x
   · exact hr hxy
@@ -67,33 +67,33 @@ theorem Reflexive.rel_of_ne_imp (h : Reflexive r) {x y : α} (hr : x ≠ y → r
 
 /-- If a reflexive relation `r : α → α → Prop` holds over `x y : α`,
 then it holds whether or not `x ≠ y`. -/
-theorem Reflexive.ne_imp_iff (h : Reflexive r) {x y : α} : x ≠ y → r x y ↔ r x y :=
+lemma Reflexive.ne_imp_iff (h : Reflexive r) {x y : α} : x ≠ y → r x y ↔ r x y :=
   ⟨h.rel_of_ne_imp, fun hr _ ↦ hr⟩
 #align reflexive.ne_imp_iff Reflexive.ne_imp_iff
 
 /-- If a reflexive relation `r : α → α → Prop` holds over `x y : α`,
 then it holds whether or not `x ≠ y`. Unlike `Reflexive.ne_imp_iff`, this uses `[IsRefl α r]`. -/
-theorem reflexive_ne_imp_iff [IsRefl α r] {x y : α} : x ≠ y → r x y ↔ r x y :=
+lemma reflexive_ne_imp_iff [IsRefl α r] {x y : α} : x ≠ y → r x y ↔ r x y :=
   IsRefl.reflexive.ne_imp_iff
 #align reflexive_ne_imp_iff reflexive_ne_imp_iff
 
-protected theorem Symmetric.iff (H : Symmetric r) (x y : α) : r x y ↔ r y x :=
+protected lemma Symmetric.iff (H : Symmetric r) (x y : α) : r x y ↔ r y x :=
   ⟨fun h ↦ H h, fun h ↦ H h⟩
 #align symmetric.iff Symmetric.iff
 
-theorem Symmetric.flip_eq (h : Symmetric r) : flip r = r :=
+lemma Symmetric.flip_eq (h : Symmetric r) : flip r = r :=
   funext₂ fun _ _ ↦ propext <| h.iff _ _
 #align symmetric.flip_eq Symmetric.flip_eq
 
-theorem Symmetric.swap_eq : Symmetric r → swap r = r :=
+lemma Symmetric.swap_eq : Symmetric r → swap r = r :=
   Symmetric.flip_eq
 #align symmetric.swap_eq Symmetric.swap_eq
 
-theorem flip_eq_iff : flip r = r ↔ Symmetric r :=
+lemma flip_eq_iff : flip r = r ↔ Symmetric r :=
   ⟨fun h _ _ ↦ (congr_fun₂ h _ _).mp, Symmetric.flip_eq⟩
 #align flip_eq_iff flip_eq_iff
 
-theorem swap_eq_iff : swap r = r ↔ Symmetric r :=
+lemma swap_eq_iff : swap r = r ↔ Symmetric r :=
   flip_eq_iff
 #align swap_eq_iff swap_eq_iff
 
@@ -103,17 +103,17 @@ section Comap
 
 variable {r : β → β → Prop}
 
-theorem Reflexive.comap (h : Reflexive r) (f : α → β) : Reflexive (r on f) := fun a ↦ h (f a)
+lemma Reflexive.comap (h : Reflexive r) (f : α → β) : Reflexive (r on f) := fun a ↦ h (f a)
 #align reflexive.comap Reflexive.comap
 
-theorem Symmetric.comap (h : Symmetric r) (f : α → β) : Symmetric (r on f) := fun _ _ hab ↦ h hab
+lemma Symmetric.comap (h : Symmetric r) (f : α → β) : Symmetric (r on f) := fun _ _ hab ↦ h hab
 #align symmetric.comap Symmetric.comap
 
-theorem Transitive.comap (h : Transitive r) (f : α → β) : Transitive (r on f) :=
+lemma Transitive.comap (h : Transitive r) (f : α → β) : Transitive (r on f) :=
   fun _ _ _ hab hbc ↦ h hab hbc
 #align transitive.comap Transitive.comap
 
-theorem Equivalence.comap (h : Equivalence r) (f : α → β) : Equivalence (r on f) :=
+lemma Equivalence.comap (h : Equivalence r) (f : α → β) : Equivalence (r on f) :=
   ⟨h.reflexive.comap f, @(h.symmetric.comap f), @(h.transitive.comap f)⟩
 #align equivalence.comap Equivalence.comap
 
@@ -136,27 +136,27 @@ def Comp (r : α → β → Prop) (p : β → γ → Prop) (a : α) (c : γ) : P
 @[inherit_doc]
 local infixr:80 " ∘r " => Relation.Comp
 
-theorem comp_eq : r ∘r (· = ·) = r :=
+lemma comp_eq : r ∘r (· = ·) = r :=
   funext fun _ ↦ funext fun b ↦ propext <|
   Iff.intro (fun ⟨_, h, Eq⟩ ↦ Eq ▸ h) fun h ↦ ⟨b, h, rfl⟩
 #align relation.comp_eq Relation.comp_eq
 
-theorem eq_comp : (· = ·) ∘r r = r :=
+lemma eq_comp : (· = ·) ∘r r = r :=
   funext fun a ↦ funext fun _ ↦ propext <|
   Iff.intro (fun ⟨_, Eq, h⟩ ↦ Eq.symm ▸ h) fun h ↦ ⟨a, rfl, h⟩
 #align relation.eq_comp Relation.eq_comp
 
-theorem iff_comp {r : Prop → α → Prop} : (· ↔ ·) ∘r r = r := by
+lemma iff_comp {r : Prop → α → Prop} : (· ↔ ·) ∘r r = r := by
   have : (· ↔ ·) = (· = ·) := by funext a b; exact iff_eq_eq
   rw [this, eq_comp]
 #align relation.iff_comp Relation.iff_comp
 
-theorem comp_iff {r : α → Prop → Prop} : r ∘r (· ↔ ·) = r := by
+lemma comp_iff {r : α → Prop → Prop} : r ∘r (· ↔ ·) = r := by
   have : (· ↔ ·) = (· = ·) := by funext a b; exact iff_eq_eq
   rw [this, comp_eq]
 #align relation.comp_iff Relation.comp_iff
 
-theorem comp_assoc : (r ∘r p) ∘r q = r ∘r p ∘r q := by
+lemma comp_assoc : (r ∘r p) ∘r q = r ∘r p ∘r q := by
   funext a d
   apply propext
   constructor
@@ -164,7 +164,7 @@ theorem comp_assoc : (r ∘r p) ∘r q = r ∘r p ∘r q := by
   exact fun ⟨b, hab, c, hbc, hcd⟩ ↦ ⟨c, ⟨b, hab, hbc⟩, hcd⟩
 #align relation.comp_assoc Relation.comp_assoc
 
-theorem flip_comp : flip (r ∘r p) = flip p ∘r flip r := by
+lemma flip_comp : flip (r ∘r p) = flip p ∘r flip r := by
   funext c a
   apply propext
   constructor
@@ -189,14 +189,14 @@ variable {rα rβ}
 
 /-- If `f : α → β` is a fibration between relations `rα` and `rβ`, and `a : α` is
   accessible under `rα`, then `f a` is accessible under `rβ`. -/
-theorem _root_.Acc.of_fibration (fib : Fibration rα rβ f) {a} (ha : Acc rα a) : Acc rβ (f a) := by
+lemma _root_.Acc.of_fibration (fib : Fibration rα rβ f) {a} (ha : Acc rα a) : Acc rβ (f a) := by
   induction' ha with a _ ih
   refine' Acc.intro (f a) fun b hr ↦ _
   obtain ⟨a', hr', rfl⟩ := fib hr
   exact ih a' hr'
 #align acc.of_fibration Acc.of_fibration
 
-theorem _root_.Acc.of_downward_closed (dc : ∀ {a b}, rβ b (f a) → ∃ c, f c = b) (a : α)
+lemma _root_.Acc.of_downward_closed (dc : ∀ {a b}, rβ b (f a) → ∃ c, f c = b) (a : α)
     (ha : Acc (InvImage rβ f) a) : Acc rβ (f a) :=
   ha.of_fibration f fun a _ h ↦
     let ⟨a', he⟩ := dc h
@@ -249,12 +249,12 @@ attribute [refl] ReflGen.refl
 
 namespace ReflGen
 
-theorem to_reflTransGen : ∀ {a b}, ReflGen r a b → ReflTransGen r a b
+lemma to_reflTransGen : ∀ {a b}, ReflGen r a b → ReflTransGen r a b
   | a, _, refl => by rfl
   | a, b, single h => ReflTransGen.tail ReflTransGen.refl h
 #align relation.refl_gen.to_refl_trans_gen Relation.ReflGen.to_reflTransGen
 
-theorem mono {p : α → α → Prop} (hp : ∀ a b, r a b → p a b) : ∀ {a b}, ReflGen r a b → ReflGen p a b
+lemma mono {p : α → α → Prop} (hp : ∀ a b, r a b → p a b) : ∀ {a b}, ReflGen r a b → ReflGen p a b
   | a, _, ReflGen.refl => by rfl
   | a, b, single h => single (hp a b h)
 #align relation.refl_gen.mono Relation.ReflGen.mono
@@ -267,35 +267,35 @@ end ReflGen
 namespace ReflTransGen
 
 @[trans]
-theorem trans (hab : ReflTransGen r a b) (hbc : ReflTransGen r b c) : ReflTransGen r a c := by
+lemma trans (hab : ReflTransGen r a b) (hbc : ReflTransGen r b c) : ReflTransGen r a c := by
   induction hbc
   case refl => assumption
   case tail c d _ hcd hac => exact hac.tail hcd
 #align relation.refl_trans_gen.trans Relation.ReflTransGen.trans
 
-theorem single (hab : r a b) : ReflTransGen r a b :=
+lemma single (hab : r a b) : ReflTransGen r a b :=
   refl.tail hab
 #align relation.refl_trans_gen.single Relation.ReflTransGen.single
 
-theorem head (hab : r a b) (hbc : ReflTransGen r b c) : ReflTransGen r a c := by
+lemma head (hab : r a b) (hbc : ReflTransGen r b c) : ReflTransGen r a c := by
   induction hbc
   case refl => exact refl.tail hab
   case tail c d _ hcd hac => exact hac.tail hcd
 #align relation.refl_trans_gen.head Relation.ReflTransGen.head
 
-theorem symmetric (h : Symmetric r) : Symmetric (ReflTransGen r) := by
+lemma symmetric (h : Symmetric r) : Symmetric (ReflTransGen r) := by
   intro x y h
   induction' h with z w _ b c
   · rfl
   · apply Relation.ReflTransGen.head (h b) c
 #align relation.refl_trans_gen.symmetric Relation.ReflTransGen.symmetric
 
-theorem cases_tail : ReflTransGen r a b → b = a ∨ ∃ c, ReflTransGen r a c ∧ r c b :=
+lemma cases_tail : ReflTransGen r a b → b = a ∨ ∃ c, ReflTransGen r a c ∧ r c b :=
   (cases_tail_iff r a b).1
 #align relation.refl_trans_gen.cases_tail Relation.ReflTransGen.cases_tail
 
 @[elab_as_elim]
-theorem head_induction_on {P : ∀ a : α, ReflTransGen r a b → Prop} {a : α} (h : ReflTransGen r a b)
+lemma head_induction_on {P : ∀ a : α, ReflTransGen r a b → Prop} {a : α} (h : ReflTransGen r a b)
     (refl : P b refl)
     (head : ∀ {a c} (h' : r a c) (h : ReflTransGen r c b), P c h → P a (h.head h')) : P a h := by
   induction h
@@ -308,7 +308,7 @@ theorem head_induction_on {P : ∀ a : α, ReflTransGen r a b → Prop} {a : α}
 #align relation.refl_trans_gen.head_induction_on Relation.ReflTransGen.head_induction_on
 
 @[elab_as_elim]
-theorem trans_induction_on {P : ∀ {a b : α}, ReflTransGen r a b → Prop} {a b : α}
+lemma trans_induction_on {P : ∀ {a b : α}, ReflTransGen r a b → Prop} {a b : α}
     (h : ReflTransGen r a b) (ih₁ : ∀ a, @P a a refl) (ih₂ : ∀ {a b} (h : r a b), P (single h))
     (ih₃ : ∀ {a b c} (h₁ : ReflTransGen r a b) (h₂ : ReflTransGen r b c), P h₁ → P h₂ →
      P (h₁.trans h₂)) : P h := by
@@ -317,7 +317,7 @@ theorem trans_induction_on {P : ∀ {a b : α}, ReflTransGen r a b → Prop} {a 
   case tail b c hab hbc ih => exact ih₃ hab (single hbc) ih (ih₂ hbc)
 #align relation.refl_trans_gen.trans_induction_on Relation.ReflTransGen.trans_induction_on
 
-theorem cases_head (h : ReflTransGen r a b) : a = b ∨ ∃ c, r a c ∧ ReflTransGen r c b := by
+lemma cases_head (h : ReflTransGen r a b) : a = b ∨ ∃ c, r a c ∧ ReflTransGen r c b := by
   induction h using Relation.ReflTransGen.head_induction_on
   · left
     rfl
@@ -325,14 +325,14 @@ theorem cases_head (h : ReflTransGen r a b) : a = b ∨ ∃ c, r a c ∧ ReflTra
     exact ⟨_, by assumption, by assumption⟩;
 #align relation.refl_trans_gen.cases_head Relation.ReflTransGen.cases_head
 
-theorem cases_head_iff : ReflTransGen r a b ↔ a = b ∨ ∃ c, r a c ∧ ReflTransGen r c b := by
+lemma cases_head_iff : ReflTransGen r a b ↔ a = b ∨ ∃ c, r a c ∧ ReflTransGen r c b := by
   use cases_head
   rintro (rfl | ⟨c, hac, hcb⟩)
   · rfl
   · exact head hac hcb
 #align relation.refl_trans_gen.cases_head_iff Relation.ReflTransGen.cases_head_iff
 
-theorem total_of_right_unique (U : Relator.RightUnique r) (ab : ReflTransGen r a b)
+lemma total_of_right_unique (U : Relator.RightUnique r) (ab : ReflTransGen r a b)
     (ac : ReflTransGen r a c) : ReflTransGen r b c ∨ ReflTransGen r c b := by
   induction' ab with b d _ bd IH
   · exact Or.inl ac
@@ -348,14 +348,14 @@ end ReflTransGen
 
 namespace TransGen
 
-theorem to_reflTransGen {a b} (h : TransGen r a b) : ReflTransGen r a b := by
+lemma to_reflTransGen {a b} (h : TransGen r a b) : ReflTransGen r a b := by
   induction' h with b h b c _ bc ab
   exact ReflTransGen.single h
   exact ReflTransGen.tail ab bc
 -- porting note: in Lean 3 this function was called `to_refl` which seems wrong.
 #align relation.trans_gen.to_refl Relation.TransGen.to_reflTransGen
 
-theorem trans_left (hab : TransGen r a b) (hbc : ReflTransGen r b c) : TransGen r a c := by
+lemma trans_left (hab : TransGen r a b) (hbc : ReflTransGen r b c) : TransGen r a c := by
   induction hbc
   case refl => assumption
   case tail c d _ hcd hac => exact hac.tail hcd
@@ -365,29 +365,29 @@ instance : Trans (TransGen r) (ReflTransGen r) (TransGen r) :=
   ⟨trans_left⟩
 
 @[trans]
-theorem trans (hab : TransGen r a b) (hbc : TransGen r b c) : TransGen r a c :=
+lemma trans (hab : TransGen r a b) (hbc : TransGen r b c) : TransGen r a c :=
   trans_left hab hbc.to_reflTransGen
 #align relation.trans_gen.trans Relation.TransGen.trans
 
 instance : Trans (TransGen r) (TransGen r) (TransGen r) :=
   ⟨trans⟩
 
-theorem head' (hab : r a b) (hbc : ReflTransGen r b c) : TransGen r a c :=
+lemma head' (hab : r a b) (hbc : ReflTransGen r b c) : TransGen r a c :=
   trans_left (single hab) hbc
 #align relation.trans_gen.head' Relation.TransGen.head'
 
-theorem tail' (hab : ReflTransGen r a b) (hbc : r b c) : TransGen r a c := by
+lemma tail' (hab : ReflTransGen r a b) (hbc : r b c) : TransGen r a c := by
   induction hab generalizing c
   case refl => exact single hbc
   case tail _ _ _ hdb IH => exact tail (IH hdb) hbc
 #align relation.trans_gen.tail' Relation.TransGen.tail'
 
-theorem head (hab : r a b) (hbc : TransGen r b c) : TransGen r a c :=
+lemma head (hab : r a b) (hbc : TransGen r b c) : TransGen r a c :=
   head' hab hbc.to_reflTransGen
 #align relation.trans_gen.head Relation.TransGen.head
 
 @[elab_as_elim]
-theorem head_induction_on {P : ∀ a : α, TransGen r a b → Prop} {a : α} (h : TransGen r a b)
+lemma head_induction_on {P : ∀ a : α, TransGen r a b → Prop} {a : α} (h : TransGen r a b)
     (base : ∀ {a} (h : r a b), P a (single h))
     (ih : ∀ {a c} (h' : r a c) (h : TransGen r c b), P c h → P a (h.head h')) : P a h := by
   induction h
@@ -400,7 +400,7 @@ theorem head_induction_on {P : ∀ a : α, TransGen r a b → Prop} {a : α} (h 
 #align relation.trans_gen.head_induction_on Relation.TransGen.head_induction_on
 
 @[elab_as_elim]
-theorem trans_induction_on {P : ∀ {a b : α}, TransGen r a b → Prop} {a b : α} (h : TransGen r a b)
+lemma trans_induction_on {P : ∀ {a b : α}, TransGen r a b → Prop} {a b : α} (h : TransGen r a b)
     (base : ∀ {a b} (h : r a b), P (single h))
     (ih : ∀ {a b c} (h₁ : TransGen r a b) (h₂ : TransGen r b c), P h₁ → P h₂ → P (h₁.trans h₂)) :
     P h := by
@@ -409,7 +409,7 @@ theorem trans_induction_on {P : ∀ {a b : α}, TransGen r a b → Prop} {a b : 
   | tail hab hbc h_ih => exact ih hab (single hbc) h_ih (base hbc)
 #align relation.trans_gen.trans_induction_on Relation.TransGen.trans_induction_on
 
-theorem trans_right (hab : ReflTransGen r a b) (hbc : TransGen r b c) : TransGen r a c := by
+lemma trans_right (hab : ReflTransGen r a b) (hbc : TransGen r b c) : TransGen r a c := by
   induction hbc
   case single c hbc => exact tail' hab hbc
   case tail c d _ hcd hac => exact hac.tail hcd
@@ -418,14 +418,14 @@ theorem trans_right (hab : ReflTransGen r a b) (hbc : TransGen r b c) : TransGen
 instance : Trans (ReflTransGen r) (TransGen r) (TransGen r) :=
   ⟨trans_right⟩
 
-theorem tail'_iff : TransGen r a c ↔ ∃ b, ReflTransGen r a b ∧ r b c := by
+lemma tail'_iff : TransGen r a c ↔ ∃ b, ReflTransGen r a b ∧ r b c := by
   refine' ⟨fun h ↦ _, fun ⟨b, hab, hbc⟩ ↦ tail' hab hbc⟩
   cases' h with _ hac b _ hab hbc
   · exact ⟨_, by rfl, hac⟩
   · exact ⟨_, hab.to_reflTransGen, hbc⟩
 #align relation.trans_gen.tail'_iff Relation.TransGen.tail'_iff
 
-theorem head'_iff : TransGen r a c ↔ ∃ b, r a b ∧ ReflTransGen r b c := by
+lemma head'_iff : TransGen r a c ↔ ∃ b, r a b ∧ ReflTransGen r b c := by
   refine' ⟨fun h ↦ _, fun ⟨b, hab, hbc⟩ ↦ head' hab hbc⟩
   induction h
   case single c hac => exact ⟨_, hac, by rfl⟩
@@ -436,18 +436,18 @@ theorem head'_iff : TransGen r a c ↔ ∃ b, r a b ∧ ReflTransGen r b c := by
 
 end TransGen
 
-theorem _root_.Acc.TransGen (h : Acc r a) : Acc (TransGen r) a := by
+lemma _root_.Acc.TransGen (h : Acc r a) : Acc (TransGen r) a := by
   induction' h with x _ H
   refine' Acc.intro x fun y hy ↦ _
   cases' hy with _ hyx z _ hyz hzx
   exacts [H y hyx, (H z hzx).inv hyz]
 #align acc.trans_gen Acc.TransGen
 
-theorem _root_.acc_transGen_iff : Acc (TransGen r) a ↔ Acc r a :=
+lemma _root_.acc_transGen_iff : Acc (TransGen r) a ↔ Acc r a :=
   ⟨Subrelation.accessible TransGen.single, Acc.TransGen⟩
 #align acc_trans_gen_iff acc_transGen_iff
 
-theorem _root_.WellFounded.transGen (h : WellFounded r) : WellFounded (TransGen r) :=
+lemma _root_.WellFounded.transGen (h : WellFounded r) : WellFounded (TransGen r) :=
   ⟨fun a ↦ (h.apply a).TransGen⟩
 #align well_founded.trans_gen WellFounded.transGen
 
@@ -467,7 +467,7 @@ end reflGen
 
 section TransGen
 
-theorem transGen_eq_self (trans : Transitive r) : TransGen r = r :=
+lemma transGen_eq_self (trans : Transitive r) : TransGen r = r :=
   funext fun a ↦ funext fun b ↦ propext <|
     ⟨fun h ↦ by
       induction h
@@ -475,35 +475,35 @@ theorem transGen_eq_self (trans : Transitive r) : TransGen r = r :=
       case tail c d _ hcd hac => exact trans hac hcd, TransGen.single⟩
 #align relation.trans_gen_eq_self Relation.transGen_eq_self
 
-theorem transitive_transGen : Transitive (TransGen r) := fun _ _ _ ↦ TransGen.trans
+lemma transitive_transGen : Transitive (TransGen r) := fun _ _ _ ↦ TransGen.trans
 #align relation.transitive_trans_gen Relation.transitive_transGen
 
 instance : IsTrans α (TransGen r) :=
   ⟨@TransGen.trans α r⟩
 
-theorem transGen_idem : TransGen (TransGen r) = TransGen r :=
+lemma transGen_idem : TransGen (TransGen r) = TransGen r :=
   transGen_eq_self transitive_transGen
 #align relation.trans_gen_idem Relation.transGen_idem
 
-theorem TransGen.lift {p : β → β → Prop} {a b : α} (f : α → β) (h : ∀ a b, r a b → p (f a) (f b))
+lemma TransGen.lift {p : β → β → Prop} {a b : α} (f : α → β) (h : ∀ a b, r a b → p (f a) (f b))
     (hab : TransGen r a b) : TransGen p (f a) (f b) := by
   induction hab
   case single c hac => exact TransGen.single (h a c hac)
   case tail c d _ hcd hac => exact TransGen.tail hac (h c d hcd)
 #align relation.trans_gen.lift Relation.TransGen.lift
 
-theorem TransGen.lift' {p : β → β → Prop} {a b : α} (f : α → β)
+lemma TransGen.lift' {p : β → β → Prop} {a b : α} (f : α → β)
     (h : ∀ a b, r a b → TransGen p (f a) (f b)) (hab : TransGen r a b) :
     TransGen p (f a) (f b) := by
 simpa [transGen_idem] using hab.lift f h
 #align relation.trans_gen.lift' Relation.TransGen.lift'
 
-theorem TransGen.closed {p : α → α → Prop} :
+lemma TransGen.closed {p : α → α → Prop} :
     (∀ a b, r a b → TransGen p a b) → TransGen r a b → TransGen p a b :=
   TransGen.lift' id
 #align relation.trans_gen.closed Relation.TransGen.closed
 
-theorem TransGen.mono {p : α → α → Prop} :
+lemma TransGen.mono {p : α → α → Prop} :
     (∀ a b, r a b → p a b) → TransGen r a b → TransGen p a b :=
   TransGen.lift id
 #align relation.trans_gen.mono Relation.TransGen.mono
@@ -512,13 +512,13 @@ lemma transGen_minimal {r' : α → α → Prop} (hr' : Transitive r') (h : ∀ 
     {x y : α} (hxy : TransGen r x y) : r' x y := by
   simpa [transGen_eq_self hr'] using TransGen.mono h hxy
 
-theorem TransGen.swap (h : TransGen r b a) : TransGen (swap r) a b := by
+lemma TransGen.swap (h : TransGen r b a) : TransGen (swap r) a b := by
   induction' h with b h b c _ hbc ih
   · exact TransGen.single h
   · exact ih.head hbc
 #align relation.trans_gen.swap Relation.TransGen.swap
 
-theorem transGen_swap : TransGen (swap r) a b ↔ TransGen r b a :=
+lemma transGen_swap : TransGen (swap r) a b ↔ TransGen r b a :=
   ⟨TransGen.swap, TransGen.swap⟩
 #align relation.trans_gen_swap Relation.transGen_swap
 
@@ -528,11 +528,11 @@ section ReflTransGen
 
 open ReflTransGen
 
-theorem reflTransGen_iff_eq (h : ∀ b, ¬r a b) : ReflTransGen r a b ↔ b = a := by
+lemma reflTransGen_iff_eq (h : ∀ b, ¬r a b) : ReflTransGen r a b ↔ b = a := by
   rw [cases_head_iff]; simp [h, eq_comm]
 #align relation.refl_trans_gen_iff_eq Relation.reflTransGen_iff_eq
 
-theorem reflTransGen_iff_eq_or_transGen : ReflTransGen r a b ↔ b = a ∨ TransGen r a b := by
+lemma reflTransGen_iff_eq_or_transGen : ReflTransGen r a b ↔ b = a ∨ TransGen r a b := by
   refine' ⟨fun h ↦ _, fun h ↦ _⟩
   · cases' h with c _ hac hcb
     · exact Or.inl rfl
@@ -542,17 +542,17 @@ theorem reflTransGen_iff_eq_or_transGen : ReflTransGen r a b ↔ b = a ∨ Trans
     · exact h.to_reflTransGen
 #align relation.refl_trans_gen_iff_eq_or_trans_gen Relation.reflTransGen_iff_eq_or_transGen
 
-theorem ReflTransGen.lift {p : β → β → Prop} {a b : α} (f : α → β)
+lemma ReflTransGen.lift {p : β → β → Prop} {a b : α} (f : α → β)
     (h : ∀ a b, r a b → p (f a) (f b)) (hab : ReflTransGen r a b) : ReflTransGen p (f a) (f b) :=
   ReflTransGen.trans_induction_on hab (fun _ ↦ refl) (ReflTransGen.single ∘ h _ _) fun _ _ ↦ trans
 #align relation.refl_trans_gen.lift Relation.ReflTransGen.lift
 
-theorem ReflTransGen.mono {p : α → α → Prop} : (∀ a b, r a b → p a b) →
+lemma ReflTransGen.mono {p : α → α → Prop} : (∀ a b, r a b → p a b) →
     ReflTransGen r a b → ReflTransGen p a b :=
   ReflTransGen.lift id
 #align relation.refl_trans_gen.mono Relation.ReflTransGen.mono
 
-theorem reflTransGen_eq_self (refl : Reflexive r) (trans : Transitive r) : ReflTransGen r = r :=
+lemma reflTransGen_eq_self (refl : Reflexive r) (trans : Transitive r) : ReflTransGen r = r :=
   funext fun a ↦ funext fun b ↦ propext <|
     ⟨fun h ↦ by
       induction' h with b c _ h₂ IH
@@ -564,10 +564,10 @@ lemma reflTransGen_minimal {r' : α → α → Prop} (hr₁ : Reflexive r') (hr�
     (h : ∀ x y, r x y → r' x y) {x y : α} (hxy : ReflTransGen r x y) : r' x y := by
   simpa [reflTransGen_eq_self hr₁ hr₂] using ReflTransGen.mono h hxy
 
-theorem reflexive_reflTransGen : Reflexive (ReflTransGen r) := fun _ ↦ refl
+lemma reflexive_reflTransGen : Reflexive (ReflTransGen r) := fun _ ↦ refl
 #align relation.reflexive_refl_trans_gen Relation.reflexive_reflTransGen
 
-theorem transitive_reflTransGen : Transitive (ReflTransGen r) := fun _ _ _ ↦ trans
+lemma transitive_reflTransGen : Transitive (ReflTransGen r) := fun _ _ _ ↦ trans
 #align relation.transitive_refl_trans_gen Relation.transitive_reflTransGen
 
 instance : IsRefl α (ReflTransGen r) :=
@@ -576,28 +576,28 @@ instance : IsRefl α (ReflTransGen r) :=
 instance : IsTrans α (ReflTransGen r) :=
   ⟨@ReflTransGen.trans α r⟩
 
-theorem reflTransGen_idem : ReflTransGen (ReflTransGen r) = ReflTransGen r :=
+lemma reflTransGen_idem : ReflTransGen (ReflTransGen r) = ReflTransGen r :=
   reflTransGen_eq_self reflexive_reflTransGen transitive_reflTransGen
 #align relation.refl_trans_gen_idem Relation.reflTransGen_idem
 
-theorem ReflTransGen.lift' {p : β → β → Prop} {a b : α} (f : α → β)
+lemma ReflTransGen.lift' {p : β → β → Prop} {a b : α} (f : α → β)
     (h : ∀ a b, r a b → ReflTransGen p (f a) (f b))
     (hab : ReflTransGen r a b) : ReflTransGen p (f a) (f b) := by
   simpa [reflTransGen_idem] using hab.lift f h
 #align relation.refl_trans_gen.lift' Relation.ReflTransGen.lift'
 
-theorem reflTransGen_closed {p : α → α → Prop} :
+lemma reflTransGen_closed {p : α → α → Prop} :
     (∀ a b, r a b → ReflTransGen p a b) → ReflTransGen r a b → ReflTransGen p a b :=
   ReflTransGen.lift' id
 #align relation.refl_trans_gen_closed Relation.reflTransGen_closed
 
-theorem ReflTransGen.swap (h : ReflTransGen r b a) : ReflTransGen (swap r) a b := by
+lemma ReflTransGen.swap (h : ReflTransGen r b a) : ReflTransGen (swap r) a b := by
   induction' h with b c _ hbc ih
   · rfl
   · exact ih.head hbc
 #align relation.refl_trans_gen.swap Relation.ReflTransGen.swap
 
-theorem reflTransGen_swap : ReflTransGen (swap r) a b ↔ ReflTransGen r b a :=
+lemma reflTransGen_swap : ReflTransGen (swap r) a b ↔ ReflTransGen r b a :=
   ⟨ReflTransGen.swap, ReflTransGen.swap⟩
 #align relation.refl_trans_gen_swap Relation.reflTransGen_swap
 
@@ -645,7 +645,7 @@ section Join
 open ReflTransGen ReflGen
 
 /-- A sufficient condition for the Church-Rosser property. -/
-theorem church_rosser (h : ∀ a b c, r a b → r a c → ∃ d, ReflGen r b d ∧ ReflTransGen r c d)
+lemma church_rosser (h : ∀ a b c, r a b → r a c → ∃ d, ReflGen r b d ∧ ReflTransGen r c d)
     (hab : ReflTransGen r a b) (hac : ReflTransGen r a c) : Join (ReflTransGen r) b c := by
   induction hab
   case refl => exact ⟨c, hac, refl⟩
@@ -668,47 +668,47 @@ theorem church_rosser (h : ∀ a b c, r a b → r a c → ∃ d, ReflGen r b d �
 #align relation.church_rosser Relation.church_rosser
 
 
-theorem join_of_single (h : Reflexive r) (hab : r a b) : Join r a b :=
+lemma join_of_single (h : Reflexive r) (hab : r a b) : Join r a b :=
   ⟨b, hab, h b⟩
 #align relation.join_of_single Relation.join_of_single
 
-theorem symmetric_join : Symmetric (Join r) := fun _ _ ⟨c, hac, hcb⟩ ↦ ⟨c, hcb, hac⟩
+lemma symmetric_join : Symmetric (Join r) := fun _ _ ⟨c, hac, hcb⟩ ↦ ⟨c, hcb, hac⟩
 #align relation.symmetric_join Relation.symmetric_join
 
-theorem reflexive_join (h : Reflexive r) : Reflexive (Join r) := fun a ↦ ⟨a, h a, h a⟩
+lemma reflexive_join (h : Reflexive r) : Reflexive (Join r) := fun a ↦ ⟨a, h a, h a⟩
 #align relation.reflexive_join Relation.reflexive_join
 
-theorem transitive_join (ht : Transitive r) (h : ∀ a b c, r a b → r a c → Join r b c) :
+lemma transitive_join (ht : Transitive r) (h : ∀ a b c, r a b → r a c → Join r b c) :
     Transitive (Join r) :=
   fun _ b _ ⟨x, hax, hbx⟩ ⟨y, hby, hcy⟩ ↦
   let ⟨z, hxz, hyz⟩ := h b x y hbx hby
   ⟨z, ht hax hxz, ht hcy hyz⟩
 #align relation.transitive_join Relation.transitive_join
 
-theorem equivalence_join (hr : Reflexive r) (ht : Transitive r)
+lemma equivalence_join (hr : Reflexive r) (ht : Transitive r)
   (h : ∀ a b c, r a b → r a c → Join r b c) : Equivalence (Join r) :=
   ⟨reflexive_join hr, @symmetric_join _ _, @transitive_join _ _ ht h⟩
 #align relation.equivalence_join Relation.equivalence_join
 
-theorem equivalence_join_reflTransGen
+lemma equivalence_join_reflTransGen
     (h : ∀ a b c, r a b → r a c → ∃ d, ReflGen r b d ∧ ReflTransGen r c d) :
     Equivalence (Join (ReflTransGen r)) :=
   equivalence_join reflexive_reflTransGen transitive_reflTransGen fun _ _ _ ↦ church_rosser h
 #align relation.equivalence_join_refl_trans_gen Relation.equivalence_join_reflTransGen
 
-theorem join_of_equivalence {r' : α → α → Prop} (hr : Equivalence r) (h : ∀ a b, r' a b → r a b) :
+lemma join_of_equivalence {r' : α → α → Prop} (hr : Equivalence r) (h : ∀ a b, r' a b → r a b) :
     Join r' a b → r a b
   | ⟨_, hac, hbc⟩ => hr.trans (h _ _ hac) (hr.symm <| h _ _ hbc)
 #align relation.join_of_equivalence Relation.join_of_equivalence
 
-theorem reflTransGen_of_transitive_reflexive {r' : α → α → Prop} (hr : Reflexive r)
+lemma reflTransGen_of_transitive_reflexive {r' : α → α → Prop} (hr : Reflexive r)
     (ht : Transitive r) (h : ∀ a b, r' a b → r a b) (h' : ReflTransGen r' a b) : r a b := by
   induction' h' with b c _ hbc ih
   · exact hr _
   · exact ht ih (h _ _ hbc)
 #align relation.refl_trans_gen_of_transitive_reflexive Relation.reflTransGen_of_transitive_reflexive
 
-theorem reflTransGen_of_equivalence {r' : α → α → Prop} (hr : Equivalence r) :
+lemma reflTransGen_of_equivalence {r' : α → α → Prop} (hr : Equivalence r) :
     (∀ a b, r' a b → r a b) → ReflTransGen r' a b → r a b :=
   reflTransGen_of_transitive_reflexive hr.1 (fun _ _ _ ↦ hr.trans)
 #align relation.refl_trans_gen_of_equivalence Relation.reflTransGen_of_equivalence
@@ -721,7 +721,7 @@ section EqvGen
 
 variable {r : α → α → Prop} {a b : α}
 
-theorem Equivalence.eqvGen_iff (h : Equivalence r) : EqvGen r a b ↔ r a b :=
+lemma Equivalence.eqvGen_iff (h : Equivalence r) : EqvGen r a b ↔ r a b :=
   Iff.intro
     (by
       intro h
@@ -733,11 +733,11 @@ theorem Equivalence.eqvGen_iff (h : Equivalence r) : EqvGen r a b ↔ r a b :=
     (EqvGen.rel a b)
 #align equivalence.eqv_gen_iff Equivalence.eqvGen_iff
 
-theorem Equivalence.eqvGen_eq (h : Equivalence r) : EqvGen r = r :=
+lemma Equivalence.eqvGen_eq (h : Equivalence r) : EqvGen r = r :=
   funext fun _ ↦ funext fun _ ↦ propext <| h.eqvGen_iff
 #align equivalence.eqv_gen_eq Equivalence.eqvGen_eq
 
-theorem EqvGen.mono {r p : α → α → Prop} (hrp : ∀ a b, r a b → p a b) (h : EqvGen r a b) :
+lemma EqvGen.mono {r p : α → α → Prop} (hrp : ∀ a b, r a b → p a b) (h : EqvGen r a b) :
     EqvGen p a b := by
   induction h with
   | rel a b h => exact EqvGen.rel _ _ (hrp _ _ h)

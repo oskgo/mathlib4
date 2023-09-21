@@ -74,20 +74,20 @@ variable {V c}
 
 -- porting note: removed @[simp] attribute because it hinders the automatic application of the
 -- more useful `quotient_map_out`
-theorem quotient_obj_as (C : HomologicalComplex V c) : ((quotient V c).obj C).as = C :=
+lemma quotient_obj_as (C : HomologicalComplex V c) : ((quotient V c).obj C).as = C :=
   rfl
 #align homotopy_category.quotient_obj_as HomotopyCategory.quotient_obj_as
 
 @[simp]
-theorem quotient_map_out {C D : HomotopyCategory V c} (f : C ⟶ D) : (quotient V c).map f.out = f :=
+lemma quotient_map_out {C D : HomotopyCategory V c} (f : C ⟶ D) : (quotient V c).map f.out = f :=
   Quot.out_eq _
 #align homotopy_category.quotient_map_out HomotopyCategory.quotient_map_out
 
 -- porting note: added to ease the port
-theorem quot_mk_eq_quotient_map {C D : HomologicalComplex V c} (f : C ⟶ D) :
+lemma quot_mk_eq_quotient_map {C D : HomologicalComplex V c} (f : C ⟶ D) :
     Quot.mk _ f = (quotient V c).map f := rfl
 
-theorem eq_of_homotopy {C D : HomologicalComplex V c} (f g : C ⟶ D) (h : Homotopy f g) :
+lemma eq_of_homotopy {C D : HomologicalComplex V c} (f g : C ⟶ D) (h : Homotopy f g) :
     (quotient V c).map f = (quotient V c).map g :=
   CategoryTheory.Quotient.sound _ ⟨h⟩
 #align homotopy_category.eq_of_homotopy HomotopyCategory.eq_of_homotopy
@@ -108,7 +108,7 @@ def homotopyOutMap {C D : HomologicalComplex V c} (f : C ⟶ D) :
 #align homotopy_category.homotopy_out_map HomotopyCategory.homotopyOutMap
 
 @[simp 1100]
-theorem quotient_map_out_comp_out {C D E : HomotopyCategory V c} (f : C ⟶ D) (g : D ⟶ E) :
+lemma quotient_map_out_comp_out {C D E : HomotopyCategory V c} (f : C ⟶ D) (g : D ⟶ E) :
     (quotient V c).map (Quot.out f ≫ Quot.out g) = f ≫ g := by simp
 #align homotopy_category.quotient_map_out_comp_out HomotopyCategory.quotient_map_out_comp_out
 
@@ -156,18 +156,18 @@ def homologyFactors (i : ι) :
 #align homotopy_category.homology_factors HomotopyCategory.homologyFactors
 
 @[simp]
-theorem homologyFactors_hom_app (i : ι) (C : HomologicalComplex V c) :
+lemma homologyFactors_hom_app (i : ι) (C : HomologicalComplex V c) :
     (homologyFactors V c i).hom.app C = 𝟙 _ :=
   rfl
 #align homotopy_category.homology_factors_hom_app HomotopyCategory.homologyFactors_hom_app
 
 @[simp]
-theorem homologyFactors_inv_app (i : ι) (C : HomologicalComplex V c) :
+lemma homologyFactors_inv_app (i : ι) (C : HomologicalComplex V c) :
     (homologyFactors V c i).inv.app C = 𝟙 _ :=
   rfl
 #align homotopy_category.homology_factors_inv_app HomotopyCategory.homologyFactors_inv_app
 
-theorem homologyFunctor_map_factors (i : ι) {C D : HomologicalComplex V c} (f : C ⟶ D) :
+lemma homologyFunctor_map_factors (i : ι) {C D : HomologicalComplex V c} (f : C ⟶ D) :
     (_root_.homologyFunctor V c i).map f =
       ((homologyFunctor V c i).map ((quotient V c).map f) : _) :=
   (CategoryTheory.Quotient.lift_map_functor_map _ (_root_.homologyFunctor V c i) _ f).symm
@@ -212,12 +212,12 @@ def NatTrans.mapHomotopyCategory {F G : V ⥤ W} [F.Additive] [G.Additive] (α :
 #align category_theory.nat_trans.map_homotopy_category CategoryTheory.NatTrans.mapHomotopyCategory
 
 @[simp]
-theorem NatTrans.mapHomotopyCategory_id (c : ComplexShape ι) (F : V ⥤ W) [F.Additive] :
+lemma NatTrans.mapHomotopyCategory_id (c : ComplexShape ι) (F : V ⥤ W) [F.Additive] :
     NatTrans.mapHomotopyCategory (𝟙 F) c = 𝟙 (F.mapHomotopyCategory c) := by aesop_cat
 #align category_theory.nat_trans.map_homotopy_category_id CategoryTheory.NatTrans.mapHomotopyCategory_id
 
 @[simp]
-theorem NatTrans.mapHomotopyCategory_comp (c : ComplexShape ι) {F G H : V ⥤ W} [F.Additive]
+lemma NatTrans.mapHomotopyCategory_comp (c : ComplexShape ι) {F G H : V ⥤ W} [F.Additive]
     [G.Additive] [H.Additive] (α : F ⟶ G) (β : G ⟶ H) :
     NatTrans.mapHomotopyCategory (α ≫ β) c =
       NatTrans.mapHomotopyCategory α c ≫ NatTrans.mapHomotopyCategory β c := by aesop_cat

@@ -58,7 +58,7 @@ open Nat
 #align list.mem_cons_self List.mem_cons_self
 #align list.mem_cons_iff List.mem_cons
 
-theorem mem_cons_eq (a y : α) (l : List α) : (a ∈ y :: l) = (a = y ∨ a ∈ l) :=
+lemma mem_cons_eq (a y : α) (l : List α) : (a ∈ y :: l) = (a = y ∨ a ∈ l) :=
   propext List.mem_cons
 #align list.mem_cons_eq List.mem_cons_eq
 
@@ -72,12 +72,12 @@ alias ⟨eq_or_mem_of_mem_cons, _⟩ := mem_cons
 #align list.mem_append_left List.mem_append_left
 #align list.mem_append_right List.mem_append_right
 
-theorem not_bex_nil (p : α → Prop) : ¬∃ x ∈ @nil α, p x := fun ⟨_, hx, _⟩ => List.not_mem_nil _ hx
+lemma not_bex_nil (p : α → Prop) : ¬∃ x ∈ @nil α, p x := fun ⟨_, hx, _⟩ => List.not_mem_nil _ hx
 #align list.not_bex_nil List.not_bex_nil
 
 #align list.ball_nil List.forall_mem_nil
 
-theorem bex_cons (p : α → Prop) (a : α) (l : List α) : (∃ x ∈ a :: l, p x) ↔ p a ∨ ∃ x ∈ l, p x :=
+lemma bex_cons (p : α → Prop) (a : α) (l : List α) : (∃ x ∈ a :: l, p x) ↔ p a ∨ ∃ x ∈ l, p x :=
   ⟨fun ⟨x, h, px⟩ => by
     simp only [find?, mem_cons] at h
     cases' h with h h
@@ -145,7 +145,7 @@ def mapAccumr (f : α → σ → σ × β) : List α → σ → σ × List β
 
 /-- Length of the list obtained by `mapAccumr`. -/
 @[simp]
-theorem length_mapAccumr :
+lemma length_mapAccumr :
     ∀ (f : α → σ → σ × β) (x : List α) (s : σ), length (mapAccumr f x s).2 = length x
   | f, _ :: x, s => congr_arg succ (length_mapAccumr f x s)
   | _, [], _ => rfl
@@ -169,7 +169,7 @@ def mapAccumr₂ (f : α → β → σ → σ × φ) : List α → List β → �
 
 /-- Length of a list obtained using `mapAccumr₂`. -/
 @[simp]
-theorem length_mapAccumr₂ :
+lemma length_mapAccumr₂ :
     ∀ (f : α → β → σ → σ × φ) (x y c), length (mapAccumr₂ f x y c).2 = min (length x) (length y)
   | f, _ :: x, _ :: y, c =>
     calc

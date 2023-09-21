@@ -42,10 +42,10 @@ instance distribMulAction : DistribMulAction R (A →+ B) where
   mul_smul _ _ _ := ext fun _ => mul_smul _ _ _
 #align add_monoid_hom.distrib_mul_action AddMonoidHom.distribMulAction
 
-@[simp] theorem coe_smul (r : R) (f : A →+ B) : ⇑(r • f) = r • ⇑f := rfl
+@[simp] lemma coe_smul (r : R) (f : A →+ B) : ⇑(r • f) = r • ⇑f := rfl
 #align add_monoid_hom.coe_smul AddMonoidHom.coe_smul
 
-theorem smul_apply (r : R) (f : A →+ B) (x : A) : (r • f) x = r • f x :=
+lemma smul_apply (r : R) (f : A →+ B) (x : A) : (r • f) x = r • f x :=
   rfl
 #align add_monoid_hom.smul_apply AddMonoidHom.smul_apply
 
@@ -78,7 +78,7 @@ protected def smul [Semiring R] [AddCommMonoid M] [Module R M] : R →+ M →+ M
   map_zero' := AddMonoidHom.ext <| zero_smul _
   map_add' _ _ := AddMonoidHom.ext <| add_smul _ _
 
-@[simp] theorem coe_smul' [Semiring R] [AddCommMonoid M] [Module R M] :
+@[simp] lemma coe_smul' [Semiring R] [AddCommMonoid M] [Module R M] :
     ⇑(.smul : R →+ M →+ M) = AddMonoidHom.smulLeft := rfl
 
 instance module [Semiring R] [AddMonoid A] [AddCommMonoid B] [Module R B] : Module R (A →+ B) :=

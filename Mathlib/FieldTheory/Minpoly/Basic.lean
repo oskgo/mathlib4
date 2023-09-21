@@ -49,34 +49,34 @@ variable [CommRing A] [Ring B] [Ring B'] [Algebra A B] [Algebra A B']
 variable {x : B}
 
 /-- A minimal polynomial is monic. -/
-theorem monic (hx : IsIntegral A x) : Monic (minpoly A x) := by
+lemma monic (hx : IsIntegral A x) : Monic (minpoly A x) := by
   delta minpoly
   rw [dif_pos hx]
   exact (degree_lt_wf.min_mem _ hx).1
 #align minpoly.monic minpoly.monic
 
 /-- A minimal polynomial is nonzero. -/
-theorem ne_zero [Nontrivial A] (hx : IsIntegral A x) : minpoly A x ≠ 0 :=
+lemma ne_zero [Nontrivial A] (hx : IsIntegral A x) : minpoly A x ≠ 0 :=
   (monic hx).ne_zero
 #align minpoly.ne_zero minpoly.ne_zero
 
-theorem eq_zero (hx : ¬IsIntegral A x) : minpoly A x = 0 :=
+lemma eq_zero (hx : ¬IsIntegral A x) : minpoly A x = 0 :=
   dif_neg hx
 #align minpoly.eq_zero minpoly.eq_zero
 
-theorem algHom_eq (f : B →ₐ[A] B') (hf : Function.Injective f) (x : B) :
+lemma algHom_eq (f : B →ₐ[A] B') (hf : Function.Injective f) (x : B) :
     minpoly A (f x) = minpoly A x := by
   refine' dif_ctx_congr (isIntegral_algHom_iff _ hf) (fun _ => _) fun _ => rfl
   simp_rw [← Polynomial.aeval_def, aeval_algHom, AlgHom.comp_apply, _root_.map_eq_zero_iff f hf]
 #align minpoly.minpoly_alg_hom minpoly.algHom_eq
 
-theorem algebraMap_eq {B} [CommRing B] [Algebra A B] [Algebra B B'] [IsScalarTower A B B']
+lemma algebraMap_eq {B} [CommRing B] [Algebra A B] [Algebra B B'] [IsScalarTower A B B']
     (h : Function.Injective (algebraMap B B')) (x : B) :
     minpoly A (algebraMap B B' x) = minpoly A x :=
   algHom_eq (IsScalarTower.toAlgHom A B B') h x
 
 @[simp]
-theorem algEquiv_eq (f : B ≃ₐ[A] B') (x : B) : minpoly A (f x) = minpoly A x :=
+lemma algEquiv_eq (f : B ≃ₐ[A] B') (x : B) : minpoly A (f x) = minpoly A x :=
   algHom_eq (f : B →ₐ[A] B') f.injective x
 #align minpoly.minpoly_alg_equiv minpoly.algEquiv_eq
 
@@ -84,7 +84,7 @@ variable (A x)
 
 /-- An element is a root of its minimal polynomial. -/
 @[simp]
-theorem aeval : aeval x (minpoly A x) = 0 := by
+lemma aeval : aeval x (minpoly A x) = 0 := by
   delta minpoly
   split_ifs with hx -- Porting note: `split_ifs` doesn't remove the `if`s
   · rw [dif_pos hx]
@@ -94,13 +94,13 @@ theorem aeval : aeval x (minpoly A x) = 0 := by
 #align minpoly.aeval minpoly.aeval
 
 /-- A minimal polynomial is not `1`. -/
-theorem ne_one [Nontrivial B] : minpoly A x ≠ 1 := by
+lemma ne_one [Nontrivial B] : minpoly A x ≠ 1 := by
   intro h
   refine' (one_ne_zero : (1 : B) ≠ 0) _
   simpa using congr_arg (Polynomial.aeval x) h
 #align minpoly.ne_one minpoly.ne_one
 
-theorem map_ne_one [Nontrivial B] {R : Type*} [Semiring R] [Nontrivial R] (f : A →+* R) :
+lemma map_ne_one [Nontrivial B] {R : Type*} [Semiring R] [Nontrivial R] (f : A →+* R) :
     (minpoly A x).map f ≠ 1 := by
   by_cases hx : IsIntegral A x
   · exact mt ((monic hx).eq_one_of_map_eq_one f) (ne_one A x)
@@ -109,7 +109,7 @@ theorem map_ne_one [Nontrivial B] {R : Type*} [Semiring R] [Nontrivial R] (f : A
 #align minpoly.map_ne_one minpoly.map_ne_one
 
 /-- A minimal polynomial is not a unit. -/
-theorem not_isUnit [Nontrivial B] : ¬IsUnit (minpoly A x) := by
+lemma not_isUnit [Nontrivial B] : ¬IsUnit (minpoly A x) := by
   haveI : Nontrivial A := (algebraMap A B).domain_nontrivial
   by_cases hx : IsIntegral A x
   · exact mt (monic hx).eq_one_of_isUnit (ne_one A x)
@@ -117,7 +117,7 @@ theorem not_isUnit [Nontrivial B] : ¬IsUnit (minpoly A x) := by
     exact not_isUnit_zero
 #align minpoly.not_is_unit minpoly.not_isUnit
 
-theorem mem_range_of_degree_eq_one (hx : (minpoly A x).degree = 1) :
+lemma mem_range_of_degree_eq_one (hx : (minpoly A x).degree = 1) :
     x ∈ (algebraMap A B).range := by
   have h : IsIntegral A x := by
     by_contra h
@@ -131,14 +131,14 @@ theorem mem_range_of_degree_eq_one (hx : (minpoly A x).degree = 1) :
 
 /-- The defining property of the minimal polynomial of an element `x`:
 it is the monic polynomial with smallest degree that has `x` as its root. -/
-theorem min {p : A[X]} (pmonic : p.Monic) (hp : Polynomial.aeval x p = 0) :
+lemma min {p : A[X]} (pmonic : p.Monic) (hp : Polynomial.aeval x p = 0) :
     degree (minpoly A x) ≤ degree p := by
   delta minpoly; split_ifs with hx
   · exact le_of_not_lt (degree_lt_wf.not_lt_min _ hx ⟨pmonic, hp⟩)
   · simp only [degree_zero, bot_le]
 #align minpoly.min minpoly.min
 
-theorem unique' {p : A[X]} (hm : p.Monic) (hp : Polynomial.aeval x p = 0)
+lemma unique' {p : A[X]} (hm : p.Monic) (hp : Polynomial.aeval x p = 0)
     (hl : ∀ q : A[X], degree q < degree p → q = 0 ∨ Polynomial.aeval x q ≠ 0) :
     p = minpoly A x := by
   nontriviality A
@@ -164,7 +164,7 @@ theorem unique' {p : A[X]} (hm : p.Monic) (hp : Polynomial.aeval x p = 0)
 #align minpoly.unique' minpoly.unique'
 
 @[nontriviality]
-theorem subsingleton [Subsingleton B] : minpoly A x = 1 := by
+lemma subsingleton [Subsingleton B] : minpoly A x = 1 := by
   nontriviality A
   have := minpoly.min A x monic_one (Subsingleton.elim _ _)
   rw [degree_one] at this
@@ -186,7 +186,7 @@ variable [Ring B] [Algebra A B]
 variable {x : B}
 
 /-- The degree of a minimal polynomial, as a natural number, is positive. -/
-theorem natDegree_pos [Nontrivial B] (hx : IsIntegral A x) : 0 < natDegree (minpoly A x) := by
+lemma natDegree_pos [Nontrivial B] (hx : IsIntegral A x) : 0 < natDegree (minpoly A x) := by
   rw [pos_iff_ne_zero]
   intro ndeg_eq_zero
   have eq_one : minpoly A x = 1 := by
@@ -197,13 +197,13 @@ theorem natDegree_pos [Nontrivial B] (hx : IsIntegral A x) : 0 < natDegree (minp
 #align minpoly.nat_degree_pos minpoly.natDegree_pos
 
 /-- The degree of a minimal polynomial is positive. -/
-theorem degree_pos [Nontrivial B] (hx : IsIntegral A x) : 0 < degree (minpoly A x) :=
+lemma degree_pos [Nontrivial B] (hx : IsIntegral A x) : 0 < degree (minpoly A x) :=
   natDegree_pos_iff_degree_pos.mp (natDegree_pos hx)
 #align minpoly.degree_pos minpoly.degree_pos
 
 /-- If `B/A` is an injective ring extension, and `a` is an element of `A`,
 then the minimal polynomial of `algebraMap A B a` is `X - C a`. -/
-theorem eq_X_sub_C_of_algebraMap_inj (a : A) (hf : Function.Injective (algebraMap A B)) :
+lemma eq_X_sub_C_of_algebraMap_inj (a : A) (hf : Function.Injective (algebraMap A B)) :
     minpoly A (algebraMap A B a) = X - C a := by
   nontriviality A
   refine' (unique' A _ (monic_X_sub_C a) _ _).symm
@@ -225,7 +225,7 @@ variable [Ring B] [Algebra A B]
 variable {x : B}
 
 /-- If `a` strictly divides the minimal polynomial of `x`, then `x` cannot be a root for `a`. -/
-theorem aeval_ne_zero_of_dvdNotUnit_minpoly {a : A[X]} (hx : IsIntegral A x) (hamonic : a.Monic)
+lemma aeval_ne_zero_of_dvdNotUnit_minpoly {a : A[X]} (hx : IsIntegral A x) (hamonic : a.Monic)
     (hdvd : DvdNotUnit a (minpoly A x)) : Polynomial.aeval x a ≠ 0 := by
   refine' fun ha => (min A x hamonic ha).not_lt (degree_lt_degree _)
   obtain ⟨_, c, hu, he⟩ := hdvd
@@ -242,7 +242,7 @@ theorem aeval_ne_zero_of_dvdNotUnit_minpoly {a : A[X]} (hx : IsIntegral A x) (ha
 variable [IsDomain A] [IsDomain B]
 
 /-- A minimal polynomial is irreducible. -/
-theorem irreducible (hx : IsIntegral A x) : Irreducible (minpoly A x) := by
+lemma irreducible (hx : IsIntegral A x) : Irreducible (minpoly A x) := by
   refine' (irreducible_of_monic (monic hx) <| ne_one A x).2 fun f g hf hg he => _
   rw [← hf.isUnit_iff, ← hg.isUnit_iff]
   by_contra' h

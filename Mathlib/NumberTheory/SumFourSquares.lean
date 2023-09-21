@@ -30,13 +30,13 @@ open scoped BigOperators
 local macro_rules | `($x ^ $y) => `(HPow.hPow $x $y) -- Porting note: See issue lean4#2220
 
 /-- **Euler's four-square identity**. -/
-theorem euler_four_squares {R : Type*} [CommRing R] (a b c d x y z w : R) :
+lemma euler_four_squares {R : Type*} [CommRing R] (a b c d x y z w : R) :
     (a * x - b * y - c * z - d * w) ^ 2 + (a * y + b * x + c * w - d * z) ^ 2 +
       (a * z - b * w + c * x + d * y) ^ 2 + (a * w + b * z - c * y + d * x) ^ 2 =
       (a ^ 2 + b ^ 2 + c ^ 2 + d ^ 2) * (x ^ 2 + y ^ 2 + z ^ 2 + w ^ 2) := by ring
 
 /-- **Euler's four-square identity**, a version for natural numbers. -/
-theorem Nat.euler_four_squares (a b c d x y z w : ℕ) :
+lemma Nat.euler_four_squares (a b c d x y z w : ℕ) :
     ((a : ℤ) * x - b * y - c * z - d * w).natAbs ^ 2 +
       ((a : ℤ) * y + b * x + c * w - d * z).natAbs ^ 2 +
       ((a : ℤ) * z - b * w + c * x + d * y).natAbs ^ 2 +
@@ -48,7 +48,7 @@ theorem Nat.euler_four_squares (a b c d x y z w : ℕ) :
 
 namespace Int
 
-theorem sq_add_sq_of_two_mul_sq_add_sq {m x y : ℤ} (h : 2 * m = x ^ 2 + y ^ 2) :
+lemma sq_add_sq_of_two_mul_sq_add_sq {m x y : ℤ} (h : 2 * m = x ^ 2 + y ^ 2) :
     m = ((x - y) / 2) ^ 2 + ((x + y) / 2) ^ 2 :=
   have : Even (x ^ 2 + y ^ 2) := by simp [← h, even_mul]
   have hxaddy : Even (x + y) := by simpa [sq, parity_simps]
@@ -64,7 +64,7 @@ theorem sq_add_sq_of_two_mul_sq_add_sq {m x y : ℤ} (h : 2 * m = x ^ 2 + y ^ 2)
 #align int.sq_add_sq_of_two_mul_sq_add_sq Int.sq_add_sq_of_two_mul_sq_add_sq
 
 -- porting note: new theorem
-theorem lt_of_sum_four_squares_eq_mul {a b c d k m : ℕ}
+lemma lt_of_sum_four_squares_eq_mul {a b c d k m : ℕ}
     (h : a ^ 2 + b ^ 2 + c ^ 2 + d ^ 2 = k * m)
     (ha : 2 * a < m) (hb : 2 * b < m) (hc : 2 * c < m) (hd : 2 * d < m) :
     k < m := by
@@ -78,7 +78,7 @@ theorem lt_of_sum_four_squares_eq_mul {a b c d k m : ℕ}
     _ = 2 ^ 2 * (m * m) := by simp; ring
 
 -- porting note: new theorem
-theorem exists_sq_add_sq_add_one_eq_mul (p : ℕ) [hp : Fact p.Prime] :
+lemma exists_sq_add_sq_add_one_eq_mul (p : ℕ) [hp : Fact p.Prime] :
     ∃ (a b k : ℕ), 0 < k ∧ k < p ∧ a ^ 2 + b ^ 2 + 1 = k * p := by
   rcases hp.1.eq_two_or_odd' with (rfl | hodd)
   · use 1, 0, 1; simp
@@ -100,7 +100,7 @@ theorem exists_sq_add_sq_add_one_eq_mul (p : ℕ) [hp : Fact p.Prime] :
   · exact hp.1.pos
 
 @[deprecated exists_sq_add_sq_add_one_eq_mul]
-theorem exists_sq_add_sq_add_one_eq_k (p : ℕ) [Fact p.Prime] :
+lemma exists_sq_add_sq_add_one_eq_k (p : ℕ) [Fact p.Prime] :
     ∃ (a b : ℤ) (k : ℕ), a ^ 2 + b ^ 2 + 1 = k * p ∧ k < p :=
   let ⟨a, b, k, _, hkp, hk⟩ := exists_sq_add_sq_add_one_eq_mul p
   ⟨a, b, k, by exact_mod_cast hk, hkp⟩
@@ -114,7 +114,7 @@ open Int
 
 open scoped Classical
 
-private theorem sum_four_squares_of_two_mul_sum_four_squares {m a b c d : ℤ}
+private lemma sum_four_squares_of_two_mul_sum_four_squares {m a b c d : ℤ}
     (h : a ^ 2 + b ^ 2 + c ^ 2 + d ^ 2 = 2 * m) :
     ∃ w x y z : ℤ, w ^ 2 + x ^ 2 + y ^ 2 + z ^ 2 = m := by
   have : ∀ f : Fin 4 → ZMod 2, f 0 ^ 2 + f 1 ^ 2 + f 2 ^ 2 + f 3 ^ 2 = 0 → ∃ i : Fin 4,
@@ -140,7 +140,7 @@ private theorem sum_four_squares_of_two_mul_sum_four_squares {m a b c d : ℤ}
   simpa only [← hx, ← hy, Fin.sum_univ_four, add_assoc] using this
 
 /-- Lagrange's **four squares theorem** for a prime number. Use `Nat.sum_four_squares` instead. -/
-protected theorem Prime.sum_four_squares {p : ℕ} (hp : p.Prime) :
+protected lemma Prime.sum_four_squares {p : ℕ} (hp : p.Prime) :
     ∃ a b c d : ℕ, a ^ 2 + b ^ 2 + c ^ 2 + d ^ 2 = p := by
   have := Fact.mk hp
   -- Find `a`, `b`, `c`, `d`, `0 < m < p` such that `a ^ 2 + b ^ 2 + c ^ 2 + d ^ 2 = m * p`
@@ -223,7 +223,7 @@ protected theorem Prime.sum_four_squares {p : ℕ} (hp : p.Prime) :
     · simp [← ZMod.int_cast_zmod_eq_zero_iff_dvd, hf_mod, mul_comm]
 
 /-- **Four squares theorem** -/
-theorem sum_four_squares (n : ℕ) : ∃ a b c d : ℕ, a ^ 2 + b ^ 2 + c ^ 2 + d ^ 2 = n := by
+lemma sum_four_squares (n : ℕ) : ∃ a b c d : ℕ, a ^ 2 + b ^ 2 + c ^ 2 + d ^ 2 = n := by
   -- The proof is by induction on prime factorization. The case of prime `n` was proved above,
   -- the inductive step follows from `Nat.euler_four_squares`.
   induction n using Nat.recOnMul with

@@ -54,13 +54,13 @@ instance PerfectRing.ofFiniteOfIsReduced (R : Type _) [CommRing R] [CharP R p]
 variable [PerfectRing R p]
 
 @[simp]
-theorem bijective_frobenius : Bijective (frobenius R p) := PerfectRing.bijective_frobenius
+lemma bijective_frobenius : Bijective (frobenius R p) := PerfectRing.bijective_frobenius
 
 @[simp]
-theorem injective_frobenius : Injective (frobenius R p) := (bijective_frobenius R p).1
+lemma injective_frobenius : Injective (frobenius R p) := (bijective_frobenius R p).1
 
 @[simp]
-theorem surjective_frobenius : Surjective (frobenius R p) := (bijective_frobenius R p).2
+lemma surjective_frobenius : Surjective (frobenius R p) := (bijective_frobenius R p).2
 
 /-- The Frobenius automorphism for a perfect ring. -/
 @[simps! apply]
@@ -69,34 +69,34 @@ noncomputable def frobeniusEquiv : R ≃+* R :=
 #align frobenius_equiv frobeniusEquiv
 
 @[simp]
-theorem coe_frobeniusEquiv : ⇑(frobeniusEquiv R p) = frobenius R p := rfl
+lemma coe_frobeniusEquiv : ⇑(frobeniusEquiv R p) = frobenius R p := rfl
 #align coe_frobenius_equiv coe_frobeniusEquiv
 
 @[simp]
-theorem frobeniusEquiv_symm_apply_frobenius (x : R) :
+lemma frobeniusEquiv_symm_apply_frobenius (x : R) :
     (frobeniusEquiv R p).symm (frobenius R p x) = x :=
   leftInverse_surjInv PerfectRing.bijective_frobenius x
 
 @[simp]
-theorem frobenius_apply_frobeniusEquiv_symm (x : R) :
+lemma frobenius_apply_frobeniusEquiv_symm (x : R) :
     frobenius R p ((frobeniusEquiv R p).symm x) = x :=
   surjInv_eq _ _
 
 @[simp]
-theorem frobenius_comp_frobeniusEquiv_symm :
+lemma frobenius_comp_frobeniusEquiv_symm :
     (frobenius R p).comp (frobeniusEquiv R p).symm = RingHom.id R := by
   ext; simp
 
 @[simp]
-theorem frobeniusEquiv_symm_comp_frobenius :
+lemma frobeniusEquiv_symm_comp_frobenius :
     ((frobeniusEquiv R p).symm : R →+* R).comp (frobenius R p) = RingHom.id R := by
   ext; simp
 
 @[simp]
-theorem frobeniusEquiv_symm_pow_p (x : R) : ((frobeniusEquiv R p).symm x) ^ p = x :=
+lemma frobeniusEquiv_symm_pow_p (x : R) : ((frobeniusEquiv R p).symm x) ^ p = x :=
   frobenius_apply_frobeniusEquiv_symm R p x
 
-theorem injective_pow_p {x y : R} (h : x ^ p = y ^ p) : x = y := (frobeniusEquiv R p).injective h
+lemma injective_pow_p {x y : R} (h : x ^ p = y ^ p) : x = y := (frobeniusEquiv R p).injective h
 #align injective_pow_p injective_pow_p
 
 lemma polynomial_expand_eq (f : R[X]) :
@@ -105,7 +105,7 @@ lemma polynomial_expand_eq (f : R[X]) :
     frobenius_comp_frobeniusEquiv_symm, map_id]
 
 @[simp]
-theorem not_irreducible_expand (f : R[X]) : ¬ Irreducible (expand R p f) := by
+lemma not_irreducible_expand (f : R[X]) : ¬ Irreducible (expand R p f) := by
   have hp : Fact p.Prime := inferInstance
   rw [polynomial_expand_eq]
   exact fun hf ↦ hf.not_unit $ (of_irreducible_pow hp.out.ne_one hf).pow p

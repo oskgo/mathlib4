@@ -34,7 +34,7 @@ variable [Zero N] {r : α → α → Prop} {s : N → N → Prop} (hbot : ∀ �
 
 /-- Transferred from `DFinsupp.Lex.acc`. See the top of that file for an explanation for the
   appearance of the relation `rᶜ ⊓ (≠)`. -/
-theorem Lex.acc (x : α →₀ N) (h : ∀ a ∈ x.support, Acc (rᶜ ⊓ (· ≠ ·)) a) :
+lemma Lex.acc (x : α →₀ N) (h : ∀ a ∈ x.support, Acc (rᶜ ⊓ (· ≠ ·)) a) :
     Acc (Finsupp.Lex r s) x := by
   rw [lex_eq_invImage_dfinsupp_lex]
   classical
@@ -42,11 +42,11 @@ theorem Lex.acc (x : α →₀ N) (h : ∀ a ∈ x.support, Acc (rᶜ ⊓ (· �
     simpa only [toDFinsupp_support] using h
 #align finsupp.lex.acc Finsupp.Lex.acc
 
-theorem Lex.wellFounded (hr : WellFounded <| rᶜ ⊓ (· ≠ ·)) : WellFounded (Finsupp.Lex r s) :=
+lemma Lex.wellFounded (hr : WellFounded <| rᶜ ⊓ (· ≠ ·)) : WellFounded (Finsupp.Lex r s) :=
   ⟨fun x => Lex.acc hbot hs x fun a _ => hr.apply a⟩
 #align finsupp.lex.well_founded Finsupp.Lex.wellFounded
 
-theorem Lex.wellFounded' [IsTrichotomous α r] (hr : WellFounded (Function.swap r)) :
+lemma Lex.wellFounded' [IsTrichotomous α r] (hr : WellFounded (Function.swap r)) :
     WellFounded (Finsupp.Lex r s) :=
   (lex_eq_invImage_dfinsupp_lex r s).symm ▸
     InvImage.wf _ (DFinsupp.Lex.wellFounded' (fun _ => hbot) (fun _ => hs) hr)
@@ -59,17 +59,17 @@ instance Lex.wellFoundedLT {α N} [LT α] [IsTrichotomous α (· < ·)] [hα : W
 
 variable (r)
 
-theorem Lex.wellFounded_of_finite [IsStrictTotalOrder α r] [Finite α] [Zero N]
+lemma Lex.wellFounded_of_finite [IsStrictTotalOrder α r] [Finite α] [Zero N]
     (hs : WellFounded s) : WellFounded (Finsupp.Lex r s) :=
   InvImage.wf (@equivFunOnFinite α N _ _) (Pi.Lex.wellFounded r fun _ => hs)
 #align finsupp.lex.well_founded_of_finite Finsupp.Lex.wellFounded_of_finite
 
-theorem Lex.wellFoundedLT_of_finite [LinearOrder α] [Finite α] [Zero N] [LT N]
+lemma Lex.wellFoundedLT_of_finite [LinearOrder α] [Finite α] [Zero N] [LT N]
     [hwf : WellFoundedLT N] : WellFoundedLT (Lex (α →₀ N)) :=
   ⟨Finsupp.Lex.wellFounded_of_finite (· < ·) hwf.1⟩
 #align finsupp.lex.well_founded_lt_of_finite Finsupp.Lex.wellFoundedLT_of_finite
 
-protected theorem wellFoundedLT [Zero N] [Preorder N] [WellFoundedLT N] (hbot : ∀ n : N, ¬n < 0) :
+protected lemma wellFoundedLT [Zero N] [Preorder N] [WellFoundedLT N] (hbot : ∀ n : N, ¬n < 0) :
     WellFoundedLT (α →₀ N) :=
   ⟨InvImage.wf toDFinsupp (DFinsupp.wellFoundedLT fun _ a => hbot a).wf⟩
 #align finsupp.well_founded_lt Finsupp.wellFoundedLT

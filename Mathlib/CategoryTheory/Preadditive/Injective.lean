@@ -76,7 +76,7 @@ def factorThru {J X Y : C} [Injective J] (g : X ⟶ J) (f : X ⟶ Y) [Mono f] : 
 #align category_theory.injective.factor_thru CategoryTheory.Injective.factorThru
 
 @[simp]
-theorem comp_factorThru {J X Y : C} [Injective J] (g : X ⟶ J) (f : X ⟶ Y) [Mono f] :
+lemma comp_factorThru {J X Y : C} [Injective J] (g : X ⟶ J) (f : X ⟶ Y) [Mono f] :
     f ≫ factorThru g f = g :=
   (Injective.factors g f).choose_spec
 #align category_theory.injective.comp_factor_thru CategoryTheory.Injective.comp_factorThru
@@ -91,7 +91,7 @@ instance zero_injective [HasZeroObject C] [HasZeroMorphisms C] : Injective (0 : 
 
 end
 
-theorem of_iso {P Q : C} (i : P ≅ Q) (hP : Injective P) : Injective Q :=
+lemma of_iso {P Q : C} (i : P ≅ Q) (hP : Injective P) : Injective Q :=
   {
     factors := fun g f mono => by
       obtain ⟨h, h_eq⟩ := @Injective.factors C _ P _ _ _ (g ≫ i.inv) f mono
@@ -99,7 +99,7 @@ theorem of_iso {P Q : C} (i : P ≅ Q) (hP : Injective P) : Injective Q :=
       rw [← Category.assoc, h_eq, Category.assoc, Iso.inv_hom_id, Category.comp_id] }
 #align category_theory.injective.of_iso CategoryTheory.Injective.of_iso
 
-theorem iso_iff {P Q : C} (i : P ≅ Q) : Injective P ↔ Injective Q :=
+lemma iso_iff {P Q : C} (i : P ≅ Q) : Injective P ↔ Injective Q :=
   ⟨of_iso i, of_iso i.symm⟩
 #align category_theory.injective.iso_iff CategoryTheory.Injective.iso_iff
 
@@ -178,15 +178,15 @@ instance {P : C} [Projective P] : Injective (op P) where
   factors g f mono :=
     ⟨(@Projective.factorThru C _ P _ _ _ g.unop f.unop _).op, Quiver.Hom.unop_inj (by simp)⟩
 
-theorem injective_iff_projective_op {J : C} : Injective J ↔ Projective (op J) :=
+lemma injective_iff_projective_op {J : C} : Injective J ↔ Projective (op J) :=
   ⟨fun _ => inferInstance, fun _ => show Injective (unop (op J)) from inferInstance⟩
 #align category_theory.injective.injective_iff_projective_op CategoryTheory.Injective.injective_iff_projective_op
 
-theorem projective_iff_injective_op {P : C} : Projective P ↔ Injective (op P) :=
+lemma projective_iff_injective_op {P : C} : Projective P ↔ Injective (op P) :=
   ⟨fun _ => inferInstance, fun _ => show Projective (unop (op P)) from inferInstance⟩
 #align category_theory.injective.projective_iff_injective_op CategoryTheory.Injective.projective_iff_injective_op
 
-theorem injective_iff_preservesEpimorphisms_yoneda_obj (J : C) :
+lemma injective_iff_preservesEpimorphisms_yoneda_obj (J : C) :
     Injective J ↔ (yoneda.obj J).PreservesEpimorphisms := by
   rw [injective_iff_projective_op, Projective.projective_iff_preservesEpimorphisms_coyoneda_obj]
   exact Functor.preservesEpimorphisms.iso_iff (Coyoneda.objOpOp _)
@@ -200,7 +200,7 @@ variable {D : Type u₂} [Category.{v₂} D]
 
 variable {L : C ⥤ D} {R : D ⥤ C} [PreservesMonomorphisms L]
 
-theorem injective_of_adjoint (adj : L ⊣ R) (J : D) [Injective J] : Injective <| R.obj J :=
+lemma injective_of_adjoint (adj : L ⊣ R) (J : D) [Injective J] : Injective <| R.obj J :=
   ⟨fun {A} {_} g f im =>
     ⟨adj.homEquiv _ _ (factorThru ((adj.homEquiv A J).symm g) (L.map f)),
       (adj.homEquiv _ _).symm.injective (by simp)⟩⟩
@@ -267,11 +267,11 @@ instance [EnoughInjectives C] : EnoughProjectives Cᵒᵖ :=
 instance [EnoughProjectives C] : EnoughInjectives Cᵒᵖ :=
   ⟨fun X => ⟨⟨_, inferInstance, (Projective.π (unop X)).op, inferInstance⟩⟩⟩
 
-theorem enoughProjectives_of_enoughInjectives_op [EnoughInjectives Cᵒᵖ] : EnoughProjectives C :=
+lemma enoughProjectives_of_enoughInjectives_op [EnoughInjectives Cᵒᵖ] : EnoughProjectives C :=
   ⟨fun X => ⟨{ p := _, f := (Injective.ι (op X)).unop} ⟩⟩
 #align category_theory.injective.enough_projectives_of_enough_injectives_op CategoryTheory.Injective.enoughProjectives_of_enoughInjectives_op
 
-theorem enoughInjectives_of_enoughProjectives_op [EnoughProjectives Cᵒᵖ] : EnoughInjectives C :=
+lemma enoughInjectives_of_enoughProjectives_op [EnoughProjectives Cᵒᵖ] : EnoughInjectives C :=
   ⟨fun X => ⟨⟨_, inferInstance, (Projective.π (op X)).unop, inferInstance⟩⟩⟩
 #align category_theory.injective.enough_injectives_of_enough_projectives_op CategoryTheory.Injective.enoughInjectives_of_enoughProjectives_op
 
@@ -298,7 +298,7 @@ def Exact.desc {J Q R S : C} [Injective J] (h : R ⟶ J) (f : Q ⟶ R) (g : R �
 #align category_theory.injective.exact.desc CategoryTheory.Injective.Exact.desc
 
 @[simp]
-theorem Exact.comp_desc {J Q R S : C} [Injective J] (h : R ⟶ J) (f : Q ⟶ R) (g : R ⟶ S)
+lemma Exact.comp_desc {J Q R S : C} [Injective J] (h : R ⟶ J) (f : Q ⟶ R) (g : R ⟶ S)
     (hgf : Exact g.op f.op) (w : f ≫ h = 0) : g ≫ Exact.desc h f g hgf w = h := by
   convert congr_arg Quiver.Hom.unop (Exact.lift_comp h.op g.op f.op hgf (congrArg Quiver.Hom.op w))
 #align category_theory.injective.exact.comp_desc CategoryTheory.Injective.Exact.comp_desc
@@ -311,7 +311,7 @@ namespace Adjunction
 
 variable {D : Type*} [Category D] {F : C ⥤ D} {G : D ⥤ C}
 
-theorem map_injective (adj : F ⊣ G) [F.PreservesMonomorphisms] (I : D) (hI : Injective I) :
+lemma map_injective (adj : F ⊣ G) [F.PreservesMonomorphisms] (I : D) (hI : Injective I) :
     Injective (G.obj I) :=
   ⟨fun {X} {Y} f g => by
     intro
@@ -321,7 +321,7 @@ theorem map_injective (adj : F ⊣ G) [F.PreservesMonomorphisms] (I : D) (hI : I
     simp⟩
 #align category_theory.adjunction.map_injective CategoryTheory.Adjunction.map_injective
 
-theorem injective_of_map_injective (adj : F ⊣ G) [Full G] [Faithful G] (I : D)
+lemma injective_of_map_injective (adj : F ⊣ G) [Full G] [Faithful G] (I : D)
     (hI : Injective (G.obj I)) : Injective I :=
   ⟨fun {X} {Y} f g => by
     intro
@@ -349,7 +349,7 @@ namespace Equivalence
 
 variable {D : Type*} [Category D] (F : C ≌ D)
 
-theorem map_injective_iff (P : C) : Injective (F.functor.obj P) ↔ Injective P :=
+lemma map_injective_iff (P : C) : Injective (F.functor.obj P) ↔ Injective P :=
   ⟨F.symm.toAdjunction.injective_of_map_injective P, F.symm.toAdjunction.map_injective P⟩
 
 /-- Given an equivalence of categories `F`, an injective presentation of `F(X)` induces an
@@ -362,7 +362,7 @@ def injectivePresentationOfMapInjectivePresentation (X : C)
   mono := mono_comp _ _
 #align category_theory.equivalence.injective_presentation_of_map_injective_presentation CategoryTheory.Equivalence.injectivePresentationOfMapInjectivePresentation
 
-theorem enoughInjectives_iff (F : C ≌ D) : EnoughInjectives C ↔ EnoughInjectives D := by
+lemma enoughInjectives_iff (F : C ≌ D) : EnoughInjectives C ↔ EnoughInjectives D := by
   constructor
   all_goals intro H; constructor; intro X; constructor
   · exact

@@ -88,10 +88,10 @@ We use this to prove that all clauses in the formula are subsumed by it. -/
 structure Fmla.subsumes (f f' : Fmla) : Prop where
   prop : ∀ x, x ∈ f' → x ∈ f
 
-theorem Fmla.subsumes_self (f : Fmla) : f.subsumes f := ⟨fun _ h ↦ h⟩
-theorem Fmla.subsumes_left (f f₁ f₂ : Fmla) (H : f.subsumes (f₁.and f₂)) : f.subsumes f₁ :=
+lemma Fmla.subsumes_self (f : Fmla) : f.subsumes f := ⟨fun _ h ↦ h⟩
+lemma Fmla.subsumes_left (f f₁ f₂ : Fmla) (H : f.subsumes (f₁.and f₂)) : f.subsumes f₁ :=
   ⟨fun _ h ↦ H.1 _ $ List.mem_append.2 $ Or.inl h⟩
-theorem Fmla.subsumes_right (f f₁ f₂ : Fmla) (H : f.subsumes (f₁.and f₂)) : f.subsumes f₂ :=
+lemma Fmla.subsumes_right (f f₁ f₂ : Fmla) (H : f.subsumes (f₁.and f₂)) : f.subsumes f₂ :=
   ⟨fun _ h ↦ H.1 _ $ List.mem_append.2 $ Or.inr h⟩
 
 /-- A valuation is an assignment of values to all the propositional variables. -/
@@ -120,7 +120,7 @@ def Fmla.proof (f : Fmla) (c : Clause) : Prop :=
   ∀ v : Valuation, v.satisfies_fmla f → v.satisfies c
 
 /-- If `f` subsumes `c` (i.e. `c ∈ f`), then `f.proof c`. -/
-theorem Fmla.proof_of_subsumes (H : Fmla.subsumes f (Fmla.one c)) : f.proof c :=
+lemma Fmla.proof_of_subsumes (H : Fmla.subsumes f (Fmla.one c)) : f.proof c :=
   fun _ h ↦ h.1 _ $ H.1 _ $ List.Mem.head ..
 
 /-- The core unit-propagation step.
@@ -132,7 +132,7 @@ such that all literals in the clause are falsified except for `¬l`;
 so in the context `h₁` where we suppose that `¬l` is falsified,
 the clause itself is falsified so we can prove `False`.
 We continue the proof in `h₂`, with the assumption that `l` is falsified. -/
-theorem Valuation.by_cases {v : Valuation} {l}
+lemma Valuation.by_cases {v : Valuation} {l}
   (h₁ : v.neg l.negate → False) (h₂ : v.neg l → False) : False :=
 match l with
 | Literal.pos _ => h₂ h₁
@@ -153,7 +153,7 @@ def Valuation.mk : List Prop → Valuation
 
 /-- The fundamental relationship between `mk` and `implies`:
 `(mk ps).implies p ps 0` is equivalent to `p`. -/
-theorem Valuation.mk_implies {as ps} (as₁) : as = List.reverseAux as₁ ps →
+lemma Valuation.mk_implies {as ps} (as₁) : as = List.reverseAux as₁ ps →
   (Valuation.mk as).implies p ps as₁.length → p := by
   induction ps generalizing as₁ with
   | nil => exact fun _ ↦ id
@@ -172,12 +172,12 @@ structure Fmla.reify (v : Valuation) (f : Fmla) (p : Prop) : Prop where
 /-- If `f` is unsatisfiable, and every `v` which agrees with `ps` implies `¬⟦f⟧_v → p`, then `p`.
 Equivalently, there exists a valuation `v` which agrees with `ps`,
 and every such valuation yields `¬⟦f⟧_v` because `f` is unsatisfiable. -/
-theorem Fmla.refute {ps} (f : Fmla) (hf : f.proof [])
+lemma Fmla.refute {ps} (f : Fmla) (hf : f.proof [])
   (hv : ∀ v, Valuation.implies v (Fmla.reify v f p) ps 0) : p :=
   (Valuation.mk_implies [] rfl (hv _)).1 (hf _)
 
 /-- Negation turns AND into OR, so `¬⟦f₁ ∧ f₂⟧_v ≡ ¬⟦f₁⟧_v ∨ ¬⟦f₂⟧_v`. -/
-theorem Fmla.reify_or (h₁ : Fmla.reify v f₁ a) (h₂ : Fmla.reify v f₂ b) :
+lemma Fmla.reify_or (h₁ : Fmla.reify v f₁ a) (h₂ : Fmla.reify v f₂ b) :
     Fmla.reify v (f₁.and f₂) (a ∨ b) := by
   refine ⟨fun H ↦ by_contra fun hn ↦ H ⟨fun c h ↦ by_contra fun hn' ↦ ?_⟩⟩
   rcases List.mem_append.1 h with h | h
@@ -189,7 +189,7 @@ structure Clause.reify (v : Valuation) (c : Clause) (p : Prop) : Prop where
   prop : ¬ v.satisfies c → p
 
 /-- Reification of a single clause formula. -/
-theorem Fmla.reify_one (h : Clause.reify v c a) : Fmla.reify v (Fmla.one c) a :=
+lemma Fmla.reify_one (h : Clause.reify v c a) : Fmla.reify v (Fmla.one c) a :=
   ⟨fun H ↦ h.1 fun h ↦ H ⟨fun | _, List.Mem.head .. => h⟩⟩
 
 /-- Asserts that `¬⟦l⟧_v` implies `p`. -/
@@ -197,22 +197,22 @@ structure Literal.reify (v : Valuation) (l : Literal) (p : Prop) : Prop where
   prop : v.neg l → p
 
 /-- Negation turns OR into AND, so `¬⟦l ∨ c⟧_v ≡ ¬⟦l⟧_v ∧ ¬⟦c⟧_v`. -/
-theorem Clause.reify_and (h₁ : Literal.reify v l a) (h₂ : Clause.reify v c b) :
+lemma Clause.reify_and (h₁ : Literal.reify v l a) (h₂ : Clause.reify v c b) :
     Clause.reify v (Clause.cons l c) (a ∧ b) :=
   ⟨fun H ↦ ⟨h₁.1 (by_contra fun hn ↦ H hn.elim), h₂.1 fun h ↦ H fun _ ↦ h⟩⟩
 
 /-- The reification of the empty clause is `True`: `¬⟦⊥⟧_v ≡ True`. -/
-theorem Clause.reify_zero : Clause.reify v Clause.nil True := ⟨fun _ ↦ trivial⟩
+lemma Clause.reify_zero : Clause.reify v Clause.nil True := ⟨fun _ ↦ trivial⟩
 
 /-- The reification of a singleton clause `¬⟦l⟧_v ≡ ¬⟦l⟧_v`. -/
-theorem Clause.reify_one (h₁ : Literal.reify v l a) : Clause.reify v (Clause.nil.cons l) a :=
+lemma Clause.reify_one (h₁ : Literal.reify v l a) : Clause.reify v (Clause.nil.cons l) a :=
   ⟨fun H ↦ ((Clause.reify_and h₁ Clause.reify_zero).1 H).1⟩
 
 /-- The reification of a positive literal `¬⟦a⟧_v ≡ ¬a`. -/
-theorem Literal.reify_pos (h : v n ↔ a) : (Literal.pos n).reify v ¬a := ⟨mt h.2⟩
+lemma Literal.reify_pos (h : v n ↔ a) : (Literal.pos n).reify v ¬a := ⟨mt h.2⟩
 
 /-- The reification of a negative literal `¬⟦¬a⟧_v ≡ a`. -/
-theorem Literal.reify_neg (h : v n ↔ a) : (Literal.neg n).reify v a := ⟨h.1⟩
+lemma Literal.reify_neg (h : v n ↔ a) : (Literal.neg n).reify v a := ⟨h.1⟩
 
 end Sat
 

@@ -25,7 +25,7 @@ variable {a b : ℝ} {f f' : ℝ → ℝ}
 
 /-- **Darboux's theorem**: if `a ≤ b` and `f' a < m < f' b`, then `f' c = m` for some
 `c ∈ (a, b)`. -/
-theorem exists_hasDerivWithinAt_eq_of_gt_of_lt (hab : a ≤ b)
+lemma exists_hasDerivWithinAt_eq_of_gt_of_lt (hab : a ≤ b)
     (hf : ∀ x ∈ Icc a b, HasDerivWithinAt f (f' x) (Icc a b) x) {m : ℝ} (hma : f' a < m)
     (hmb : m < f' b) : m ∈ f' '' Ioo a b := by
   rcases hab.eq_or_lt with (rfl | hab')
@@ -63,7 +63,7 @@ theorem exists_hasDerivWithinAt_eq_of_gt_of_lt (hab : a ≤ b)
 
 /-- **Darboux's theorem**: if `a ≤ b` and `f' b < m < f' a`, then `f' c = m` for some `c ∈ (a, b)`.
 -/
-theorem exists_hasDerivWithinAt_eq_of_lt_of_gt (hab : a ≤ b)
+lemma exists_hasDerivWithinAt_eq_of_lt_of_gt (hab : a ≤ b)
     (hf : ∀ x ∈ Icc a b, HasDerivWithinAt f (f' x) (Icc a b) x) {m : ℝ} (hma : m < f' a)
     (hmb : f' b < m) : m ∈ f' '' Ioo a b :=
   let ⟨c, cmem, hc⟩ :=
@@ -74,7 +74,7 @@ theorem exists_hasDerivWithinAt_eq_of_lt_of_gt (hab : a ≤ b)
 
 /-- **Darboux's theorem**: the image of a `Set.OrdConnected` set under `f'` is a `Set.OrdConnected`
 set, `HasDerivWithinAt` version. -/
-theorem Set.OrdConnected.image_hasDerivWithinAt {s : Set ℝ} (hs : OrdConnected s)
+lemma Set.OrdConnected.image_hasDerivWithinAt {s : Set ℝ} (hs : OrdConnected s)
     (hf : ∀ x ∈ s, HasDerivWithinAt f (f' x) s x) : OrdConnected (f' '' s) := by
   apply ordConnected_of_Ioo
   rintro _ ⟨a, ha, rfl⟩ _ ⟨b, hb, rfl⟩ - m ⟨hma, hmb⟩
@@ -93,42 +93,42 @@ theorem Set.OrdConnected.image_hasDerivWithinAt {s : Set ℝ} (hs : OrdConnected
 
 /-- **Darboux's theorem**: the image of a `Set.OrdConnected` set under `f'` is a `Set.OrdConnected`
 set, `derivWithin` version. -/
-theorem Set.OrdConnected.image_derivWithin {s : Set ℝ} (hs : OrdConnected s)
+lemma Set.OrdConnected.image_derivWithin {s : Set ℝ} (hs : OrdConnected s)
     (hf : DifferentiableOn ℝ f s) : OrdConnected (derivWithin f s '' s) :=
   hs.image_hasDerivWithinAt fun x hx => (hf x hx).hasDerivWithinAt
 #align set.ord_connected.image_deriv_within Set.OrdConnected.image_derivWithin
 
 /-- **Darboux's theorem**: the image of a `Set.OrdConnected` set under `f'` is a `Set.OrdConnected`
 set, `deriv` version. -/
-theorem Set.OrdConnected.image_deriv {s : Set ℝ} (hs : OrdConnected s)
+lemma Set.OrdConnected.image_deriv {s : Set ℝ} (hs : OrdConnected s)
     (hf : ∀ x ∈ s, DifferentiableAt ℝ f x) : OrdConnected (deriv f '' s) :=
   hs.image_hasDerivWithinAt fun x hx => (hf x hx).hasDerivAt.hasDerivWithinAt
 #align set.ord_connected.image_deriv Set.OrdConnected.image_deriv
 
 /-- **Darboux's theorem**: the image of a convex set under `f'` is a convex set,
 `HasDerivWithinAt` version. -/
-theorem Convex.image_hasDerivWithinAt {s : Set ℝ} (hs : Convex ℝ s)
+lemma Convex.image_hasDerivWithinAt {s : Set ℝ} (hs : Convex ℝ s)
     (hf : ∀ x ∈ s, HasDerivWithinAt f (f' x) s x) : Convex ℝ (f' '' s) :=
   (hs.ordConnected.image_hasDerivWithinAt hf).convex
 #align convex.image_has_deriv_within_at Convex.image_hasDerivWithinAt
 
 /-- **Darboux's theorem**: the image of a convex set under `f'` is a convex set,
 `derivWithin` version. -/
-theorem Convex.image_derivWithin {s : Set ℝ} (hs : Convex ℝ s) (hf : DifferentiableOn ℝ f s) :
+lemma Convex.image_derivWithin {s : Set ℝ} (hs : Convex ℝ s) (hf : DifferentiableOn ℝ f s) :
     Convex ℝ (derivWithin f s '' s) :=
   (hs.ordConnected.image_derivWithin hf).convex
 #align convex.image_deriv_within Convex.image_derivWithin
 
 /-- **Darboux's theorem**: the image of a convex set under `f'` is a convex set,
 `deriv` version. -/
-theorem Convex.image_deriv {s : Set ℝ} (hs : Convex ℝ s) (hf : ∀ x ∈ s, DifferentiableAt ℝ f x) :
+lemma Convex.image_deriv {s : Set ℝ} (hs : Convex ℝ s) (hf : ∀ x ∈ s, DifferentiableAt ℝ f x) :
     Convex ℝ (deriv f '' s) :=
   (hs.ordConnected.image_deriv hf).convex
 #align convex.image_deriv Convex.image_deriv
 
 /-- **Darboux's theorem**: if `a ≤ b` and `f' a ≤ m ≤ f' b`, then `f' c = m` for some
 `c ∈ [a, b]`. -/
-theorem exists_hasDerivWithinAt_eq_of_ge_of_le (hab : a ≤ b)
+lemma exists_hasDerivWithinAt_eq_of_ge_of_le (hab : a ≤ b)
     (hf : ∀ x ∈ Icc a b, HasDerivWithinAt f (f' x) (Icc a b) x) {m : ℝ} (hma : f' a ≤ m)
     (hmb : m ≤ f' b) : m ∈ f' '' Icc a b :=
   (ordConnected_Icc.image_hasDerivWithinAt hf).out (mem_image_of_mem _ (left_mem_Icc.2 hab))
@@ -137,7 +137,7 @@ theorem exists_hasDerivWithinAt_eq_of_ge_of_le (hab : a ≤ b)
 
 /-- **Darboux's theorem**: if `a ≤ b` and `f' b ≤ m ≤ f' a`, then `f' c = m` for some
 `c ∈ [a, b]`. -/
-theorem exists_hasDerivWithinAt_eq_of_le_of_ge (hab : a ≤ b)
+lemma exists_hasDerivWithinAt_eq_of_le_of_ge (hab : a ≤ b)
     (hf : ∀ x ∈ Icc a b, HasDerivWithinAt f (f' x) (Icc a b) x) {m : ℝ} (hma : f' a ≤ m)
     (hmb : m ≤ f' b) : m ∈ f' '' Icc a b :=
   (ordConnected_Icc.image_hasDerivWithinAt hf).out (mem_image_of_mem _ (left_mem_Icc.2 hab))
@@ -146,7 +146,7 @@ theorem exists_hasDerivWithinAt_eq_of_le_of_ge (hab : a ≤ b)
 
 /-- If the derivative of a function is never equal to `m`, then either
 it is always greater than `m`, or it is always less than `m`. -/
-theorem hasDerivWithinAt_forall_lt_or_forall_gt_of_forall_ne {s : Set ℝ} (hs : Convex ℝ s)
+lemma hasDerivWithinAt_forall_lt_or_forall_gt_of_forall_ne {s : Set ℝ} (hs : Convex ℝ s)
     (hf : ∀ x ∈ s, HasDerivWithinAt f (f' x) s x) {m : ℝ} (hf' : ∀ x ∈ s, f' x ≠ m) :
     (∀ x ∈ s, f' x < m) ∨ ∀ x ∈ s, m < f' x := by
   contrapose! hf'

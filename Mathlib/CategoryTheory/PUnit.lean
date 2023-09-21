@@ -45,7 +45,7 @@ attribute [nolint simpNF] punitExt_hom_app_down_down punitExt_inv_app_down_down
 
 /-- Any two functors to `Discrete PUnit` are *equal*.
 You probably want to use `punitExt` instead of this. -/
-theorem punit_ext' (F G : C ⥤ Discrete PUnit.{w + 1}) : F = G :=
+lemma punit_ext' (F G : C ⥤ Discrete PUnit.{w + 1}) : F = G :=
   Functor.ext fun X => by simp only [eq_iff_true_of_subsingleton]
 #align category_theory.functor.punit_ext' CategoryTheory.Functor.punit_ext'
 
@@ -70,7 +70,7 @@ end Functor
 /-- A category being equivalent to `PUnit` is equivalent to it having a unique morphism between
   any two objects. (In fact, such a category is also a groupoid;
   see `CategoryTheory.Groupoid.ofHomUnique`) -/
-theorem equiv_punit_iff_unique :
+lemma equiv_punit_iff_unique :
     Nonempty (C ≌ Discrete PUnit.{w + 1}) ↔ Nonempty C ∧ ∀ x y : C, Nonempty <| Unique (x ⟶ y) := by
   constructor
   · rintro ⟨h⟩

@@ -92,7 +92,7 @@ instance : Inhabited (ClosureOperator α) :=
 variable {α} [PartialOrder α] (c : ClosureOperator α)
 
 @[ext]
-theorem ext : ∀ c₁ c₂ : ClosureOperator α, (c₁ : α → α) = (c₂ : α → α) → c₁ = c₂
+lemma ext : ∀ c₁ c₂ : ClosureOperator α, (c₁ : α → α) = (c₂ : α → α) → c₁ = c₂
   | ⟨⟨c₁, _⟩, _, _⟩, ⟨⟨c₂, _⟩, _, _⟩, h => by
     congr
 #align closure_operator.ext ClosureOperator.ext
@@ -132,36 +132,36 @@ def mk₃ (f : α → α) (p : α → Prop) (hf : ∀ x, x ≤ f x) (hfp : ∀ x
 
 /-- This lemma shows that the image of `x` of a closure operator built from the `mk₃` constructor
 respects `p`, the property that was fed into it. -/
-theorem closure_mem_mk₃ {f : α → α} {p : α → Prop} {hf : ∀ x, x ≤ f x} {hfp : ∀ x, p (f x)}
+lemma closure_mem_mk₃ {f : α → α} {p : α → Prop} {hf : ∀ x, x ≤ f x} {hfp : ∀ x, p (f x)}
     {hmin : ∀ ⦃x y⦄, x ≤ y → p y → f x ≤ y} (x : α) : p (mk₃ f p hf hfp hmin x) :=
   hfp x
 #align closure_operator.closure_mem_mk₃ ClosureOperator.closure_mem_mk₃
 
 /-- Analogue of `closure_le_closed_iff_le` but with the `p` that was fed into the `mk₃` constructor.
 -/
-theorem closure_le_mk₃_iff {f : α → α} {p : α → Prop} {hf : ∀ x, x ≤ f x} {hfp : ∀ x, p (f x)}
+lemma closure_le_mk₃_iff {f : α → α} {p : α → Prop} {hf : ∀ x, x ≤ f x} {hfp : ∀ x, p (f x)}
     {hmin : ∀ ⦃x y⦄, x ≤ y → p y → f x ≤ y} {x y : α} (hxy : x ≤ y) (hy : p y) :
     mk₃ f p hf hfp hmin x ≤ y :=
   hmin hxy hy
 #align closure_operator.closure_le_mk₃_iff ClosureOperator.closure_le_mk₃_iff
 
 @[mono]
-theorem monotone : Monotone c :=
+lemma monotone : Monotone c :=
   c.monotone'
 #align closure_operator.monotone ClosureOperator.monotone
 
 /-- Every element is less than its closure. This property is sometimes referred to as extensivity or
 inflationarity. -/
-theorem le_closure (x : α) : x ≤ c x :=
+lemma le_closure (x : α) : x ≤ c x :=
   c.le_closure' x
 #align closure_operator.le_closure ClosureOperator.le_closure
 
 @[simp]
-theorem idempotent (x : α) : c (c x) = c x :=
+lemma idempotent (x : α) : c (c x) = c x :=
   c.idempotent' x
 #align closure_operator.idempotent ClosureOperator.idempotent
 
-theorem le_closure_iff (x y : α) : x ≤ c y ↔ c x ≤ c y :=
+lemma le_closure_iff (x y : α) : x ≤ c y ↔ c x ≤ c y :=
   ⟨fun h => c.idempotent y ▸ c.monotone h, fun h => (c.le_closure x).trans h⟩
 #align closure_operator.le_closure_iff ClosureOperator.le_closure_iff
 
@@ -169,25 +169,25 @@ theorem le_closure_iff (x y : α) : x ≤ c y ↔ c x ≤ c y :=
 def closed : Set α := {x | c x = x}
 #align closure_operator.closed ClosureOperator.closed
 
-theorem mem_closed_iff (x : α) : x ∈ c.closed ↔ c x = x :=
+lemma mem_closed_iff (x : α) : x ∈ c.closed ↔ c x = x :=
   Iff.rfl
 #align closure_operator.mem_closed_iff ClosureOperator.mem_closed_iff
 
-theorem mem_closed_iff_closure_le (x : α) : x ∈ c.closed ↔ c x ≤ x :=
+lemma mem_closed_iff_closure_le (x : α) : x ∈ c.closed ↔ c x ≤ x :=
   ⟨le_of_eq, fun h => h.antisymm (c.le_closure x)⟩
 #align closure_operator.mem_closed_iff_closure_le ClosureOperator.mem_closed_iff_closure_le
 
-theorem closure_eq_self_of_mem_closed {x : α} (h : x ∈ c.closed) : c x = x :=
+lemma closure_eq_self_of_mem_closed {x : α} (h : x ∈ c.closed) : c x = x :=
   h
 #align closure_operator.closure_eq_self_of_mem_closed ClosureOperator.closure_eq_self_of_mem_closed
 
 @[simp]
-theorem closure_is_closed (x : α) : c x ∈ c.closed :=
+lemma closure_is_closed (x : α) : c x ∈ c.closed :=
   c.idempotent x
 #align closure_operator.closure_is_closed ClosureOperator.closure_is_closed
 
 /-- The set of closed elements for `c` is exactly its range. -/
-theorem closed_eq_range_close : c.closed = Set.range c :=
+lemma closed_eq_range_close : c.closed = Set.range c :=
   Set.ext fun x =>
     ⟨fun h => ⟨x, h⟩, by
       rintro ⟨y, rfl⟩
@@ -200,13 +200,13 @@ def toClosed (x : α) : c.closed :=
 #align closure_operator.to_closed ClosureOperator.toClosed
 
 @[simp]
-theorem closure_le_closed_iff_le (x : α) {y : α} (hy : c.closed y) : c x ≤ y ↔ x ≤ y := by
+lemma closure_le_closed_iff_le (x : α) {y : α} (hy : c.closed y) : c x ≤ y ↔ x ≤ y := by
   rw [← c.closure_eq_self_of_mem_closed hy, ← le_closure_iff]
 #align closure_operator.closure_le_closed_iff_le ClosureOperator.closure_le_closed_iff_le
 
 /-- A closure operator is equal to the closure operator obtained by feeding `c.closed` into the
 `mk₃` constructor. -/
-theorem eq_mk₃_closed (c : ClosureOperator α) :
+lemma eq_mk₃_closed (c : ClosureOperator α) :
     c =
       mk₃ c c.closed c.le_closure c.closure_is_closed fun x y hxy hy =>
         (c.closure_le_closed_iff_le x hy).2 hxy := by
@@ -215,7 +215,7 @@ theorem eq_mk₃_closed (c : ClosureOperator α) :
 #align closure_operator.eq_mk₃_closed ClosureOperator.eq_mk₃_closed
 
 /-- The property `p` fed into the `mk₃` constructor exactly corresponds to being closed. -/
-@[simp] theorem mem_mk₃_closed {f : α → α} {p : α → Prop} {hf hfp hmin} {x : α} :
+@[simp] lemma mem_mk₃_closed {f : α → α} {p : α → Prop} {hf hfp hmin} {x : α} :
   x ∈ (mk₃ f p hf hfp hmin).closed ↔ p x := by
   refine' ⟨λ hx ↦ _, λ hx ↦ (hmin le_rfl hx).antisymm (hf _)⟩
   rw [←closure_eq_self_of_mem_closed _ hx]
@@ -231,17 +231,17 @@ section OrderTop
 variable [PartialOrder α] [OrderTop α] (c : ClosureOperator α)
 
 @[simp]
-theorem closure_top : c ⊤ = ⊤ :=
+lemma closure_top : c ⊤ = ⊤ :=
   le_top.antisymm (c.le_closure _)
 #align closure_operator.closure_top ClosureOperator.closure_top
 
-theorem top_mem_closed : ⊤ ∈ c.closed :=
+lemma top_mem_closed : ⊤ ∈ c.closed :=
   c.closure_top
 #align closure_operator.top_mem_closed ClosureOperator.top_mem_closed
 
 end OrderTop
 
-theorem closure_inf_le [SemilatticeInf α] (c : ClosureOperator α) (x y : α) :
+lemma closure_inf_le [SemilatticeInf α] (c : ClosureOperator α) (x y : α) :
     c (x ⊓ y) ≤ c x ⊓ c y :=
   c.monotone.map_inf_le _ _
 #align closure_operator.closure_inf_le ClosureOperator.closure_inf_le
@@ -250,21 +250,21 @@ section SemilatticeSup
 
 variable [SemilatticeSup α] (c : ClosureOperator α)
 
-theorem closure_sup_closure_le (x y : α) : c x ⊔ c y ≤ c (x ⊔ y) :=
+lemma closure_sup_closure_le (x y : α) : c x ⊔ c y ≤ c (x ⊔ y) :=
   c.monotone.le_map_sup _ _
 #align closure_operator.closure_sup_closure_le ClosureOperator.closure_sup_closure_le
 
-theorem closure_sup_closure_left (x y : α) : c (c x ⊔ y) = c (x ⊔ y) :=
+lemma closure_sup_closure_left (x y : α) : c (c x ⊔ y) = c (x ⊔ y) :=
   ((c.le_closure_iff _ _).1
         (sup_le (c.monotone le_sup_left) (le_sup_right.trans (c.le_closure _)))).antisymm
     (c.monotone (sup_le_sup_right (c.le_closure _) _))
 #align closure_operator.closure_sup_closure_left ClosureOperator.closure_sup_closure_left
 
-theorem closure_sup_closure_right (x y : α) : c (x ⊔ c y) = c (x ⊔ y) := by
+lemma closure_sup_closure_right (x y : α) : c (x ⊔ c y) = c (x ⊔ y) := by
   rw [sup_comm, closure_sup_closure_left, sup_comm (a := x)]
 #align closure_operator.closure_sup_closure_right ClosureOperator.closure_sup_closure_right
 
-theorem closure_sup_closure (x y : α) : c (c x ⊔ c y) = c (x ⊔ y) := by
+lemma closure_sup_closure (x y : α) : c (c x ⊔ c y) = c (x ⊔ y) := by
   rw [closure_sup_closure_left, closure_sup_closure_right]
 #align closure_operator.closure_sup_closure ClosureOperator.closure_sup_closure
 
@@ -275,13 +275,13 @@ section CompleteLattice
 variable [CompleteLattice α] (c : ClosureOperator α)
 
 @[simp]
-theorem closure_iSup_closure (f : ι → α) : c (⨆ i, c (f i)) = c (⨆ i, f i) :=
+lemma closure_iSup_closure (f : ι → α) : c (⨆ i, c (f i)) = c (⨆ i, f i) :=
   le_antisymm ((c.le_closure_iff _ _).1 <| iSup_le fun i => c.monotone <| le_iSup f i) <|
     c.monotone <| iSup_mono fun _ => c.le_closure _
 #align closure_operator.closure_supr_closure ClosureOperator.closure_iSup_closure
 
 @[simp]
-theorem closure_iSup₂_closure (f : ∀ i, κ i → α) :
+lemma closure_iSup₂_closure (f : ∀ i, κ i → α) :
     c (⨆ (i) (j), c (f i j)) = c (⨆ (i) (j), f i j) :=
   le_antisymm ((c.le_closure_iff _ _).1 <| iSup₂_le fun i j => c.monotone <| le_iSup₂ i j) <|
     c.monotone <| iSup₂_mono fun _ _ => c.le_closure _
@@ -329,24 +329,24 @@ variable [Preorder α] [Preorder β] {u : β → α} (l : LowerAdjoint u)
 
 instance : CoeFun (LowerAdjoint u) fun _ => α → β where coe := toFun
 
-theorem gc : GaloisConnection l u :=
+lemma gc : GaloisConnection l u :=
   l.gc'
 #align lower_adjoint.gc LowerAdjoint.gc
 
 @[ext]
-theorem ext : ∀ l₁ l₂ : LowerAdjoint u, (l₁ : α → β) = (l₂ : α → β) → l₁ = l₂
+lemma ext : ∀ l₁ l₂ : LowerAdjoint u, (l₁ : α → β) = (l₂ : α → β) → l₁ = l₂
   | ⟨l₁, _⟩, ⟨l₂, _⟩, h => by
     congr
 #align lower_adjoint.ext LowerAdjoint.ext
 
 @[mono]
-theorem monotone : Monotone (u ∘ l) :=
+lemma monotone : Monotone (u ∘ l) :=
   l.gc.monotone_u.comp l.gc.monotone_l
 #align lower_adjoint.monotone LowerAdjoint.monotone
 
 /-- Every element is less than its closure. This property is sometimes referred to as extensivity or
 inflationarity. -/
-theorem le_closure (x : α) : x ≤ u (l x) :=
+lemma le_closure (x : α) : x ≤ u (l x) :=
   l.gc.le_u_l _
 #align lower_adjoint.le_closure LowerAdjoint.le_closure
 
@@ -367,11 +367,11 @@ def closureOperator : ClosureOperator α where
 #align lower_adjoint.closure_operator LowerAdjoint.closureOperator
 #align lower_adjoint.closure_operator_apply LowerAdjoint.closureOperator_apply
 
-theorem idempotent (x : α) : u (l (u (l x))) = u (l x) :=
+lemma idempotent (x : α) : u (l (u (l x))) = u (l x) :=
   l.closureOperator.idempotent _
 #align lower_adjoint.idempotent LowerAdjoint.idempotent
 
-theorem le_closure_iff (x y : α) : x ≤ u (l y) ↔ u (l x) ≤ u (l y) :=
+lemma le_closure_iff (x y : α) : x ≤ u (l y) ↔ u (l x) ≤ u (l y) :=
   l.closureOperator.le_closure_iff _ _
 #align lower_adjoint.le_closure_iff LowerAdjoint.le_closure_iff
 
@@ -385,11 +385,11 @@ variable [Preorder α] [Preorder β] {u : β → α} (l : LowerAdjoint u)
 def closed : Set α := {x | u (l x) = x}
 #align lower_adjoint.closed LowerAdjoint.closed
 
-theorem mem_closed_iff (x : α) : x ∈ l.closed ↔ u (l x) = x :=
+lemma mem_closed_iff (x : α) : x ∈ l.closed ↔ u (l x) = x :=
   Iff.rfl
 #align lower_adjoint.mem_closed_iff LowerAdjoint.mem_closed_iff
 
-theorem closure_eq_self_of_mem_closed {x : α} (h : x ∈ l.closed) : u (l x) = x :=
+lemma closure_eq_self_of_mem_closed {x : α} (h : x ∈ l.closed) : u (l x) = x :=
   h
 #align lower_adjoint.closure_eq_self_of_mem_closed LowerAdjoint.closure_eq_self_of_mem_closed
 
@@ -399,17 +399,17 @@ section PartialOrder
 
 variable [PartialOrder α] [PartialOrder β] {u : β → α} (l : LowerAdjoint u)
 
-theorem mem_closed_iff_closure_le (x : α) : x ∈ l.closed ↔ u (l x) ≤ x :=
+lemma mem_closed_iff_closure_le (x : α) : x ∈ l.closed ↔ u (l x) ≤ x :=
   l.closureOperator.mem_closed_iff_closure_le _
 #align lower_adjoint.mem_closed_iff_closure_le LowerAdjoint.mem_closed_iff_closure_le
 
 @[simp, nolint simpNF] -- Porting note: lemma does prove itself, seems to be a linter error
-theorem closure_is_closed (x : α) : u (l x) ∈ l.closed :=
+lemma closure_is_closed (x : α) : u (l x) ∈ l.closed :=
   l.idempotent x
 #align lower_adjoint.closure_is_closed LowerAdjoint.closure_is_closed
 
 /-- The set of closed elements for `l` is the range of `u ∘ l`. -/
-theorem closed_eq_range_close : l.closed = Set.range (u ∘ l) :=
+lemma closed_eq_range_close : l.closed = Set.range (u ∘ l) :=
   l.closureOperator.closed_eq_range_close
 #align lower_adjoint.closed_eq_range_close LowerAdjoint.closed_eq_range_close
 
@@ -419,18 +419,18 @@ def toClosed (x : α) : l.closed :=
 #align lower_adjoint.to_closed LowerAdjoint.toClosed
 
 @[simp]
-theorem closure_le_closed_iff_le (x : α) {y : α} (hy : l.closed y) : u (l x) ≤ y ↔ x ≤ y :=
+lemma closure_le_closed_iff_le (x : α) {y : α} (hy : l.closed y) : u (l x) ≤ y ↔ x ≤ y :=
   l.closureOperator.closure_le_closed_iff_le x hy
 #align lower_adjoint.closure_le_closed_iff_le LowerAdjoint.closure_le_closed_iff_le
 
 end PartialOrder
 
-theorem closure_top [PartialOrder α] [OrderTop α] [Preorder β] {u : β → α} (l : LowerAdjoint u) :
+lemma closure_top [PartialOrder α] [OrderTop α] [Preorder β] {u : β → α} (l : LowerAdjoint u) :
     u (l ⊤) = ⊤ :=
   l.closureOperator.closure_top
 #align lower_adjoint.closure_top LowerAdjoint.closure_top
 
-theorem closure_inf_le [SemilatticeInf α] [Preorder β] {u : β → α} (l : LowerAdjoint u) (x y : α) :
+lemma closure_inf_le [SemilatticeInf α] [Preorder β] {u : β → α} (l : LowerAdjoint u) (x y : α) :
     u (l (x ⊓ y)) ≤ u (l x) ⊓ u (l y) :=
   l.closureOperator.closure_inf_le x y
 #align lower_adjoint.closure_inf_le LowerAdjoint.closure_inf_le
@@ -439,19 +439,19 @@ section SemilatticeSup
 
 variable [SemilatticeSup α] [Preorder β] {u : β → α} (l : LowerAdjoint u)
 
-theorem closure_sup_closure_le (x y : α) : u (l x) ⊔ u (l y) ≤ u (l (x ⊔ y)) :=
+lemma closure_sup_closure_le (x y : α) : u (l x) ⊔ u (l y) ≤ u (l (x ⊔ y)) :=
   l.closureOperator.closure_sup_closure_le x y
 #align lower_adjoint.closure_sup_closure_le LowerAdjoint.closure_sup_closure_le
 
-theorem closure_sup_closure_left (x y : α) : u (l (u (l x) ⊔ y)) = u (l (x ⊔ y)) :=
+lemma closure_sup_closure_left (x y : α) : u (l (u (l x) ⊔ y)) = u (l (x ⊔ y)) :=
   l.closureOperator.closure_sup_closure_left x y
 #align lower_adjoint.closure_sup_closure_left LowerAdjoint.closure_sup_closure_left
 
-theorem closure_sup_closure_right (x y : α) : u (l (x ⊔ u (l y))) = u (l (x ⊔ y)) :=
+lemma closure_sup_closure_right (x y : α) : u (l (x ⊔ u (l y))) = u (l (x ⊔ y)) :=
   l.closureOperator.closure_sup_closure_right x y
 #align lower_adjoint.closure_sup_closure_right LowerAdjoint.closure_sup_closure_right
 
-theorem closure_sup_closure (x y : α) : u (l (u (l x) ⊔ u (l y))) = u (l (x ⊔ y)) :=
+lemma closure_sup_closure (x y : α) : u (l (u (l x) ⊔ u (l y))) = u (l (x ⊔ y)) :=
   l.closureOperator.closure_sup_closure x y
 #align lower_adjoint.closure_sup_closure LowerAdjoint.closure_sup_closure
 
@@ -461,11 +461,11 @@ section CompleteLattice
 
 variable [CompleteLattice α] [Preorder β] {u : β → α} (l : LowerAdjoint u)
 
-theorem closure_iSup_closure (f : ι → α) : u (l (⨆ i, u (l (f i)))) = u (l (⨆ i, f i)) :=
+lemma closure_iSup_closure (f : ι → α) : u (l (⨆ i, u (l (f i)))) = u (l (⨆ i, f i)) :=
   l.closureOperator.closure_iSup_closure _
 #align lower_adjoint.closure_supr_closure LowerAdjoint.closure_iSup_closure
 
-theorem closure_iSup₂_closure (f : ∀ i, κ i → α) :
+lemma closure_iSup₂_closure (f : ∀ i, κ i → α) :
     u (l <| ⨆ (i) (j), u (l <| f i j)) = u (l <| ⨆ (i) (j), f i j) :=
   l.closureOperator.closure_iSup₂_closure _
 #align lower_adjoint.closure_supr₂_closure LowerAdjoint.closure_iSup₂_closure
@@ -477,54 +477,54 @@ section CoeToSet
 
 variable [SetLike α β] (l : LowerAdjoint ((↑) : α → Set β))
 
-theorem subset_closure (s : Set β) : s ⊆ l s :=
+lemma subset_closure (s : Set β) : s ⊆ l s :=
   l.le_closure s
 #align lower_adjoint.subset_closure LowerAdjoint.subset_closure
 
-theorem not_mem_of_not_mem_closure {s : Set β} {P : β} (hP : P ∉ l s) : P ∉ s := fun h =>
+lemma not_mem_of_not_mem_closure {s : Set β} {P : β} (hP : P ∉ l s) : P ∉ s := fun h =>
   hP (subset_closure _ s h)
 #align lower_adjoint.not_mem_of_not_mem_closure LowerAdjoint.not_mem_of_not_mem_closure
 
-theorem le_iff_subset (s : Set β) (S : α) : l s ≤ S ↔ s ⊆ S :=
+lemma le_iff_subset (s : Set β) (S : α) : l s ≤ S ↔ s ⊆ S :=
   l.gc s S
 #align lower_adjoint.le_iff_subset LowerAdjoint.le_iff_subset
 
-theorem mem_iff (s : Set β) (x : β) : x ∈ l s ↔ ∀ S : α, s ⊆ S → x ∈ S := by
+lemma mem_iff (s : Set β) (x : β) : x ∈ l s ↔ ∀ S : α, s ⊆ S → x ∈ S := by
   simp_rw [← SetLike.mem_coe, ← Set.singleton_subset_iff, ← l.le_iff_subset]
   exact ⟨fun h S => h.trans, fun h => h _ le_rfl⟩
 #align lower_adjoint.mem_iff LowerAdjoint.mem_iff
 
-theorem eq_of_le {s : Set β} {S : α} (h₁ : s ⊆ S) (h₂ : S ≤ l s) : l s = S :=
+lemma eq_of_le {s : Set β} {S : α} (h₁ : s ⊆ S) (h₂ : S ≤ l s) : l s = S :=
   ((l.le_iff_subset _ _).2 h₁).antisymm h₂
 #align lower_adjoint.eq_of_le LowerAdjoint.eq_of_le
 
-theorem closure_union_closure_subset (x y : α) : (l x : Set β) ∪ l y ⊆ l (x ∪ y) :=
+lemma closure_union_closure_subset (x y : α) : (l x : Set β) ∪ l y ⊆ l (x ∪ y) :=
   l.closure_sup_closure_le x y
 #align lower_adjoint.closure_union_closure_subset LowerAdjoint.closure_union_closure_subset
 
 @[simp]
-theorem closure_union_closure_left (x y : α) : l (l x ∪ y) = l (x ∪ y) :=
+lemma closure_union_closure_left (x y : α) : l (l x ∪ y) = l (x ∪ y) :=
   SetLike.coe_injective (l.closure_sup_closure_left x y)
 #align lower_adjoint.closure_union_closure_left LowerAdjoint.closure_union_closure_left
 
 @[simp]
-theorem closure_union_closure_right (x y : α) : l (x ∪ l y) = l (x ∪ y) :=
+lemma closure_union_closure_right (x y : α) : l (x ∪ l y) = l (x ∪ y) :=
   SetLike.coe_injective (l.closure_sup_closure_right x y)
 #align lower_adjoint.closure_union_closure_right LowerAdjoint.closure_union_closure_right
 
-theorem closure_union_closure (x y : α) : l (l x ∪ l y) = l (x ∪ y) := by
+lemma closure_union_closure (x y : α) : l (l x ∪ l y) = l (x ∪ y) := by
   rw [closure_union_closure_right, closure_union_closure_left]
 #align lower_adjoint.closure_union_closure LowerAdjoint.closure_union_closure
 
 @[simp]
-theorem closure_iUnion_closure (f : ι → α) : l (⋃ i, l (f i)) = l (⋃ i, f i) :=
+lemma closure_iUnion_closure (f : ι → α) : l (⋃ i, l (f i)) = l (⋃ i, f i) :=
   SetLike.coe_injective <| l.closure_iSup_closure _
 #align lower_adjoint.closure_Union_closure LowerAdjoint.closure_iUnion_closure
 
 /- ./././Mathport/Syntax/Translate/Expr.lean:107:6: warning: expanding binder group (i j) -/
 /- ./././Mathport/Syntax/Translate/Expr.lean:107:6: warning: expanding binder group (i j) -/
 @[simp]
-theorem closure_iUnion₂_closure (f : ∀ i, κ i → α) :
+lemma closure_iUnion₂_closure (f : ∀ i, κ i → α) :
     l (⋃ (i) (j), l (f i j)) = l (⋃ (i) (j), f i j) :=
   SetLike.coe_injective <| l.closure_iSup₂_closure _
 #align lower_adjoint.closure_Union₂_closure LowerAdjoint.closure_iUnion₂_closure
@@ -567,7 +567,7 @@ def _root_.ClosureOperator.gi [PartialOrder α] (c : ClosureOperator α) :
 operator.
 Note that the inverse in the opposite direction does not hold in general. -/
 @[simp]
-theorem closureOperator_gi_self [PartialOrder α] (c : ClosureOperator α) :
+lemma closureOperator_gi_self [PartialOrder α] (c : ClosureOperator α) :
     c.gi.gc.closureOperator = c := by
   ext x
   rfl

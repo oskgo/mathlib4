@@ -42,7 +42,7 @@ def dualProd : BilinForm R (Module.Dual R M × M) :=
           (LinearMap.fst R (Module.Dual R M) M)).flip
 #align bilin_form.dual_prod BilinForm.dualProd
 
-theorem isSymm_dualProd : (dualProd R M).IsSymm := fun _x _y => add_comm _ _
+lemma isSymm_dualProd : (dualProd R M).IsSymm := fun _x _y => add_comm _ _
 #align bilin_form.is_symm_dual_prod BilinForm.isSymm_dualProd
 
 end Semiring
@@ -51,7 +51,7 @@ section Ring
 
 variable [CommRing R] [AddCommGroup M] [Module R M]
 
-theorem nondenerate_dualProd :
+lemma nondenerate_dualProd :
     (dualProd R M).Nondegenerate ↔ Function.Injective (Module.Dual.eval R M) := by
   classical
   rw [nondegenerate_iff_ker_eq_bot]
@@ -102,7 +102,7 @@ def dualProd : QuadraticForm R (Module.Dual R M × M) where
 #align quadratic_form.dual_prod QuadraticForm.dualProd
 
 @[simp]
-theorem _root_.BilinForm.dualProd.toQuadraticForm :
+lemma _root_.BilinForm.dualProd.toQuadraticForm :
     (BilinForm.dualProd R M).toQuadraticForm = 2 • dualProd R M :=
   ext fun _a => (two_nsmul _).symm
 #align bilin_form.dual_prod.to_quadratic_form BilinForm.dualProd.toQuadraticForm

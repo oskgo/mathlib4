@@ -126,13 +126,13 @@ instance {X : Profinite} : T2Space ((forget Profinite).obj X) := by
 
 -- Porting note: have changed statement as the original LHS simplified.
 @[simp]
-theorem coe_id (X : Profinite) : (𝟙 ((forget Profinite).obj X)) = id :=
+lemma coe_id (X : Profinite) : (𝟙 ((forget Profinite).obj X)) = id :=
   rfl
 #align Profinite.coe_id Profinite.coe_id
 
 -- Porting note: have changed statement as the original LHS simplified.
 @[simp]
-theorem coe_comp {X Y Z : Profinite} (f : X ⟶ Y) (g : Y ⟶ Z) :
+lemma coe_comp {X Y Z : Profinite} (f : X ⟶ Y) (g : Y ⟶ Z) :
     ((forget Profinite).map f ≫ (forget Profinite).map g) = g ∘ f :=
   rfl
 #align Profinite.coe_comp Profinite.coe_comp
@@ -173,7 +173,7 @@ instance : Faithful Profinite.toTopCat :=
 show Faithful <| inducedFunctor _ from inferInstance
 
 @[simp]
-theorem Profinite.to_compHausToTopCat :
+lemma Profinite.to_compHausToTopCat :
     profiniteToCompHaus ⋙ compHausToTop = Profinite.toTopCat :=
   rfl
 #align Profinite.to_CompHaus_to_Top Profinite.to_compHausToTopCat
@@ -215,7 +215,7 @@ def CompHaus.toProfinite : CompHaus ⥤ Profinite :=
   Adjunction.leftAdjointOfEquiv Profinite.toCompHausEquivalence fun _ _ _ _ _ => rfl
 #align CompHaus.to_Profinite CompHaus.toProfinite
 
-theorem CompHaus.toProfinite_obj' (X : CompHaus) :
+lemma CompHaus.toProfinite_obj' (X : CompHaus) :
     ↥(CompHaus.toProfinite.obj X) = ConnectedComponents X :=
   rfl
 #align CompHaus.to_Profinite_obj' CompHaus.toProfinite_obj'
@@ -228,7 +228,7 @@ section DiscreteTopology
 
 attribute [local instance] FintypeCat.botTopology
 
-theorem FintypeCat.discreteTopology (A : FintypeCat) : DiscreteTopology A :=
+lemma FintypeCat.discreteTopology (A : FintypeCat) : DiscreteTopology A :=
   ⟨rfl⟩
 #align Fintype.discrete_topology FintypeCat.discreteTopology
 
@@ -313,12 +313,12 @@ noncomputable instance forgetPreservesLimits : Limits.PreservesLimits (forget Pr
 variable {X Y : Profinite.{u}} (f : X ⟶ Y)
 
 /-- Any morphism of profinite spaces is a closed map. -/
-theorem isClosedMap : IsClosedMap f :=
+lemma isClosedMap : IsClosedMap f :=
   CompHaus.isClosedMap _
 #align Profinite.is_closed_map Profinite.isClosedMap
 
 /-- Any continuous bijection of profinite spaces induces an isomorphism. -/
-theorem isIso_of_bijective (bij : Function.Bijective f) : IsIso f :=
+lemma isIso_of_bijective (bij : Function.Bijective f) : IsIso f :=
   haveI := CompHaus.isIso_of_bijective (profiniteToCompHaus.map f) bij
   isIso_of_fully_faithful profiniteToCompHaus _
 #align Profinite.is_iso_of_bijective Profinite.isIso_of_bijective
@@ -359,7 +359,7 @@ def isoEquivHomeo : (X ≅ Y) ≃ (X ≃ₜ Y) where
   right_inv f := by ext; rfl
 #align Profinite.iso_equiv_homeo Profinite.isoEquivHomeo
 
-theorem epi_iff_surjective {X Y : Profinite.{u}} (f : X ⟶ Y) : Epi f ↔ Function.Surjective f := by
+lemma epi_iff_surjective {X Y : Profinite.{u}} (f : X ⟶ Y) : Epi f ↔ Function.Surjective f := by
   constructor
   · -- Porting note: in mathlib3 `contrapose` saw through `Function.Surjective`.
     dsimp [Function.Surjective]
@@ -402,7 +402,7 @@ instance {X Y : Profinite} (f : X ⟶ Y) [Epi f] : @Epi CompHaus _ _ _ f := by
 instance {X Y : Profinite} (f : X ⟶ Y) [@Epi CompHaus _ _ _ f] : Epi f := by
   rwa [epi_iff_surjective, ← CompHaus.epi_iff_surjective]
 
-theorem mono_iff_injective {X Y : Profinite.{u}} (f : X ⟶ Y) : Mono f ↔ Function.Injective f := by
+lemma mono_iff_injective {X Y : Profinite.{u}} (f : X ⟶ Y) : Mono f ↔ Function.Injective f := by
   constructor
   · intro h
     haveI : Limits.PreservesLimits profiniteToCompHaus := inferInstance

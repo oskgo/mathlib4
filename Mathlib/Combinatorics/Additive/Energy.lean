@@ -46,7 +46,7 @@ def multiplicativeEnergy (s t : Finset α) : ℕ :=
 #align finset.additive_energy Finset.additiveEnergy
 
 @[to_additive additiveEnergy_mono]
-theorem multiplicativeEnergy_mono (hs : s₁ ⊆ s₂) (ht : t₁ ⊆ t₂) :
+lemma multiplicativeEnergy_mono (hs : s₁ ⊆ s₂) (ht : t₁ ⊆ t₂) :
     multiplicativeEnergy s₁ t₁ ≤ multiplicativeEnergy s₂ t₂ :=
   card_le_of_subset <|
     filter_subset_filter _ <|
@@ -55,21 +55,21 @@ theorem multiplicativeEnergy_mono (hs : s₁ ⊆ s₂) (ht : t₁ ⊆ t₂) :
 #align finset.additive_energy_mono Finset.additiveEnergy_mono
 
 @[to_additive additiveEnergy_mono_left]
-theorem multiplicativeEnergy_mono_left (hs : s₁ ⊆ s₂) :
+lemma multiplicativeEnergy_mono_left (hs : s₁ ⊆ s₂) :
     multiplicativeEnergy s₁ t ≤ multiplicativeEnergy s₂ t :=
   multiplicativeEnergy_mono hs Subset.rfl
 #align finset.multiplicative_energy_mono_left Finset.multiplicativeEnergy_mono_left
 #align finset.additive_energy_mono_left Finset.additiveEnergy_mono_left
 
 @[to_additive additiveEnergy_mono_right]
-theorem multiplicativeEnergy_mono_right (ht : t₁ ⊆ t₂) :
+lemma multiplicativeEnergy_mono_right (ht : t₁ ⊆ t₂) :
     multiplicativeEnergy s t₁ ≤ multiplicativeEnergy s t₂ :=
   multiplicativeEnergy_mono Subset.rfl ht
 #align finset.multiplicative_energy_mono_right Finset.multiplicativeEnergy_mono_right
 #align finset.additive_energy_mono_right Finset.additiveEnergy_mono_right
 
 @[to_additive le_additiveEnergy]
-theorem le_multiplicativeEnergy : s.card * t.card ≤ multiplicativeEnergy s t := by
+lemma le_multiplicativeEnergy : s.card * t.card ≤ multiplicativeEnergy s t := by
   rw [← card_product]
   refine'
     card_le_card_of_inj_on (@fun x => ((x.1, x.1), x.2, x.2)) (by
@@ -82,7 +82,7 @@ theorem le_multiplicativeEnergy : s.card * t.card ≤ multiplicativeEnergy s t :
 #align finset.le_additive_energy Finset.le_additiveEnergy
 
 @[to_additive additiveEnergy_pos]
-theorem multiplicativeEnergy_pos (hs : s.Nonempty) (ht : t.Nonempty) :
+lemma multiplicativeEnergy_pos (hs : s.Nonempty) (ht : t.Nonempty) :
     0 < multiplicativeEnergy s t :=
   (mul_pos hs.card_pos ht.card_pos).trans_le le_multiplicativeEnergy
 #align finset.multiplicative_energy_pos Finset.multiplicativeEnergy_pos
@@ -91,13 +91,13 @@ theorem multiplicativeEnergy_pos (hs : s.Nonempty) (ht : t.Nonempty) :
 variable (s t)
 
 @[to_additive (attr := simp) additiveEnergy_empty_left]
-theorem multiplicativeEnergy_empty_left : multiplicativeEnergy ∅ t = 0 := by
+lemma multiplicativeEnergy_empty_left : multiplicativeEnergy ∅ t = 0 := by
   simp [multiplicativeEnergy]
 #align finset.multiplicative_energy_empty_left Finset.multiplicativeEnergy_empty_left
 #align finset.additive_energy_empty_left Finset.additiveEnergy_empty_left
 
 @[to_additive (attr := simp) additiveEnergy_empty_right]
-theorem multiplicativeEnergy_empty_right : multiplicativeEnergy s ∅ = 0 := by
+lemma multiplicativeEnergy_empty_right : multiplicativeEnergy s ∅ = 0 := by
   simp [multiplicativeEnergy]
 #align finset.multiplicative_energy_empty_right Finset.multiplicativeEnergy_empty_right
 #align finset.additive_energy_empty_right Finset.additiveEnergy_empty_right
@@ -105,7 +105,7 @@ theorem multiplicativeEnergy_empty_right : multiplicativeEnergy s ∅ = 0 := by
 variable {s t}
 
 @[to_additive (attr := simp) additiveEnergy_pos_iff]
-theorem multiplicativeEnergy_pos_iff : 0 < multiplicativeEnergy s t ↔ s.Nonempty ∧ t.Nonempty :=
+lemma multiplicativeEnergy_pos_iff : 0 < multiplicativeEnergy s t ↔ s.Nonempty ∧ t.Nonempty :=
   ⟨fun h =>
     of_not_not fun H => by
       simp_rw [not_and_or, not_nonempty_iff_eq_empty] at H
@@ -115,7 +115,7 @@ theorem multiplicativeEnergy_pos_iff : 0 < multiplicativeEnergy s t ↔ s.Nonemp
 #align finset.additive_energy_pos_iff Finset.additiveEnergy_pos_iff
 
 @[to_additive (attr := simp) additive_energy_eq_zero_iff]
-theorem multiplicativeEnergy_eq_zero_iff : multiplicativeEnergy s t = 0 ↔ s = ∅ ∨ t = ∅ := by
+lemma multiplicativeEnergy_eq_zero_iff : multiplicativeEnergy s t = 0 ↔ s = ∅ ∨ t = ∅ := by
   simp [← (Nat.zero_le _).not_gt_iff_eq, not_and_or, imp_iff_or_not, or_comm]
 #align finset.multiplicative_energy_eq_zero_iff Finset.multiplicativeEnergy_eq_zero_iff
 #align finset.additive_energy_eq_zero_iff Finset.additive_energy_eq_zero_iff
@@ -127,7 +127,7 @@ section CommMonoid
 variable [CommMonoid α]
 
 @[to_additive additiveEnergy_comm]
-theorem multiplicativeEnergy_comm (s t : Finset α) :
+lemma multiplicativeEnergy_comm (s t : Finset α) :
     multiplicativeEnergy s t = multiplicativeEnergy t s := by
   rw [multiplicativeEnergy, ← Finset.card_map (Equiv.prodComm _ _).toEmbedding, map_filter]
   simp [-Finset.card_map, eq_comm, multiplicativeEnergy, mul_comm, map_eq_image, Function.comp]
@@ -141,7 +141,7 @@ section CommGroup
 variable [CommGroup α] [Fintype α] (s t : Finset α)
 
 @[to_additive (attr := simp) additiveEnergy_univ_left]
-theorem multiplicativeEnergy_univ_left :
+lemma multiplicativeEnergy_univ_left :
     multiplicativeEnergy univ t = Fintype.card α * t.card ^ 2 := by
   simp only [multiplicativeEnergy, univ_product_univ, Fintype.card, sq, ← card_product]
   let f : α × α × α → (α × α) × α × α := fun x => ((x.1 * x.2.2, x.1 * x.2.1), x.2)
@@ -161,7 +161,7 @@ theorem multiplicativeEnergy_univ_left :
 #align finset.additive_energy_univ_left Finset.additiveEnergy_univ_left
 
 @[to_additive (attr := simp) additiveEnergy_univ_right]
-theorem multiplicativeEnergy_univ_right :
+lemma multiplicativeEnergy_univ_right :
     multiplicativeEnergy s univ = Fintype.card α * s.card ^ 2 := by
   rw [multiplicativeEnergy_comm, multiplicativeEnergy_univ_left]
 #align finset.multiplicative_energy_univ_right Finset.multiplicativeEnergy_univ_right

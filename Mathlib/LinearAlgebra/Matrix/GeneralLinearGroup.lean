@@ -94,12 +94,12 @@ def mkOfDetNeZero {K : Type*} [Field K] (A : Matrix n n K) (h : Matrix.det A ≠
   mk' A (invertibleOfNonzero h)
 #align matrix.general_linear_group.mk_of_det_ne_zero Matrix.GeneralLinearGroup.mkOfDetNeZero
 
-theorem ext_iff (A B : GL n R) : A = B ↔ ∀ i j, (A : Matrix n n R) i j = (B : Matrix n n R) i j :=
+lemma ext_iff (A B : GL n R) : A = B ↔ ∀ i j, (A : Matrix n n R) i j = (B : Matrix n n R) i j :=
   Units.ext_iff.trans Matrix.ext_iff.symm
 #align matrix.general_linear_group.ext_iff Matrix.GeneralLinearGroup.ext_iff
 
 /-- Not marked `@[ext]` as the `ext` tactic already solves this. -/
-theorem ext ⦃A B : GL n R⦄ (h : ∀ i j, (A : Matrix n n R) i j = (B : Matrix n n R) i j) : A = B :=
+lemma ext ⦃A B : GL n R⦄ (h : ∀ i j, (A : Matrix n n R) i j = (B : Matrix n n R) i j) : A = B :=
   Units.ext <| Matrix.ext h
 #align matrix.general_linear_group.ext Matrix.GeneralLinearGroup.ext
 
@@ -108,16 +108,16 @@ section CoeLemmas
 variable (A B : GL n R)
 
 @[simp]
-theorem coe_mul : ↑(A * B) = (↑A : Matrix n n R) * (↑B : Matrix n n R) :=
+lemma coe_mul : ↑(A * B) = (↑A : Matrix n n R) * (↑B : Matrix n n R) :=
   rfl
 #align matrix.general_linear_group.coe_mul Matrix.GeneralLinearGroup.coe_mul
 
 @[simp]
-theorem coe_one : ↑(1 : GL n R) = (1 : Matrix n n R) :=
+lemma coe_one : ↑(1 : GL n R) = (1 : Matrix n n R) :=
   rfl
 #align matrix.general_linear_group.coe_one Matrix.GeneralLinearGroup.coe_one
 
-theorem coe_inv : ↑A⁻¹ = (↑A : Matrix n n R)⁻¹ :=
+lemma coe_inv : ↑A⁻¹ = (↑A : Matrix n n R)⁻¹ :=
   letI := A.invertible
   invOf_eq_nonsing_inv (↑A : Matrix n n R)
 #align matrix.general_linear_group.coe_inv Matrix.GeneralLinearGroup.coe_inv
@@ -133,13 +133,13 @@ def toLinear : GeneralLinearGroup n R ≃* LinearMap.GeneralLinearGroup R (n →
 -- These `λ a b, _inst a b` terms also appear in the type of `A`, but simp doesn't get confused by
 -- them so for now we do not care.
 @[simp]
-theorem coe_toLinear : (@toLinear n ‹_› ‹_› _ _ A : (n → R) →ₗ[R] n → R) = Matrix.mulVecLin A :=
+lemma coe_toLinear : (@toLinear n ‹_› ‹_› _ _ A : (n → R) →ₗ[R] n → R) = Matrix.mulVecLin A :=
   rfl
 #align matrix.general_linear_group.coe_to_linear Matrix.GeneralLinearGroup.coe_toLinear
 
 -- Porting note: is inserting toLinearEquiv here correct?
 @[simp]
-theorem toLinear_apply (v : n → R) : (toLinear A).toLinearEquiv v = Matrix.mulVecLin (↑A) v :=
+lemma toLinear_apply (v : n → R) : (toLinear A).toLinearEquiv v = Matrix.mulVecLin (↑A) v :=
   rfl
 #align matrix.general_linear_group.to_linear_apply Matrix.GeneralLinearGroup.toLinear_apply
 
@@ -165,7 +165,7 @@ instance hasCoeToGeneralLinearGroup : Coe (SpecialLinearGroup n R) (GL n R) :=
 #align matrix.special_linear_group.has_coe_to_general_linear_group Matrix.SpecialLinearGroup.hasCoeToGeneralLinearGroup
 
 @[simp]
-theorem coeToGL_det (g : SpecialLinearGroup n R) :
+lemma coeToGL_det (g : SpecialLinearGroup n R) :
     Matrix.GeneralLinearGroup.det (g : GL n R) = 1 :=
   Units.ext g.prop
 set_option linter.uppercaseLean3 false in
@@ -191,12 +191,12 @@ set_option linter.uppercaseLean3 false in
 end
 
 @[simp]
-theorem mem_glpos (A : GL n R) : A ∈ GLPos n R ↔ 0 < (Matrix.GeneralLinearGroup.det A : R) :=
+lemma mem_glpos (A : GL n R) : A ∈ GLPos n R ↔ 0 < (Matrix.GeneralLinearGroup.det A : R) :=
   Iff.rfl
 set_option linter.uppercaseLean3 false in
 #align matrix.mem_GL_pos Matrix.mem_glpos
 
-theorem GLPos.det_ne_zero (A : GLPos n R) : ((A : GL n R) : Matrix n n R).det ≠ 0 :=
+lemma GLPos.det_ne_zero (A : GLPos n R) : ((A : GL n R) : Matrix n n R).det ≠ 0 :=
   ne_of_gt A.prop
 set_option linter.uppercaseLean3 false in
 #align matrix.GL_pos.det_ne_zero Matrix.GLPos.det_ne_zero
@@ -218,19 +218,19 @@ instance : Neg (GLPos n R) :=
       exact g.prop⟩⟩
 
 @[simp]
-theorem GLPos.coe_neg_GL (g : GLPos n R) : ↑(-g) = -(g : GL n R) :=
+lemma GLPos.coe_neg_GL (g : GLPos n R) : ↑(-g) = -(g : GL n R) :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align matrix.GL_pos.coe_neg_GL Matrix.GLPos.coe_neg_GL
 
 @[simp]
-theorem GLPos.coe_neg (g : GLPos n R) : (↑(-g) : GL n R) = -((g : GL n R) : Matrix n n R) :=
+lemma GLPos.coe_neg (g : GLPos n R) : (↑(-g) : GL n R) = -((g : GL n R) : Matrix n n R) :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align matrix.GL_pos.coe_neg Matrix.GLPos.coe_neg
 
 @[simp]
-theorem GLPos.coe_neg_apply (g : GLPos n R) (i j : n) :
+lemma GLPos.coe_neg_apply (g : GLPos n R) (i j : n) :
     ((↑(-g) : GL n R) : Matrix n n R) i j = -((g : GL n R) : Matrix n n R) i j :=
   rfl
 set_option linter.uppercaseLean3 false in
@@ -258,7 +258,7 @@ instance : Coe (SpecialLinearGroup n R) (GLPos n R) :=
 
 #noalign matrix.special_linear_group.coe_eq_to_GL_pos
 
-theorem toGLPos_injective : Function.Injective (toGLPos : SpecialLinearGroup n R → GLPos n R) :=
+lemma toGLPos_injective : Function.Injective (toGLPos : SpecialLinearGroup n R → GLPos n R) :=
   -- Porting note: had to rewrite this to hint the correct types to Lean
   -- (It can't find the coercion GLPos n R → Matrix n n R)
   Function.Injective.of_comp
@@ -271,14 +271,14 @@ set_option linter.uppercaseLean3 false in
 /-- Coercing a `Matrix.SpecialLinearGroup` via `GL_pos` and `GL` is the same as coercing straight to
 a matrix. -/
 @[simp]
-theorem coe_GLPos_coe_GL_coe_matrix (g : SpecialLinearGroup n R) :
+lemma coe_GLPos_coe_GL_coe_matrix (g : SpecialLinearGroup n R) :
     (↑(↑(↑g : GLPos n R) : GL n R) : Matrix n n R) = ↑g :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align matrix.special_linear_group.coe_GL_pos_coe_GL_coe_matrix Matrix.SpecialLinearGroup.coe_GLPos_coe_GL_coe_matrix
 
 @[simp]
-theorem coe_to_GLPos_to_GL_det (g : SpecialLinearGroup n R) :
+lemma coe_to_GLPos_to_GL_det (g : SpecialLinearGroup n R) :
     Matrix.GeneralLinearGroup.det ((g : GLPos n R) : GL n R) = 1 :=
   Units.ext g.prop
 set_option linter.uppercaseLean3 false in
@@ -287,7 +287,7 @@ set_option linter.uppercaseLean3 false in
 variable [Fact (Even (Fintype.card n))]
 
 @[norm_cast]
-theorem coe_GLPos_neg (g : SpecialLinearGroup n R) : ↑(-g) = -(↑g : GLPos n R) :=
+lemma coe_GLPos_neg (g : SpecialLinearGroup n R) : ↑(-g) = -(↑g : GLPos n R) :=
   Subtype.ext <| Units.ext rfl
 set_option linter.uppercaseLean3 false in
 #align matrix.special_linear_group.coe_GL_pos_neg Matrix.SpecialLinearGroup.coe_GLPos_neg

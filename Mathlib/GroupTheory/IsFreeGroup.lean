@@ -77,7 +77,7 @@ def of : Generators G → G :=
 #align is_free_group.of IsFreeGroup.of
 
 @[simp]
-theorem of_eq_freeGroup_of {A : Type u} : @of (FreeGroup A) _ _ = FreeGroup.of :=
+lemma of_eq_freeGroup_of {A : Type u} : @of (FreeGroup A) _ _ = FreeGroup.of :=
   rfl
 #align is_free_group.of_eq_free_group_of IsFreeGroup.of_eq_freeGroup_of
 
@@ -98,23 +98,23 @@ def lift : (Generators G → H) ≃ (G →* H) :=
 #align is_free_group.lift IsFreeGroup.lift
 
 @[simp]
-theorem lift'_eq_freeGroup_lift {A : Type u} : @lift (FreeGroup A) _ _ H _ = FreeGroup.lift :=
+lemma lift'_eq_freeGroup_lift {A : Type u} : @lift (FreeGroup A) _ _ H _ = FreeGroup.lift :=
   rfl
 #align is_free_group.lift'_eq_free_group_lift IsFreeGroup.lift'_eq_freeGroup_lift
 
 @[simp]
-theorem lift_of (f : Generators G → H) (a : Generators G) : lift f (of a) = f a :=
+lemma lift_of (f : Generators G → H) (a : Generators G) : lift f (of a) = f a :=
   congr_fun (lift.symm_apply_apply f) a
 #align is_free_group.lift_of IsFreeGroup.lift_of
 
 @[simp]
-theorem lift_symm_apply (f : G →* H) (a : Generators G) : (lift.symm f) a = f (of a) :=
+lemma lift_symm_apply (f : G →* H) (a : Generators G) : (lift.symm f) a = f (of a) :=
   rfl
 #align is_free_group.lift_symm_apply IsFreeGroup.lift_symm_apply
 
 @[ext 1050] --Porting note: increased priority, but deliberately less than for example
 --`FreeProduct.ext_hom`
-theorem ext_hom ⦃f g : G →* H⦄ (h : ∀ a : Generators G, f (of a) = g (of a)) : f = g :=
+lemma ext_hom ⦃f g : G →* H⦄ (h : ∀ a : Generators G, f (of a) = g (of a)) : f = g :=
   lift.symm.injective (funext h)
 #align is_free_group.ext_hom IsFreeGroup.ext_hom
 
@@ -123,7 +123,7 @@ group extends in a unique way to a homomorphism from `G`.
 
 Note that since `IsFreeGroup.lift` is expressed as a bijection, it already
 expresses the universal property.  -/
-theorem unique_lift (f : Generators G → H) : ∃! F : G →* H, ∀ a, F (of a) = f a := by
+lemma unique_lift (f : Generators G → H) : ∃! F : G →* H, ∀ a, F (of a) = f a := by
   simpa only [Function.funext_iff] using lift.symm.bijective.existsUnique f
 #align is_free_group.unique_lift IsFreeGroup.unique_lift
 

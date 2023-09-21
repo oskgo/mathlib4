@@ -212,7 +212,7 @@ end EffectiveEpiFamily
 section JointlySurjective
 
 /-- One direction of `Profinite.effectiveEpiFamily_tfae` -/
-theorem effectiveEpiFamily_of_jointly_surjective
+lemma effectiveEpiFamily_of_jointly_surjective
     {α : Type} [Fintype α] {B : Profinite}
     (X : α → Profinite) (π : (a : α) → (X a ⟶ B))
     (surj : ∀ b : B, ∃ (a : α) (x : X a), π a x = b) :
@@ -226,7 +226,7 @@ For a finite family of profinite spaces `π a : X a → B` the following are equ
 * the map `∐ π a ⟶ B` is an epimorphism
 * `π` is jointly surjective
 -/
-theorem effectiveEpiFamily_tfae {α : Type} [Fintype α] {B : Profinite}
+lemma effectiveEpiFamily_tfae {α : Type} [Fintype α] {B : Profinite}
     (X : α → Profinite) (π : (a : α) → (X a ⟶ B)) :
     TFAE [
       EffectiveEpiFamily X π,

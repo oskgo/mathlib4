@@ -135,7 +135,7 @@ instance [FreimanHomClass F A β n] : CoeTC F (A →*[n] β) :=
 
 
 @[to_additive]
-theorem map_prod_eq_map_prod [FreimanHomClass F A β n] (f : F) {s t : Multiset α}
+lemma map_prod_eq_map_prod [FreimanHomClass F A β n] (f : F) {s t : Multiset α}
     (hsA : ∀ ⦃x⦄, x ∈ s → x ∈ A) (htA : ∀ ⦃x⦄, x ∈ t → x ∈ A)
     (hs : Multiset.card s = n) (ht : Multiset.card t = n)
     (h : s.prod = t.prod) : (s.map f).prod = (t.map f).prod :=
@@ -144,7 +144,7 @@ theorem map_prod_eq_map_prod [FreimanHomClass F A β n] (f : F) {s t : Multiset 
 #align map_sum_eq_map_sum map_sum_eq_map_sum
 
 @[to_additive]
-theorem map_mul_map_eq_map_mul_map [FreimanHomClass F A β 2] (f : F) (ha : a ∈ A) (hb : b ∈ A)
+lemma map_mul_map_eq_map_mul_map [FreimanHomClass F A β 2] (f : F) (ha : a ∈ A) (hb : b ∈ A)
     (hc : c ∈ A) (hd : d ∈ A) (h : a * b = c * d) : f a * f b = f c * f d := by
   simp_rw [← prod_pair] at h ⊢
   refine' map_prod_eq_map_prod f _ _ (card_pair _ _) (card_pair _ _) h <;> simp [ha, hb, hc, hd]
@@ -179,19 +179,19 @@ initialize_simps_projections FreimanHom (toFun → apply)
 initialize_simps_projections AddFreimanHom (toFun → apply)
 
 @[to_additive (attr := simp)]
-theorem toFun_eq_coe (f : A →*[n] β) : f.toFun = f :=
+lemma toFun_eq_coe (f : A →*[n] β) : f.toFun = f :=
   rfl
 #align freiman_hom.to_fun_eq_coe FreimanHom.toFun_eq_coe
 #align add_freiman_hom.to_fun_eq_coe AddFreimanHom.toFun_eq_coe
 
 @[to_additive (attr := ext)]
-theorem ext ⦃f g : A →*[n] β⦄ (h : ∀ x, f x = g x) : f = g :=
+lemma ext ⦃f g : A →*[n] β⦄ (h : ∀ x, f x = g x) : f = g :=
   FunLike.ext f g h
 #align freiman_hom.ext FreimanHom.ext
 #align add_freiman_hom.ext AddFreimanHom.ext
 
 @[to_additive (attr := simp)]
-theorem coe_mk (f : α → β)
+lemma coe_mk (f : α → β)
     (h :
       ∀ s t : Multiset α,
         (∀ ⦃x⦄, x ∈ s → x ∈ A) →
@@ -204,7 +204,7 @@ theorem coe_mk (f : α → β)
 #align add_freiman_hom.coe_mk AddFreimanHom.coe_mk
 
 @[to_additive (attr := simp)]
-theorem mk_coe (f : A →*[n] β) (h) : mk f h = f :=
+lemma mk_coe (f : A →*[n] β) (h) : mk f h = f :=
   ext fun _ => rfl
 #align freiman_hom.mk_coe FreimanHom.mk_coe
 #align add_freiman_hom.mk_coe AddFreimanHom.mk_coe
@@ -233,53 +233,53 @@ protected def comp (f : B →*[n] γ) (g : A →*[n] β) (hAB : A.MapsTo g B) : 
 #align add_freiman_hom.comp AddFreimanHom.comp
 
 @[to_additive (attr := simp)]
-theorem coe_comp (f : B →*[n] γ) (g : A →*[n] β) {hfg} : ⇑(f.comp g hfg) = f ∘ g :=
+lemma coe_comp (f : B →*[n] γ) (g : A →*[n] β) {hfg} : ⇑(f.comp g hfg) = f ∘ g :=
   rfl
 #align freiman_hom.coe_comp FreimanHom.coe_comp
 #align add_freiman_hom.coe_comp AddFreimanHom.coe_comp
 
 @[to_additive]
-theorem comp_apply (f : B →*[n] γ) (g : A →*[n] β) {hfg} (x : α) : f.comp g hfg x = f (g x) :=
+lemma comp_apply (f : B →*[n] γ) (g : A →*[n] β) {hfg} (x : α) : f.comp g hfg x = f (g x) :=
   rfl
 #align freiman_hom.comp_apply FreimanHom.comp_apply
 #align add_freiman_hom.comp_apply AddFreimanHom.comp_apply
 
 @[to_additive]
-theorem comp_assoc (f : A →*[n] β) (g : B →*[n] γ) (h : C →*[n] δ) {hf hhg hgf}
+lemma comp_assoc (f : A →*[n] β) (g : B →*[n] γ) (h : C →*[n] δ) {hf hhg hgf}
     {hh : A.MapsTo (g.comp f hgf) C} : (h.comp g hhg).comp f hf = h.comp (g.comp f hgf) hh :=
   rfl
 #align freiman_hom.comp_assoc FreimanHom.comp_assoc
 #align add_freiman_hom.comp_assoc AddFreimanHom.comp_assoc
 
 @[to_additive (attr := simp)]
-theorem cancel_right {g₁ g₂ : B →*[n] γ} {f : A →*[n] β} (hf : Function.Surjective f) {hg₁ hg₂} :
+lemma cancel_right {g₁ g₂ : B →*[n] γ} {f : A →*[n] β} (hf : Function.Surjective f) {hg₁ hg₂} :
     g₁.comp f hg₁ = g₂.comp f hg₂ ↔ g₁ = g₂ :=
   ⟨fun h => ext <| hf.forall.2 <| FunLike.ext_iff.1 h, fun h => h ▸ rfl⟩
 #align freiman_hom.cancel_right FreimanHom.cancel_right
 #align add_freiman_hom.cancel_right AddFreimanHom.cancel_right
 
 @[to_additive]
-theorem cancel_right_on {g₁ g₂ : B →*[n] γ} {f : A →*[n] β} (hf : A.SurjOn f B) {hf'} :
+lemma cancel_right_on {g₁ g₂ : B →*[n] γ} {f : A →*[n] β} (hf : A.SurjOn f B) {hf'} :
     A.EqOn (g₁.comp f hf') (g₂.comp f hf') ↔ B.EqOn g₁ g₂ :=
   by simp [hf.cancel_right hf']
 #align freiman_hom.cancel_right_on FreimanHom.cancel_right_on
 #align add_freiman_hom.cancel_right_on AddFreimanHom.cancel_right_on
 
 @[to_additive]
-theorem cancel_left_on {g : B →*[n] γ} {f₁ f₂ : A →*[n] β} (hg : B.InjOn g) {hf₁ hf₂} :
+lemma cancel_left_on {g : B →*[n] γ} {f₁ f₂ : A →*[n] β} (hg : B.InjOn g) {hf₁ hf₂} :
     A.EqOn (g.comp f₁ hf₁) (g.comp f₂ hf₂) ↔ A.EqOn f₁ f₂ :=
   by simp [hg.cancel_left hf₁ hf₂]
 #align freiman_hom.cancel_left_on FreimanHom.cancel_left_on
 #align add_freiman_hom.cancel_left_on AddFreimanHom.cancel_left_on
 
 @[to_additive (attr := simp)]
-theorem comp_id (f : A →*[n] β) {hf} : f.comp (FreimanHom.id A n) hf = f :=
+lemma comp_id (f : A →*[n] β) {hf} : f.comp (FreimanHom.id A n) hf = f :=
   ext fun _ => rfl
 #align freiman_hom.comp_id FreimanHom.comp_id
 #align add_freiman_hom.comp_id AddFreimanHom.comp_id
 
 @[to_additive (attr := simp)]
-theorem id_comp (f : A →*[n] β) {hf} : (FreimanHom.id B n).comp f hf = f :=
+lemma id_comp (f : A →*[n] β) {hf} : (FreimanHom.id B n).comp f hf = f :=
   ext fun _ => rfl
 #align freiman_hom.id_comp FreimanHom.id_comp
 #align add_freiman_hom.id_comp AddFreimanHom.id_comp
@@ -294,13 +294,13 @@ def const (A : Set α) (n : ℕ) (b : β) : A →*[n] β where
 #align add_freiman_hom.const AddFreimanHom.const
 
 @[to_additive (attr := simp)]
-theorem const_apply (n : ℕ) (b : β) (x : α) : const A n b x = b :=
+lemma const_apply (n : ℕ) (b : β) (x : α) : const A n b x = b :=
   rfl
 #align freiman_hom.const_apply FreimanHom.const_apply
 #align add_freiman_hom.const_apply AddFreimanHom.const_apply
 
 @[to_additive (attr := simp)]
-theorem const_comp (n : ℕ) (c : γ) (f : A →*[n] β) {hf} : (const B n c).comp f hf = const A n c :=
+lemma const_comp (n : ℕ) (c : γ) (f : A →*[n] β) {hf} : (const B n c).comp f hf = const A n c :=
   rfl
 #align freiman_hom.const_comp FreimanHom.const_comp
 #align add_freiman_hom.const_comp AddFreimanHom.const_comp
@@ -311,13 +311,13 @@ instance : One (A →*[n] β) :=
   ⟨const A n 1⟩
 
 @[to_additive (attr := simp)]
-theorem one_apply (x : α) : (1 : A →*[n] β) x = 1 :=
+lemma one_apply (x : α) : (1 : A →*[n] β) x = 1 :=
   rfl
 #align freiman_hom.one_apply FreimanHom.one_apply
 #align add_freiman_hom.zero_apply AddFreimanHom.zero_apply
 
 @[to_additive (attr := simp)]
-theorem one_comp (f : A →*[n] β) {hf} : (1 : B →*[n] γ).comp f hf = 1 :=
+lemma one_comp (f : A →*[n] β) {hf} : (1 : B →*[n] γ).comp f hf = 1 :=
   rfl
 #align freiman_hom.one_comp FreimanHom.one_comp
 #align add_freiman_hom.zero_comp AddFreimanHom.zero_comp
@@ -337,13 +337,13 @@ instance : Mul (A →*[n] β) :=
           rw [map_prod_eq_map_prod g hsA htA hs ht h]}⟩
 
 @[to_additive (attr := simp)]
-theorem mul_apply (f g : A →*[n] β) (x : α) : (f * g) x = f x * g x :=
+lemma mul_apply (f g : A →*[n] β) (x : α) : (f * g) x = f x * g x :=
   rfl
 #align freiman_hom.mul_apply FreimanHom.mul_apply
 #align add_freiman_hom.add_apply AddFreimanHom.add_apply
 
 @[to_additive]
-theorem mul_comp (g₁ g₂ : B →*[n] γ) (f : A →*[n] β) {hg hg₁ hg₂} :
+lemma mul_comp (g₁ g₂ : B →*[n] γ) (f : A →*[n] β) {hg hg₁ hg₂} :
     (g₁ * g₂).comp f hg = g₁.comp f hg₁ * g₂.comp f hg₂ :=
   rfl
 #align freiman_hom.mul_comp FreimanHom.mul_comp
@@ -361,13 +361,13 @@ instance : Inv (A →*[n] G) :=
         rw [prod_map_inv, prod_map_inv, map_prod_eq_map_prod f hsA htA hs ht h] }⟩
 
 @[to_additive (attr := simp)]
-theorem inv_apply (f : A →*[n] G) (x : α) : f⁻¹ x = (f x)⁻¹ :=
+lemma inv_apply (f : A →*[n] G) (x : α) : f⁻¹ x = (f x)⁻¹ :=
   rfl
 #align freiman_hom.inv_apply FreimanHom.inv_apply
 #align add_freiman_hom.neg_apply AddFreimanHom.neg_apply
 
 @[to_additive (attr := simp)]
-theorem inv_comp (f : B →*[n] G) (g : A →*[n] β) {hf hf'} : f⁻¹.comp g hf = (f.comp g hf')⁻¹ :=
+lemma inv_comp (f : B →*[n] G) (g : A →*[n] β) {hf hf'} : f⁻¹.comp g hf = (f.comp g hf')⁻¹ :=
   ext fun _ => rfl
 #align freiman_hom.inv_comp FreimanHom.inv_comp
 #align add_freiman_hom.neg_comp AddFreimanHom.neg_comp
@@ -385,13 +385,13 @@ instance : Div (A →*[n] G) :=
           map_prod_eq_map_prod g hsA htA hs ht h] }⟩
 
 @[to_additive (attr := simp)]
-theorem div_apply (f g : A →*[n] G) (x : α) : (f / g) x = f x / g x :=
+lemma div_apply (f g : A →*[n] G) (x : α) : (f / g) x = f x / g x :=
   rfl
 #align freiman_hom.div_apply FreimanHom.div_apply
 #align add_freiman_hom.sub_apply AddFreimanHom.sub_apply
 
 @[to_additive (attr := simp)]
-theorem div_comp (f₁ f₂ : B →*[n] G) (g : A →*[n] β) {hf hf₁ hf₂} :
+lemma div_comp (f₁ f₂ : B →*[n] G) (g : A →*[n] β) {hf hf₁ hf₂} :
     (f₁ / f₂).comp g hf = f₁.comp g hf₁ / f₂.comp g hf₂ :=
   ext fun _ => rfl
 #align freiman_hom.div_comp FreimanHom.div_comp
@@ -469,13 +469,13 @@ def MonoidHom.toFreimanHom (A : Set α) (n : ℕ) (f : α →* β) : A →*[n] �
 #align add_monoid_hom.to_add_freiman_hom AddMonoidHom.toAddFreimanHom
 
 @[to_additive (attr := simp) toAddFreimanHom_coe]
-theorem MonoidHom.toFreimanHom_coe (f : α →* β) : (f.toFreimanHom A n : α → β) = f :=
+lemma MonoidHom.toFreimanHom_coe (f : α →* β) : (f.toFreimanHom A n : α → β) = f :=
   rfl
 #align monoid_hom.to_freiman_hom_coe MonoidHom.toFreimanHom_coe
 #align add_monoid_hom.to_freiman_hom_coe AddMonoidHom.toAddFreimanHom_coe
 
 @[to_additive AddMonoidHom.toAddFreimanHom_injective]
-theorem MonoidHom.toFreimanHom_injective :
+lemma MonoidHom.toFreimanHom_injective :
     Function.Injective (MonoidHom.toFreimanHom A n : (α →* β) → A →*[n] β) := fun f g h =>
    by rwa [toFreimanHom, toFreimanHom, FreimanHom.mk.injEq, FunLike.coe_fn_eq] at h
 #align monoid_hom.to_freiman_hom_injective MonoidHom.toFreimanHom_injective
@@ -488,7 +488,7 @@ section CancelCommMonoid
 variable [CommMonoid α] [CancelCommMonoid β] {A : Set α} {m n : ℕ}
 
 @[to_additive]
-theorem map_prod_eq_map_prod_of_le [FreimanHomClass F A β n] (f : F) {s t : Multiset α}
+lemma map_prod_eq_map_prod_of_le [FreimanHomClass F A β n] (f : F) {s t : Multiset α}
     (hsA : ∀ x ∈ s, x ∈ A) (htA : ∀ x ∈ t, x ∈ A)
     (hs : Multiset.card s = m) (ht : Multiset.card t = m)
     (hst : s.prod = t.prod) (h : m ≤ n) : (s.map f).prod = (t.map f).prod := by
@@ -535,7 +535,7 @@ def FreimanHom.toFreimanHom (h : m ≤ n) (f : A →*[n] β) : A →*[m] β wher
 @[to_additive AddFreimanHom.addFreimanHomClass_of_le
       "An additive `n`-Freiman homomorphism is
       also an additive `m`-Freiman homomorphism for any `m ≤ n`."]
-theorem FreimanHom.FreimanHomClass_of_le [FreimanHomClass F A β n] (h : m ≤ n) :
+lemma FreimanHom.FreimanHomClass_of_le [FreimanHomClass F A β n] (h : m ≤ n) :
     FreimanHomClass F A β m where
   map_prod_eq_map_prod' f _ _ hsA htA hs ht hst :=
     map_prod_eq_map_prod_of_le f hsA htA hs ht hst h
@@ -543,14 +543,14 @@ theorem FreimanHom.FreimanHomClass_of_le [FreimanHomClass F A β n] (h : m ≤ n
 #align add_freiman_hom.add_freiman_hom_class_of_le AddFreimanHom.addFreimanHomClass_of_le
 
 @[to_additive (attr := simp) AddFreimanHom.toAddFreimanHom_coe]
-theorem FreimanHom.toFreimanHom_coe (h : m ≤ n) (f : A →*[n] β) :
+lemma FreimanHom.toFreimanHom_coe (h : m ≤ n) (f : A →*[n] β) :
     (f.toFreimanHom h : α → β) = f :=
   rfl
 #align freiman_hom.to_freiman_hom_coe FreimanHom.toFreimanHom_coe
 #align add_freiman_hom.to_add_freiman_hom_coe AddFreimanHom.toAddFreimanHom_coe
 
 @[to_additive AddFreimanHom.toAddFreimanHom_injective]
-theorem FreimanHom.toFreimanHom_injective (h : m ≤ n) :
+lemma FreimanHom.toFreimanHom_injective (h : m ≤ n) :
     Function.Injective (FreimanHom.toFreimanHom h : (A →*[n] β) → A →*[m] β) := fun f g hfg =>
   FreimanHom.ext <| by convert FunLike.ext_iff.1 hfg using 0
 #align freiman_hom.to_freiman_hom_injective FreimanHom.toFreimanHom_injective

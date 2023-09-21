@@ -50,7 +50,7 @@ namespace Basis
 
 /-- Since `k` is redundant, it is not necessary to show `q₁.k = q₂.k` when showing `q₁ = q₂`. -/
 @[ext]
-protected theorem ext ⦃q₁ q₂ : Basis A c₁ c₂⦄ (hi : q₁.i = q₂.i) (hj : q₁.j = q₂.j) : q₁ = q₂ := by
+protected lemma ext ⦃q₁ q₂ : Basis A c₁ c₂⦄ (hi : q₁.i = q₂.i) (hj : q₁.j = q₂.j) : q₁ = q₂ := by
   cases q₁; rename_i q₁_i_mul_j _
   cases q₂; rename_i q₂_i_mul_j _
   congr
@@ -82,27 +82,27 @@ variable (q : Basis A c₁ c₂)
 attribute [simp] i_mul_i j_mul_j i_mul_j j_mul_i
 
 @[simp]
-theorem i_mul_k : q.i * q.k = c₁ • q.j := by
+lemma i_mul_k : q.i * q.k = c₁ • q.j := by
   rw [← i_mul_j, ← mul_assoc, i_mul_i, smul_mul_assoc, one_mul]
 #align quaternion_algebra.basis.i_mul_k QuaternionAlgebra.Basis.i_mul_k
 
 @[simp]
-theorem k_mul_i : q.k * q.i = -c₁ • q.j := by
+lemma k_mul_i : q.k * q.i = -c₁ • q.j := by
   rw [← i_mul_j, mul_assoc, j_mul_i, mul_neg, i_mul_k, neg_smul]
 #align quaternion_algebra.basis.k_mul_i QuaternionAlgebra.Basis.k_mul_i
 
 @[simp]
-theorem k_mul_j : q.k * q.j = c₂ • q.i := by
+lemma k_mul_j : q.k * q.j = c₂ • q.i := by
   rw [← i_mul_j, mul_assoc, j_mul_j, mul_smul_comm, mul_one]
 #align quaternion_algebra.basis.k_mul_j QuaternionAlgebra.Basis.k_mul_j
 
 @[simp]
-theorem j_mul_k : q.j * q.k = -c₂ • q.i := by
+lemma j_mul_k : q.j * q.k = -c₂ • q.i := by
   rw [← i_mul_j, ← mul_assoc, j_mul_i, neg_mul, k_mul_j, neg_smul]
 #align quaternion_algebra.basis.j_mul_k QuaternionAlgebra.Basis.j_mul_k
 
 @[simp]
-theorem k_mul_k : q.k * q.k = -((c₁ * c₂) • (1 : A)) := by
+lemma k_mul_k : q.k * q.k = -((c₁ * c₂) • (1 : A)) := by
   rw [← i_mul_j, mul_assoc, ← mul_assoc q.j _ _, j_mul_i, ← i_mul_j, ← mul_assoc, mul_neg, ←
     mul_assoc, i_mul_i, smul_mul_assoc, one_mul, neg_mul, smul_mul_assoc, j_mul_j, smul_smul]
 #align quaternion_algebra.basis.k_mul_k QuaternionAlgebra.Basis.k_mul_k
@@ -112,18 +112,18 @@ def lift (x : ℍ[R,c₁,c₂]) : A :=
   algebraMap R _ x.re + x.imI • q.i + x.imJ • q.j + x.imK • q.k
 #align quaternion_algebra.basis.lift QuaternionAlgebra.Basis.lift
 
-theorem lift_zero : q.lift (0 : ℍ[R,c₁,c₂]) = 0 := by simp [lift]
+lemma lift_zero : q.lift (0 : ℍ[R,c₁,c₂]) = 0 := by simp [lift]
 #align quaternion_algebra.basis.lift_zero QuaternionAlgebra.Basis.lift_zero
 
-theorem lift_one : q.lift (1 : ℍ[R,c₁,c₂]) = 1 := by simp [lift]
+lemma lift_one : q.lift (1 : ℍ[R,c₁,c₂]) = 1 := by simp [lift]
 #align quaternion_algebra.basis.lift_one QuaternionAlgebra.Basis.lift_one
 
-theorem lift_add (x y : ℍ[R,c₁,c₂]) : q.lift (x + y) = q.lift x + q.lift y := by
+lemma lift_add (x y : ℍ[R,c₁,c₂]) : q.lift (x + y) = q.lift x + q.lift y := by
   simp [lift, add_smul]
   abel
 #align quaternion_algebra.basis.lift_add QuaternionAlgebra.Basis.lift_add
 
-theorem lift_mul (x y : ℍ[R,c₁,c₂]) : q.lift (x * y) = q.lift x * q.lift y := by
+lemma lift_mul (x y : ℍ[R,c₁,c₂]) : q.lift (x * y) = q.lift x * q.lift y := by
   simp only [lift, Algebra.algebraMap_eq_smul_one]
   simp_rw [add_mul, mul_add, smul_mul_assoc, mul_smul_comm, one_mul, mul_one, smul_smul]
   simp only [i_mul_i, j_mul_j, i_mul_j, j_mul_i, i_mul_k, k_mul_i, k_mul_j, j_mul_k, k_mul_k]
@@ -136,7 +136,7 @@ theorem lift_mul (x y : ℍ[R,c₁,c₂]) : q.lift (x * y) = q.lift x * q.lift y
   abel
 #align quaternion_algebra.basis.lift_mul QuaternionAlgebra.Basis.lift_mul
 
-theorem lift_smul (r : R) (x : ℍ[R,c₁,c₂]) : q.lift (r • x) = r • q.lift x := by
+lemma lift_smul (r : R) (x : ℍ[R,c₁,c₂]) : q.lift (r • x) = r • q.lift x := by
   simp [lift, mul_smul, ← Algebra.smul_def]
 #align quaternion_algebra.basis.lift_smul QuaternionAlgebra.Basis.lift_smul
 

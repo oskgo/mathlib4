@@ -60,37 +60,37 @@ def multicospanComp : (S.index (P ⋙ F)).multicospan ≅ (S.index P).multicospa
 #align category_theory.grothendieck_topology.cover.multicospan_comp CategoryTheory.GrothendieckTopology.Cover.multicospanComp
 
 @[simp]
-theorem multicospanComp_app_left (a) :
+lemma multicospanComp_app_left (a) :
     (S.multicospanComp F P).app (WalkingMulticospan.left a) = eqToIso rfl :=
   rfl
 #align category_theory.grothendieck_topology.cover.multicospan_comp_app_left CategoryTheory.GrothendieckTopology.Cover.multicospanComp_app_left
 
 @[simp]
-theorem multicospanComp_app_right (b) :
+lemma multicospanComp_app_right (b) :
     (S.multicospanComp F P).app (WalkingMulticospan.right b) = eqToIso rfl :=
   rfl
 #align category_theory.grothendieck_topology.cover.multicospan_comp_app_right CategoryTheory.GrothendieckTopology.Cover.multicospanComp_app_right
 
 @[simp]
-theorem multicospanComp_hom_app_left (a) :
+lemma multicospanComp_hom_app_left (a) :
     (S.multicospanComp F P).hom.app (WalkingMulticospan.left a) = eqToHom rfl :=
   rfl
 #align category_theory.grothendieck_topology.cover.multicospan_comp_hom_app_left CategoryTheory.GrothendieckTopology.Cover.multicospanComp_hom_app_left
 
 @[simp]
-theorem multicospanComp_hom_app_right (b) :
+lemma multicospanComp_hom_app_right (b) :
     (S.multicospanComp F P).hom.app (WalkingMulticospan.right b) = eqToHom rfl :=
   rfl
 #align category_theory.grothendieck_topology.cover.multicospan_comp_hom_app_right CategoryTheory.GrothendieckTopology.Cover.multicospanComp_hom_app_right
 
 @[simp]
-theorem multicospanComp_hom_inv_left (P : Cᵒᵖ ⥤ A) {X : C} (S : J.Cover X) (a) :
+lemma multicospanComp_hom_inv_left (P : Cᵒᵖ ⥤ A) {X : C} (S : J.Cover X) (a) :
     (S.multicospanComp F P).inv.app (WalkingMulticospan.left a) = eqToHom rfl :=
   rfl
 #align category_theory.grothendieck_topology.cover.multicospan_comp_hom_inv_left CategoryTheory.GrothendieckTopology.Cover.multicospanComp_hom_inv_left
 
 @[simp]
-theorem multicospanComp_hom_inv_right (P : Cᵒᵖ ⥤ A) {X : C} (S : J.Cover X) (b) :
+lemma multicospanComp_hom_inv_right (P : Cᵒᵖ ⥤ A) {X : C} (S : J.Cover X) (b) :
     (S.multicospanComp F P).inv.app (WalkingMulticospan.right b) = eqToHom rfl :=
   rfl
 #align category_theory.grothendieck_topology.cover.multicospan_comp_hom_inv_right CategoryTheory.GrothendieckTopology.Cover.multicospanComp_hom_inv_right
@@ -118,7 +118,7 @@ variable [∀ (X : C) (S : J.Cover X) (P : Cᵒᵖ ⥤ A), PreservesLimit (S.ind
 variable [∀ (X : C) (S : J.Cover X) (P : Cᵒᵖ ⥤ A), PreservesLimit (S.index P).multicospan G]
 variable [∀ (X : C) (S : J.Cover X) (P : Cᵒᵖ ⥤ A), PreservesLimit (S.index P).multicospan H]
 
-theorem Presheaf.IsSheaf.comp {P : Cᵒᵖ ⥤ A} (hP : Presheaf.IsSheaf J P) :
+lemma Presheaf.IsSheaf.comp {P : Cᵒᵖ ⥤ A} (hP : Presheaf.IsSheaf J P) :
     Presheaf.IsSheaf J (P ⋙ F) := by
   rw [Presheaf.isSheaf_iff_multifork] at hP ⊢
   intro X S

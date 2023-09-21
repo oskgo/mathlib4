@@ -54,11 +54,11 @@ class Simple (X : C) : Prop where
 #align category_theory.simple CategoryTheory.Simple
 
 /-- A nonzero monomorphism to a simple object is an isomorphism. -/
-theorem isIso_of_mono_of_nonzero {X Y : C} [Simple Y] {f : X ⟶ Y} [Mono f] (w : f ≠ 0) : IsIso f :=
+lemma isIso_of_mono_of_nonzero {X Y : C} [Simple Y] {f : X ⟶ Y} [Mono f] (w : f ≠ 0) : IsIso f :=
   (Simple.mono_isIso_iff_nonzero f).mpr w
 #align category_theory.is_iso_of_mono_of_nonzero CategoryTheory.isIso_of_mono_of_nonzero
 
-theorem Simple.of_iso {X Y : C} [Simple Y] (i : X ≅ Y) : Simple X :=
+lemma Simple.of_iso {X Y : C} [Simple Y] (i : X ≅ Y) : Simple X :=
   { mono_isIso_iff_nonzero := fun f m => by
       haveI : Mono (f ≫ i.hom) := mono_comp _ _
       constructor
@@ -78,11 +78,11 @@ theorem Simple.of_iso {X Y : C} [Simple Y] (i : X ≅ Y) : Simple X :=
         infer_instance }
 #align category_theory.simple.of_iso CategoryTheory.Simple.of_iso
 
-theorem Simple.iff_of_iso {X Y : C} (i : X ≅ Y) : Simple X ↔ Simple Y :=
+lemma Simple.iff_of_iso {X Y : C} (i : X ≅ Y) : Simple X ↔ Simple Y :=
   ⟨fun _ => Simple.of_iso i.symm, fun _ => Simple.of_iso i⟩
 #align category_theory.simple.iff_of_iso CategoryTheory.Simple.iff_of_iso
 
-theorem kernel_zero_of_nonzero_from_simple {X Y : C} [Simple X] {f : X ⟶ Y} [HasKernel f]
+lemma kernel_zero_of_nonzero_from_simple {X Y : C} [Simple X] {f : X ⟶ Y} [HasKernel f]
     (w : f ≠ 0) : kernel.ι f = 0 := by
   classical
     by_contra h
@@ -94,21 +94,21 @@ theorem kernel_zero_of_nonzero_from_simple {X Y : C} [Simple X] {f : X ⟶ Y} [H
 /-- A nonzero morphism `f` to a simple object is an epimorphism
 (assuming `f` has an image, and `C` has equalizers).
 -/
-theorem epi_of_nonzero_to_simple [HasEqualizers C] {X Y : C} [Simple Y] {f : X ⟶ Y} [HasImage f]
+lemma epi_of_nonzero_to_simple [HasEqualizers C] {X Y : C} [Simple Y] {f : X ⟶ Y} [HasImage f]
     (w : f ≠ 0) : Epi f := by
   rw [← image.fac f]
   haveI : IsIso (image.ι f) := isIso_of_mono_of_nonzero fun h => w (eq_zero_of_image_eq_zero h)
   apply epi_comp
 #align category_theory.epi_of_nonzero_to_simple CategoryTheory.epi_of_nonzero_to_simple
 
-theorem mono_to_simple_zero_of_not_iso {X Y : C} [Simple Y] {f : X ⟶ Y} [Mono f]
+lemma mono_to_simple_zero_of_not_iso {X Y : C} [Simple Y] {f : X ⟶ Y} [Mono f]
     (w : IsIso f → False) : f = 0 := by
   classical
     by_contra h
     exact w (isIso_of_mono_of_nonzero h)
 #align category_theory.mono_to_simple_zero_of_not_iso CategoryTheory.mono_to_simple_zero_of_not_iso
 
-theorem id_nonzero (X : C) [Simple.{v} X] : 𝟙 X ≠ 0 :=
+lemma id_nonzero (X : C) [Simple.{v} X] : 𝟙 X ≠ 0 :=
   (Simple.mono_isIso_iff_nonzero (𝟙 X)).mp (by infer_instance)
 #align category_theory.id_nonzero CategoryTheory.id_nonzero
 
@@ -117,7 +117,7 @@ instance (X : C) [Simple.{v} X] : Nontrivial (End X) :=
 
 section
 
-theorem Simple.not_isZero (X : C) [Simple X] : ¬IsZero X := by
+lemma Simple.not_isZero (X : C) [Simple X] : ¬IsZero X := by
   simpa [Limits.IsZero.iff_id_eq_zero] using id_nonzero X
 #align category_theory.simple.not_is_zero CategoryTheory.Simple.not_isZero
 
@@ -128,7 +128,7 @@ open ZeroObject
 variable (C)
 
 /-- We don't want the definition of 'simple' to include the zero object, so we check that here. -/
-theorem zero_not_simple [Simple (0 : C)] : False :=
+lemma zero_not_simple [Simple (0 : C)] : False :=
   (Simple.mono_isIso_iff_nonzero (0 : (0 : C) ⟶ (0 : C))).mp ⟨⟨0, by aesop_cat⟩⟩ rfl
 #align category_theory.zero_not_simple CategoryTheory.zero_not_simple
 
@@ -143,7 +143,7 @@ variable [Abelian C]
 
 /-- In an abelian category, an object satisfying the dual of the definition of a simple object is
     simple. -/
-theorem simple_of_cosimple (X : C) (h : ∀ {Z : C} (f : X ⟶ Z) [Epi f], IsIso f ↔ f ≠ 0) :
+lemma simple_of_cosimple (X : C) (h : ∀ {Z : C} (f : X ⟶ Z) [Epi f], IsIso f ↔ f ≠ 0) :
     Simple X :=
   ⟨fun {Y} f I => by
     classical
@@ -161,14 +161,14 @@ theorem simple_of_cosimple (X : C) (h : ∀ {Z : C} (f : X ⟶ Z) [Epi f], IsIso
 #align category_theory.simple_of_cosimple CategoryTheory.simple_of_cosimple
 
 /-- A nonzero epimorphism from a simple object is an isomorphism. -/
-theorem isIso_of_epi_of_nonzero {X Y : C} [Simple X] {f : X ⟶ Y} [Epi f] (w : f ≠ 0) : IsIso f :=
+lemma isIso_of_epi_of_nonzero {X Y : C} [Simple X] {f : X ⟶ Y} [Epi f] (w : f ≠ 0) : IsIso f :=
   -- `f ≠ 0` means that `kernel.ι f` is not an iso, and hence zero, and hence `f` is a mono.
   haveI : Mono f :=
     Preadditive.mono_of_kernel_zero (mono_to_simple_zero_of_not_iso (kernel_not_iso_of_nonzero w))
   isIso_of_mono_of_epi f
 #align category_theory.is_iso_of_epi_of_nonzero CategoryTheory.isIso_of_epi_of_nonzero
 
-theorem cokernel_zero_of_nonzero_to_simple {X Y : C} [Simple Y] {f : X ⟶ Y} (w : f ≠ 0) :
+lemma cokernel_zero_of_nonzero_to_simple {X Y : C} [Simple Y] {f : X ⟶ Y} (w : f ≠ 0) :
     cokernel.π f = 0 := by
   classical
     by_contra h
@@ -176,7 +176,7 @@ theorem cokernel_zero_of_nonzero_to_simple {X Y : C} [Simple Y] {f : X ⟶ Y} (w
     exact w (eq_zero_of_mono_cokernel f)
 #align category_theory.cokernel_zero_of_nonzero_to_simple CategoryTheory.cokernel_zero_of_nonzero_to_simple
 
-theorem epi_from_simple_zero_of_not_iso {X Y : C} [Simple X] {f : X ⟶ Y} [Epi f]
+lemma epi_from_simple_zero_of_not_iso {X Y : C} [Simple X] {f : X ⟶ Y} [Epi f]
     (w : IsIso f → False) : f = 0 := by
   classical
     by_contra h
@@ -191,7 +191,7 @@ variable [Preadditive C] [HasBinaryBiproducts C]
 
 -- There are another three potential variations of this lemma,
 -- but as any one suffices to prove `indecomposable_of_simple` we will not give them all.
-theorem Biprod.isIso_inl_iff_isZero (X Y : C) : IsIso (biprod.inl : X ⟶ X ⊞ Y) ↔ IsZero Y := by
+lemma Biprod.isIso_inl_iff_isZero (X Y : C) : IsIso (biprod.inl : X ⟶ X ⊞ Y) ↔ IsZero Y := by
   rw [biprod.isIso_inl_iff_id_eq_fst_comp_inl, ← biprod.total, add_right_eq_self]
   constructor
   · intro h
@@ -203,7 +203,7 @@ theorem Biprod.isIso_inl_iff_isZero (X Y : C) : IsIso (biprod.inl : X ⟶ X ⊞ 
 #align category_theory.biprod.is_iso_inl_iff_is_zero CategoryTheory.Biprod.isIso_inl_iff_isZero
 
 /-- Any simple object in a preadditive category is indecomposable. -/
-theorem indecomposable_of_simple (X : C) [Simple X] : Indecomposable X :=
+lemma indecomposable_of_simple (X : C) [Simple X] : Indecomposable X :=
   ⟨Simple.not_isZero X, fun Y Z i => by
     refine' or_iff_not_imp_left.mpr fun h => _
     rw [IsZero.iff_isSplitMono_eq_zero (biprod.inl : Y ⟶ Y ⊞ Z)] at h
@@ -235,7 +235,7 @@ instance {X : C} [Simple X] : IsSimpleOrder (Subobject X) where
     · refine' Or.inr ((isIso_iff_mk_eq_top _).mp ((Simple.mono_isIso_iff_nonzero f).mpr h))
 
 /-- If `X` has subobject lattice `{⊥, ⊤}`, then `X` is simple. -/
-theorem simple_of_isSimpleOrder_subobject (X : C) [IsSimpleOrder (Subobject X)] : Simple X := by
+lemma simple_of_isSimpleOrder_subobject (X : C) [IsSimpleOrder (Subobject X)] : Simple X := by
   constructor; intros Y f hf; constructor
   · intro i
     rw [Subobject.isIso_iff_mk_eq_top] at i
@@ -250,7 +250,7 @@ theorem simple_of_isSimpleOrder_subobject (X : C) [IsSimpleOrder (Subobject X)] 
 #align category_theory.simple_of_is_simple_order_subobject CategoryTheory.simple_of_isSimpleOrder_subobject
 
 /-- `X` is simple iff it has subobject lattice `{⊥, ⊤}`. -/
-theorem simple_iff_subobject_isSimpleOrder (X : C) : Simple X ↔ IsSimpleOrder (Subobject X) :=
+lemma simple_iff_subobject_isSimpleOrder (X : C) : Simple X ↔ IsSimpleOrder (Subobject X) :=
   ⟨by
     intro h
     infer_instance, by
@@ -259,7 +259,7 @@ theorem simple_iff_subobject_isSimpleOrder (X : C) : Simple X ↔ IsSimpleOrder 
 #align category_theory.simple_iff_subobject_is_simple_order CategoryTheory.simple_iff_subobject_isSimpleOrder
 
 /-- A subobject is simple iff it is an atom in the subobject lattice. -/
-theorem subobject_simple_iff_isAtom {X : C} (Y : Subobject X) : Simple (Y : C) ↔ IsAtom Y :=
+lemma subobject_simple_iff_isAtom {X : C} (Y : Subobject X) : Simple (Y : C) ↔ IsAtom Y :=
   (simple_iff_subobject_isSimpleOrder _).trans
     ((OrderIso.isSimpleOrder_iff (subobjectOrderIso Y)).trans Set.isSimpleOrder_Iic_iff_isAtom)
 #align category_theory.subobject_simple_iff_is_atom CategoryTheory.subobject_simple_iff_isAtom

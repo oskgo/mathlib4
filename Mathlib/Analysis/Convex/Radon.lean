@@ -24,7 +24,7 @@ variable {ι 𝕜 E : Type*} [LinearOrderedField 𝕜] [AddCommGroup E] [Module 
 
 /-- **Radon theorem on convex sets**: Any family `f` of affine dependent vectors contains a set `I`
 with the property that convex hulls of `I` and `Iᶜ` intersect. -/
-theorem radon_partition (h : ¬ AffineIndependent 𝕜 f) :
+lemma radon_partition (h : ¬ AffineIndependent 𝕜 f) :
     ∃ I, (convexHull 𝕜 (f '' I) ∩ convexHull 𝕜 (f '' Iᶜ)).Nonempty := by
   rw [affineIndependent_iff] at h
   push_neg at h

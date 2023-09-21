@@ -59,7 +59,7 @@ instance AddGroup.uniformContinuousConstSMul_int [AddGroup X] [UniformAddGroup X
 /-- A `DistribMulAction` that is continuous on a uniform group is uniformly continuous.
 This can't be an instance due to it forming a loop with
 `UniformContinuousConstSMul.to_continuousConstSMul` -/
-theorem uniformContinuousConstSMul_of_continuousConstSMul [Monoid R] [AddCommGroup M]
+lemma uniformContinuousConstSMul_of_continuousConstSMul [Monoid R] [AddCommGroup M]
     [DistribMulAction R M] [UniformSpace M] [UniformAddGroup M] [ContinuousConstSMul R M] :
     UniformContinuousConstSMul R M :=
   ⟨fun r =>
@@ -93,7 +93,7 @@ instance (priority := 100) UniformContinuousConstSMul.to_continuousConstSMul
 variable {M X Y}
 
 @[to_additive]
-theorem UniformContinuous.const_smul [UniformContinuousConstSMul M X] {f : Y → X}
+lemma UniformContinuous.const_smul [UniformContinuousConstSMul M X] {f : Y → X}
     (hf : UniformContinuous f) (c : M) : UniformContinuous (c • f) :=
   (uniformContinuous_const_smul c).comp hf
 #align uniform_continuous.const_smul UniformContinuous.const_smul
@@ -142,7 +142,7 @@ noncomputable instance : SMul M (Completion X) :=
   ⟨fun c => Completion.map ((· • ·) c)⟩
 
 @[to_additive]
-theorem smul_def (c : M) (x : Completion X) : c • x = Completion.map (c • ·) x :=
+lemma smul_def (c : M) (x : Completion X) : c • x = Completion.map (c • ·) x :=
   rfl
 #align uniform_space.completion.smul_def UniformSpace.Completion.smul_def
 #align uniform_space.completion.vadd_def UniformSpace.Completion.vadd_def
@@ -180,7 +180,7 @@ variable {M X}
 variable [UniformContinuousConstSMul M X]
 
 @[to_additive (attr := simp, norm_cast)]
-theorem coe_smul (c : M) (x : X) : (↑(c • x) : Completion X) = c • (x : Completion X) :=
+lemma coe_smul (c : M) (x : X) : (↑(c • x) : Completion X) = c • (x : Completion X) :=
   (map_coe (uniformContinuous_const_smul c) x).symm
 #align uniform_space.completion.coe_smul UniformSpace.Completion.coe_smul
 #align uniform_space.completion.coe_vadd UniformSpace.Completion.coe_vadd

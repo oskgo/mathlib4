@@ -23,15 +23,15 @@ namespace Sum
 #align sum.forall Sum.forall
 #align sum.exists Sum.exists
 
-theorem exists_sum {γ : α ⊕ β → Sort*} (p : (∀ ab, γ ab) → Prop) :
+lemma exists_sum {γ : α ⊕ β → Sort*} (p : (∀ ab, γ ab) → Prop) :
     (∃ fab, p fab) ↔ (∃ fa fb, p (Sum.rec fa fb)) := by
   rw [← not_forall_not, forall_sum]
   simp
 
-theorem inl_injective : Function.Injective (inl : α → Sum α β) := fun _ _ ↦ inl.inj
+lemma inl_injective : Function.Injective (inl : α → Sum α β) := fun _ _ ↦ inl.inj
 #align sum.inl_injective Sum.inl_injective
 
-theorem inr_injective : Function.Injective (inr : β → Sum α β) := fun _ _ ↦ inr.inj
+lemma inr_injective : Function.Injective (inr : β → Sum α β) := fun _ _ ↦ inr.inj
 #align sum.inr_injective Sum.inr_injective
 
 section get
@@ -46,19 +46,19 @@ variable {x y : Sum α β}
 #align sum.get_left_eq_none_iff Sum.getLeft?_eq_none_iff
 #align sum.get_right_eq_none_iff Sum.getRight?_eq_none_iff
 
-theorem eq_left_iff_getLeft_eq {a : α} : x = inl a ↔ ∃ h, x.getLeft h = a := by
+lemma eq_left_iff_getLeft_eq {a : α} : x = inl a ↔ ∃ h, x.getLeft h = a := by
   cases x <;> simp
 
-theorem eq_right_iff_getRight_eq {b : β} : x = inr b ↔ ∃ h, x.getRight h = b := by
+lemma eq_right_iff_getRight_eq {b : β} : x = inr b ↔ ∃ h, x.getRight h = b := by
   cases x <;> simp
 
 #align sum.get_left_eq_some_iff Sum.getLeft?_eq_some_iff
 #align sum.get_right_eq_some_iff Sum.getRight?_eq_some_iff
 
-theorem getLeft_eq_getLeft? (h₁ : x.isLeft) (h₂ : x.getLeft?.isSome) :
+lemma getLeft_eq_getLeft? (h₁ : x.isLeft) (h₂ : x.getLeft?.isSome) :
     x.getLeft h₁ = x.getLeft?.get h₂ := by simp [← getLeft?_eq_some_iff]
 
-theorem getRight_eq_getRight? (h₁ : x.isRight) (h₂ : x.getRight?.isSome) :
+lemma getRight_eq_getRight? (h₁ : x.isRight) (h₂ : x.getRight?.isSome) :
     x.getRight h₁ = x.getRight?.get h₂ := by simp [← getRight?_eq_some_iff]
 
 #align sum.bnot_is_left Sum.bnot_isLeft
@@ -70,10 +70,10 @@ theorem getRight_eq_getRight? (h₁ : x.isRight) (h₂ : x.getRight?.isSome) :
 #align sum.is_left_iff Sum.isLeft_iff
 #align sum.is_right_iff Sum.isRight_iff
 
-@[simp] theorem isSome_getLeft?_iff_isLeft : x.getLeft?.isSome ↔ x.isLeft := by
+@[simp] lemma isSome_getLeft?_iff_isLeft : x.getLeft?.isSome ↔ x.isLeft := by
   rw [isLeft_iff, Option.isSome_iff_exists]; simp
 
-@[simp] theorem isSome_getRight?_iff_isRight : x.getRight?.isSome ↔ x.isRight := by
+@[simp] lemma isSome_getRight?_iff_isRight : x.getRight?.isSome ↔ x.isRight := by
   rw [isRight_iff, Option.isSome_iff_exists]; simp
 
 end get
@@ -106,59 +106,59 @@ end get
 open Function (update update_eq_iff update_comp_eq_of_injective update_comp_eq_of_forall_ne)
 
 @[simp]
-theorem update_elim_inl [DecidableEq α] [DecidableEq (Sum α β)] {f : α → γ} {g : β → γ} {i : α}
+lemma update_elim_inl [DecidableEq α] [DecidableEq (Sum α β)] {f : α → γ} {g : β → γ} {i : α}
     {x : γ} : update (Sum.elim f g) (inl i) x = Sum.elim (update f i x) g :=
   update_eq_iff.2 ⟨by simp, by simp (config := { contextual := true })⟩
 #align sum.update_elim_inl Sum.update_elim_inl
 
 @[simp]
-theorem update_elim_inr [DecidableEq β] [DecidableEq (Sum α β)] {f : α → γ} {g : β → γ} {i : β}
+lemma update_elim_inr [DecidableEq β] [DecidableEq (Sum α β)] {f : α → γ} {g : β → γ} {i : β}
     {x : γ} : update (Sum.elim f g) (inr i) x = Sum.elim f (update g i x) :=
   update_eq_iff.2 ⟨by simp, by simp (config := { contextual := true })⟩
 #align sum.update_elim_inr Sum.update_elim_inr
 
 @[simp]
-theorem update_inl_comp_inl [DecidableEq α] [DecidableEq (Sum α β)] {f : Sum α β → γ} {i : α}
+lemma update_inl_comp_inl [DecidableEq α] [DecidableEq (Sum α β)] {f : Sum α β → γ} {i : α}
     {x : γ} : update f (inl i) x ∘ inl = update (f ∘ inl) i x :=
   update_comp_eq_of_injective _ inl_injective _ _
 #align sum.update_inl_comp_inl Sum.update_inl_comp_inl
 
 @[simp]
-theorem update_inl_apply_inl [DecidableEq α] [DecidableEq (Sum α β)] {f : Sum α β → γ} {i j : α}
+lemma update_inl_apply_inl [DecidableEq α] [DecidableEq (Sum α β)] {f : Sum α β → γ} {i j : α}
     {x : γ} : update f (inl i) x (inl j) = update (f ∘ inl) i x j := by
   rw [← update_inl_comp_inl, Function.comp_apply]
 #align sum.update_inl_apply_inl Sum.update_inl_apply_inl
 
 @[simp]
-theorem update_inl_comp_inr [DecidableEq (Sum α β)] {f : Sum α β → γ} {i : α} {x : γ} :
+lemma update_inl_comp_inr [DecidableEq (Sum α β)] {f : Sum α β → γ} {i : α} {x : γ} :
     update f (inl i) x ∘ inr = f ∘ inr :=
   (update_comp_eq_of_forall_ne _ _) fun _ ↦ inr_ne_inl
 #align sum.update_inl_comp_inr Sum.update_inl_comp_inr
 
-theorem update_inl_apply_inr [DecidableEq (Sum α β)] {f : Sum α β → γ} {i : α} {j : β} {x : γ} :
+lemma update_inl_apply_inr [DecidableEq (Sum α β)] {f : Sum α β → γ} {i : α} {j : β} {x : γ} :
     update f (inl i) x (inr j) = f (inr j) :=
   Function.update_noteq inr_ne_inl _ _
 #align sum.update_inl_apply_inr Sum.update_inl_apply_inr
 
 @[simp]
-theorem update_inr_comp_inl [DecidableEq (Sum α β)] {f : Sum α β → γ} {i : β} {x : γ} :
+lemma update_inr_comp_inl [DecidableEq (Sum α β)] {f : Sum α β → γ} {i : β} {x : γ} :
     update f (inr i) x ∘ inl = f ∘ inl :=
   (update_comp_eq_of_forall_ne _ _) fun _ ↦ inl_ne_inr
 #align sum.update_inr_comp_inl Sum.update_inr_comp_inl
 
-theorem update_inr_apply_inl [DecidableEq (Sum α β)] {f : Sum α β → γ} {i : α} {j : β} {x : γ} :
+lemma update_inr_apply_inl [DecidableEq (Sum α β)] {f : Sum α β → γ} {i : α} {j : β} {x : γ} :
     update f (inr j) x (inl i) = f (inl i) :=
   Function.update_noteq inl_ne_inr _ _
 #align sum.update_inr_apply_inl Sum.update_inr_apply_inl
 
 @[simp]
-theorem update_inr_comp_inr [DecidableEq β] [DecidableEq (Sum α β)] {f : Sum α β → γ} {i : β}
+lemma update_inr_comp_inr [DecidableEq β] [DecidableEq (Sum α β)] {f : Sum α β → γ} {i : β}
     {x : γ} : update f (inr i) x ∘ inr = update (f ∘ inr) i x :=
   update_comp_eq_of_injective _ inr_injective _ _
 #align sum.update_inr_comp_inr Sum.update_inr_comp_inr
 
 @[simp]
-theorem update_inr_apply_inr [DecidableEq β] [DecidableEq (Sum α β)] {f : Sum α β → γ} {i j : β}
+lemma update_inr_apply_inr [DecidableEq β] [DecidableEq (Sum α β)] {f : Sum α β → γ} {i j : β}
     {x : γ} : update f (inr i) x (inr j) = update (f ∘ inr) i x j := by
   rw [← update_inr_comp_inr, Function.comp_apply]
 #align sum.update_inr_apply_inr Sum.update_inr_apply_inr
@@ -170,12 +170,12 @@ theorem update_inr_apply_inr [DecidableEq β] [DecidableEq (Sum α β)] {f : Sum
 #align sum.swap_swap_eq Sum.swap_swap_eq
 
 @[simp]
-theorem swap_leftInverse : Function.LeftInverse (@swap α β) swap :=
+lemma swap_leftInverse : Function.LeftInverse (@swap α β) swap :=
   swap_swap
 #align sum.swap_left_inverse Sum.swap_leftInverse
 
 @[simp]
-theorem swap_rightInverse : Function.RightInverse (@swap α β) swap :=
+lemma swap_rightInverse : Function.RightInverse (@swap α β) swap :=
   swap_swap
 #align sum.swap_right_inverse Sum.swap_rightInverse
 
@@ -224,7 +224,7 @@ open Sum
 
 namespace Function
 
-theorem Injective.sum_elim {f : α → γ} {g : β → γ} (hf : Injective f) (hg : Injective g)
+lemma Injective.sum_elim {f : α → γ} {g : β → γ} (hf : Injective f) (hg : Injective g)
     (hfg : ∀ a b, f a ≠ g b) : Injective (Sum.elim f g)
   | inl _, inl _, h => congr_arg inl <| hf h
   | inl _, inr _, h => (hfg _ _ h).elim
@@ -232,13 +232,13 @@ theorem Injective.sum_elim {f : α → γ} {g : β → γ} (hf : Injective f) (h
   | inr _, inr _, h => congr_arg inr <| hg h
 #align function.injective.sum_elim Function.Injective.sum_elim
 
-theorem Injective.sum_map {f : α → β} {g : α' → β'} (hf : Injective f) (hg : Injective g) :
+lemma Injective.sum_map {f : α → β} {g : α' → β'} (hf : Injective f) (hg : Injective g) :
     Injective (Sum.map f g)
   | inl _, inl _, h => congr_arg inl <| hf <| inl.inj h
   | inr _, inr _, h => congr_arg inr <| hg <| inr.inj h
 #align function.injective.sum_map Function.Injective.sum_map
 
-theorem Surjective.sum_map {f : α → β} {g : α' → β'} (hf : Surjective f) (hg : Surjective g) :
+lemma Surjective.sum_map {f : α → β} {g : α' → β'} (hf : Surjective f) (hg : Surjective g) :
     Surjective (Sum.map f g)
   | inl y =>
     let ⟨x, hx⟩ := hf y
@@ -248,7 +248,7 @@ theorem Surjective.sum_map {f : α → β} {g : α' → β'} (hf : Surjective f)
     ⟨inr x, congr_arg inr hx⟩
 #align function.surjective.sum_map Function.Surjective.sum_map
 
-theorem Bijective.sum_map {f : α → β} {g : α' → β'} (hf : Bijective f) (hg : Bijective g) :
+lemma Bijective.sum_map {f : α → β} {g : α' → β'} (hf : Bijective f) (hg : Bijective g) :
     Bijective (Sum.map f g) :=
   ⟨hf.injective.sum_map hg.injective, hf.surjective.sum_map hg.surjective⟩
 #align function.bijective.sum_map Function.Bijective.sum_map
@@ -260,7 +260,7 @@ namespace Sum
 open Function
 
 @[simp]
-theorem map_injective {f : α → γ} {g : β → δ} :
+lemma map_injective {f : α → γ} {g : β → δ} :
     Injective (Sum.map f g) ↔ Injective f ∧ Injective g :=
   ⟨fun h =>
     ⟨fun a₁ a₂ ha => inl_injective <| @h (inl a₁) (inl a₂) (congr_arg inl ha : _), fun b₁ b₂ hb =>
@@ -269,7 +269,7 @@ theorem map_injective {f : α → γ} {g : β → δ} :
 #align sum.map_injective Sum.map_injective
 
 @[simp]
-theorem map_surjective {f : α → γ} {g : β → δ} :
+lemma map_surjective {f : α → γ} {g : β → δ} :
     Surjective (Sum.map f g) ↔ Surjective f ∧ Surjective g :=
   ⟨ fun h => ⟨
       (fun c => by
@@ -284,7 +284,7 @@ theorem map_surjective {f : α → γ} {g : β → δ} :
 #align sum.map_surjective Sum.map_surjective
 
 @[simp]
-theorem map_bijective {f : α → γ} {g : β → δ} :
+lemma map_bijective {f : α → γ} {g : β → δ} :
     Bijective (Sum.map f g) ↔ Bijective f ∧ Bijective g :=
   (map_injective.and map_surjective).trans <| and_and_and_comm
 #align sum.map_bijective Sum.map_bijective
@@ -292,7 +292,7 @@ theorem map_bijective {f : α → γ} {g : β → δ} :
 #align sum.elim_const_const Sum.elim_const_const
 #align sum.elim_lam_const_lam_const Sum.elim_lam_const_lam_const
 
-theorem elim_update_left [DecidableEq α] [DecidableEq β] (f : α → γ) (g : β → γ) (i : α) (c : γ) :
+lemma elim_update_left [DecidableEq α] [DecidableEq β] (f : α → γ) (g : β → γ) (i : α) (c : γ) :
     Sum.elim (Function.update f i c) g = Function.update (Sum.elim f g) (inl i) c := by
   ext x
   rcases x with x | x
@@ -303,7 +303,7 @@ theorem elim_update_left [DecidableEq α] [DecidableEq β] (f : α → γ) (g : 
   · simp
 #align sum.elim_update_left Sum.elim_update_left
 
-theorem elim_update_right [DecidableEq α] [DecidableEq β] (f : α → γ) (g : β → γ) (i : β) (c : γ) :
+lemma elim_update_right [DecidableEq α] [DecidableEq β] (f : α → γ) (g : β → γ) (i : β) (c : γ) :
     Sum.elim f (Function.update g i c) = Function.update (Sum.elim f g) (inr i) c := by
   ext x
   rcases x with x | x

@@ -80,7 +80,7 @@ set_option linter.uppercaseLean3 false in
 #align homological_complex.single_obj_X_self HomologicalComplex.singleObjXSelf
 
 @[simp 1100]
-theorem single_map_f_self (j : ι) {A B : V} (f : A ⟶ B) :
+lemma single_map_f_self (j : ι) {A B : V} (f : A ⟶ B) :
     ((single V c j).map f).f j = (singleObjXSelf V c j A).hom ≫
       f ≫ (singleObjXSelf V c j B).inv := by simp
 #align homological_complex.single_map_f_self HomologicalComplex.single_map_f_self
@@ -142,32 +142,32 @@ def single₀ : V ⥤ ChainComplex V ℕ where
 #align chain_complex.single₀ ChainComplex.single₀
 
 @[simp]
-theorem single₀_obj_X_0 (X : V) : ((single₀ V).obj X).X 0 = X :=
+lemma single₀_obj_X_0 (X : V) : ((single₀ V).obj X).X 0 = X :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align chain_complex.single₀_obj_X_0 ChainComplex.single₀_obj_X_0
 
 @[simp]
-theorem single₀_obj_X_succ (X : V) (n : ℕ) : ((single₀ V).obj X).X (n + 1) = 0 :=
+lemma single₀_obj_X_succ (X : V) (n : ℕ) : ((single₀ V).obj X).X (n + 1) = 0 :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align chain_complex.single₀_obj_X_succ ChainComplex.single₀_obj_X_succ
 
 @[simp]
-theorem single₀_obj_X_d (X : V) (i j : ℕ) : ((single₀ V).obj X).d i j = 0 :=
+lemma single₀_obj_X_d (X : V) (i j : ℕ) : ((single₀ V).obj X).d i j = 0 :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align chain_complex.single₀_obj_X_d ChainComplex.single₀_obj_X_d
 
 @[simp]
-theorem single₀_obj_X_dTo (X : V) (j : ℕ) : ((single₀ V).obj X).dTo j = 0 := by
+lemma single₀_obj_X_dTo (X : V) (j : ℕ) : ((single₀ V).obj X).dTo j = 0 := by
   rw [dTo_eq ((single₀ V).obj X) rfl]
   simp
 set_option linter.uppercaseLean3 false in
 #align chain_complex.single₀_obj_X_d_to ChainComplex.single₀_obj_X_dTo
 
 @[simp]
-theorem single₀_obj_x_dFrom (X : V) (i : ℕ) : ((single₀ V).obj X).dFrom i = 0 := by
+lemma single₀_obj_x_dFrom (X : V) (i : ℕ) : ((single₀ V).obj X).dFrom i = 0 := by
   cases i
   · rw [dFrom_eq_zero]
     simp
@@ -177,12 +177,12 @@ set_option linter.uppercaseLean3 false in
 #align chain_complex.single₀_obj_X_d_from ChainComplex.single₀_obj_x_dFrom
 
 @[simp]
-theorem single₀_map_f_0 {X Y : V} (f : X ⟶ Y) : ((single₀ V).map f).f 0 = f :=
+lemma single₀_map_f_0 {X Y : V} (f : X ⟶ Y) : ((single₀ V).map f).f 0 = f :=
   rfl
 #align chain_complex.single₀_map_f_0 ChainComplex.single₀_map_f_0
 
 @[simp]
-theorem single₀_map_f_succ {X Y : V} (f : X ⟶ Y) (n : ℕ) : ((single₀ V).map f).f (n + 1) = 0 :=
+lemma single₀_map_f_succ {X Y : V} (f : X ⟶ Y) (n : ℕ) : ((single₀ V).map f).f (n + 1) = 0 :=
   rfl
 #align chain_complex.single₀_map_f_succ ChainComplex.single₀_map_f_succ
 
@@ -251,7 +251,7 @@ def toSingle₀Equiv (C : ChainComplex V ℕ) (X : V) :
 #align chain_complex.to_single₀_equiv ChainComplex.toSingle₀Equiv
 
 @[ext]
-theorem to_single₀_ext {C : ChainComplex V ℕ} {X : V} (f g : C ⟶ (single₀ V).obj X)
+lemma to_single₀_ext {C : ChainComplex V ℕ} {X : V} (f g : C ⟶ (single₀ V).obj X)
     (h : f.f 0 = g.f 0) : f = g :=
   (toSingle₀Equiv C X).injective
     (by
@@ -339,32 +339,32 @@ def single₀ : V ⥤ CochainComplex V ℕ where
 #align cochain_complex.single₀ CochainComplex.single₀
 
 @[simp]
-theorem single₀_obj_X_0 (X : V) : ((single₀ V).obj X).X 0 = X :=
+lemma single₀_obj_X_0 (X : V) : ((single₀ V).obj X).X 0 = X :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align cochain_complex.single₀_obj_X_0 CochainComplex.single₀_obj_X_0
 
 @[simp]
-theorem single₀_obj_X_succ (X : V) (n : ℕ) : ((single₀ V).obj X).X (n + 1) = 0 :=
+lemma single₀_obj_X_succ (X : V) (n : ℕ) : ((single₀ V).obj X).X (n + 1) = 0 :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align cochain_complex.single₀_obj_X_succ CochainComplex.single₀_obj_X_succ
 
 @[simp]
-theorem single₀_obj_X_d (X : V) (i j : ℕ) : ((single₀ V).obj X).d i j = 0 :=
+lemma single₀_obj_X_d (X : V) (i j : ℕ) : ((single₀ V).obj X).d i j = 0 :=
   rfl
 set_option linter.uppercaseLean3 false in
 #align cochain_complex.single₀_obj_X_d CochainComplex.single₀_obj_X_d
 
 @[simp]
-theorem single₀_obj_x_dFrom (X : V) (j : ℕ) : ((single₀ V).obj X).dFrom j = 0 := by
+lemma single₀_obj_x_dFrom (X : V) (j : ℕ) : ((single₀ V).obj X).dFrom j = 0 := by
   rw [dFrom_eq ((single₀ V).obj X) rfl]
   simp
 set_option linter.uppercaseLean3 false in
 #align cochain_complex.single₀_obj_X_d_from CochainComplex.single₀_obj_x_dFrom
 
 @[simp]
-theorem single₀_obj_x_dTo (X : V) (i : ℕ) : ((single₀ V).obj X).dTo i = 0 := by
+lemma single₀_obj_x_dTo (X : V) (i : ℕ) : ((single₀ V).obj X).dTo i = 0 := by
   cases i
   · rw [dTo_eq_zero]
     simp
@@ -374,12 +374,12 @@ set_option linter.uppercaseLean3 false in
 #align cochain_complex.single₀_obj_X_d_to CochainComplex.single₀_obj_x_dTo
 
 @[simp]
-theorem single₀_map_f_0 {X Y : V} (f : X ⟶ Y) : ((single₀ V).map f).f 0 = f :=
+lemma single₀_map_f_0 {X Y : V} (f : X ⟶ Y) : ((single₀ V).map f).f 0 = f :=
   rfl
 #align cochain_complex.single₀_map_f_0 CochainComplex.single₀_map_f_0
 
 @[simp]
-theorem single₀_map_f_succ {X Y : V} (f : X ⟶ Y) (n : ℕ) : ((single₀ V).map f).f (n + 1) = 0 :=
+lemma single₀_map_f_succ {X Y : V} (f : X ⟶ Y) (n : ℕ) : ((single₀ V).map f).f (n + 1) = 0 :=
   rfl
 #align cochain_complex.single₀_map_f_succ CochainComplex.single₀_map_f_succ
 
@@ -450,7 +450,7 @@ def fromSingle₀Equiv (C : CochainComplex V ℕ) (X : V) :
 
 -- porting note: added to ease the following definition
 @[ext]
-theorem from_single₀_ext {C : CochainComplex V ℕ} {X : V} (f g : (single₀ V).obj X ⟶ C)
+lemma from_single₀_ext {C : CochainComplex V ℕ} {X : V} (f g : (single₀ V).obj X ⟶ C)
     (h : f.f 0 = g.f 0) : f = g :=
   (fromSingle₀Equiv C X).injective
     (by

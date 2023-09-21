@@ -35,31 +35,31 @@ variable [AddCommGroup N] [Module R N] [Module.Free R N]
 open Module.Free
 
 @[simp]
-theorem rank_finsupp (ι : Type w) :
+lemma rank_finsupp (ι : Type w) :
     Module.rank R (ι →₀ M) = Cardinal.lift.{v} #ι * Cardinal.lift.{w} (Module.rank R M) := by
   obtain ⟨⟨_, bs⟩⟩ := Module.Free.exists_basis (R := R) (M := M)
   rw [← bs.mk_eq_rank'', ← (Finsupp.basis fun _ : ι => bs).mk_eq_rank'', Cardinal.mk_sigma,
     Cardinal.sum_const]
 #align rank_finsupp rank_finsupp
 
-theorem rank_finsupp' (ι : Type v) : Module.rank R (ι →₀ M) = #ι * Module.rank R M := by
+lemma rank_finsupp' (ι : Type v) : Module.rank R (ι →₀ M) = #ι * Module.rank R M := by
   simp [rank_finsupp]
 #align rank_finsupp' rank_finsupp'
 
 /-- The rank of `(ι →₀ R)` is `(#ι).lift`. -/
 -- Porting note, this should not be `@[simp]`, as simp can prove it.
 -- @[simp]
-theorem rank_finsupp_self (ι : Type w) : Module.rank R (ι →₀ R) = Cardinal.lift.{u} #ι := by
+lemma rank_finsupp_self (ι : Type w) : Module.rank R (ι →₀ R) = Cardinal.lift.{u} #ι := by
   simp [rank_finsupp]
 #align rank_finsupp_self rank_finsupp_self
 
 /-- If `R` and `ι` lie in the same universe, the rank of `(ι →₀ R)` is `# ι`. -/
-theorem rank_finsupp_self' {ι : Type u} : Module.rank R (ι →₀ R) = #ι := by simp
+lemma rank_finsupp_self' {ι : Type u} : Module.rank R (ι →₀ R) = #ι := by simp
 #align rank_finsupp_self' rank_finsupp_self'
 
 /-- The rank of the direct sum is the sum of the ranks. -/
 @[simp]
-theorem rank_directSum {ι : Type v} (M : ι → Type w) [∀ i : ι, AddCommGroup (M i)]
+lemma rank_directSum {ι : Type v} (M : ι → Type w) [∀ i : ι, AddCommGroup (M i)]
     [∀ i : ι, Module R (M i)] [∀ i : ι, Module.Free R (M i)] :
     Module.rank R (⨁ i, M i) = Cardinal.sum fun i => Module.rank R (M i) := by
   let B i := chooseBasis R (M i)
@@ -69,7 +69,7 @@ theorem rank_directSum {ι : Type v} (M : ι → Type w) [∀ i : ι, AddCommGro
 
 /-- If `m` and `n` are `Fintype`, the rank of `m × n` matrices is `(#m).lift * (#n).lift`. -/
 @[simp]
-theorem rank_matrix (m : Type v) (n : Type w) [Finite m] [Finite n] :
+lemma rank_matrix (m : Type v) (n : Type w) [Finite m] [Finite n] :
     Module.rank R (Matrix m n R) =
       Cardinal.lift.{max v w u, v} #m * Cardinal.lift.{max v w u, w} #n := by
   cases nonempty_fintype m
@@ -82,7 +82,7 @@ theorem rank_matrix (m : Type v) (n : Type w) [Finite m] [Finite n] :
 /-- If `m` and `n` are `Fintype` that lie in the same universe, the rank of `m × n` matrices is
   `(#n * #m).lift`. -/
 @[simp high]
-theorem rank_matrix' (m n : Type v) [Finite m] [Finite n] :
+lemma rank_matrix' (m n : Type v) [Finite m] [Finite n] :
     Module.rank R (Matrix m n R) = Cardinal.lift.{u} (#m * #n) := by
   rw [rank_matrix, lift_mul, lift_umax.{v, u}]
 #align rank_matrix' rank_matrix'
@@ -90,7 +90,7 @@ theorem rank_matrix' (m n : Type v) [Finite m] [Finite n] :
 /-- If `m` and `n` are `Fintype` that lie in the same universe as `R`, the rank of `m × n` matrices
   is `# m * # n`. -/
 -- @[simp] -- Porting note: simp can prove this
-theorem rank_matrix'' (m n : Type u) [Finite m] [Finite n] :
+lemma rank_matrix'' (m n : Type u) [Finite m] [Finite n] :
     Module.rank R (Matrix m n R) = #m * #n := by simp
 #align rank_matrix'' rank_matrix''
 
@@ -108,7 +108,7 @@ open Module.Free
 
 /-- The rank of `M ⊗[R] N` is `(Module.rank R M).lift * (Module.rank R N).lift`. -/
 @[simp]
-theorem rank_tensorProduct :
+lemma rank_tensorProduct :
     Module.rank R (M ⊗[R] N) =
       Cardinal.lift.{w, v} (Module.rank R M) * Cardinal.lift.{v, w} (Module.rank R N) := by
   obtain ⟨⟨_, bM⟩⟩ := Module.Free.exists_basis (R := R) (M := M)
@@ -118,7 +118,7 @@ theorem rank_tensorProduct :
 
 /-- If `M` and `N` lie in the same universe, the rank of `M ⊗[R] N` is
   `(Module.rank R M) * (Module.rank R N)`. -/
-theorem rank_tensorProduct' (N : Type v) [AddCommGroup N] [Module R N] [Module.Free R N] :
+lemma rank_tensorProduct' (N : Type v) [AddCommGroup N] [Module R N] [Module.Free R N] :
     Module.rank R (M ⊗[R] N) = Module.rank R M * Module.rank R N := by simp
 #align rank_tensor_product' rank_tensorProduct'
 

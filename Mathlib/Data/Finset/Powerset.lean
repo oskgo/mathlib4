@@ -31,71 +31,71 @@ def powerset (s : Finset α) : Finset (Finset α) :=
 #align finset.powerset Finset.powerset
 
 @[simp]
-theorem mem_powerset {s t : Finset α} : s ∈ powerset t ↔ s ⊆ t := by
+lemma mem_powerset {s t : Finset α} : s ∈ powerset t ↔ s ⊆ t := by
   cases s
   simp [powerset, mem_mk, mem_pmap, mk.injEq, mem_powerset, exists_prop, exists_eq_right,
     ← val_le_iff]
 #align finset.mem_powerset Finset.mem_powerset
 
 @[simp, norm_cast]
-theorem coe_powerset (s : Finset α) :
+lemma coe_powerset (s : Finset α) :
     (s.powerset : Set (Finset α)) = ((↑) : Finset α → Set α) ⁻¹' (s : Set α).powerset := by
   ext
   simp
 #align finset.coe_powerset Finset.coe_powerset
 
 --Porting note: remove @[simp], simp can prove it
-theorem empty_mem_powerset (s : Finset α) : ∅ ∈ powerset s :=
+lemma empty_mem_powerset (s : Finset α) : ∅ ∈ powerset s :=
   mem_powerset.2 (empty_subset _)
 #align finset.empty_mem_powerset Finset.empty_mem_powerset
 
 --Porting note: remove @[simp], simp can prove it
-theorem mem_powerset_self (s : Finset α) : s ∈ powerset s :=
+lemma mem_powerset_self (s : Finset α) : s ∈ powerset s :=
   mem_powerset.2 Subset.rfl
 #align finset.mem_powerset_self Finset.mem_powerset_self
 
-theorem powerset_nonempty (s : Finset α) : s.powerset.Nonempty :=
+lemma powerset_nonempty (s : Finset α) : s.powerset.Nonempty :=
   ⟨∅, empty_mem_powerset _⟩
 #align finset.powerset_nonempty Finset.powerset_nonempty
 
 @[simp]
-theorem powerset_mono {s t : Finset α} : powerset s ⊆ powerset t ↔ s ⊆ t :=
+lemma powerset_mono {s t : Finset α} : powerset s ⊆ powerset t ↔ s ⊆ t :=
   ⟨fun h => mem_powerset.1 <| h <| mem_powerset_self _, fun st _u h =>
     mem_powerset.2 <| Subset.trans (mem_powerset.1 h) st⟩
 #align finset.powerset_mono Finset.powerset_mono
 
-theorem powerset_injective : Injective (powerset : Finset α → Finset (Finset α)) :=
+lemma powerset_injective : Injective (powerset : Finset α → Finset (Finset α)) :=
   (injective_of_le_imp_le _) powerset_mono.1
 #align finset.powerset_injective Finset.powerset_injective
 
 @[simp]
-theorem powerset_inj : powerset s = powerset t ↔ s = t :=
+lemma powerset_inj : powerset s = powerset t ↔ s = t :=
   powerset_injective.eq_iff
 #align finset.powerset_inj Finset.powerset_inj
 
 @[simp]
-theorem powerset_empty : (∅ : Finset α).powerset = {∅} :=
+lemma powerset_empty : (∅ : Finset α).powerset = {∅} :=
   rfl
 #align finset.powerset_empty Finset.powerset_empty
 
 @[simp]
-theorem powerset_eq_singleton_empty : s.powerset = {∅} ↔ s = ∅ := by
+lemma powerset_eq_singleton_empty : s.powerset = {∅} ↔ s = ∅ := by
   rw [← powerset_empty, powerset_inj]
 #align finset.powerset_eq_singleton_empty Finset.powerset_eq_singleton_empty
 
 /-- **Number of Subsets of a Set** -/
 @[simp]
-theorem card_powerset (s : Finset α) : card (powerset s) = 2 ^ card s :=
+lemma card_powerset (s : Finset α) : card (powerset s) = 2 ^ card s :=
   (card_pmap _ _ _).trans (Multiset.card_powerset s.1)
 #align finset.card_powerset Finset.card_powerset
 
-theorem not_mem_of_mem_powerset_of_not_mem {s t : Finset α} {a : α} (ht : t ∈ s.powerset)
+lemma not_mem_of_mem_powerset_of_not_mem {s t : Finset α} {a : α} (ht : t ∈ s.powerset)
     (h : a ∉ s) : a ∉ t := by
   apply mt _ h
   apply mem_powerset.1 ht
 #align finset.not_mem_of_mem_powerset_of_not_mem Finset.not_mem_of_mem_powerset_of_not_mem
 
-theorem powerset_insert [DecidableEq α] (s : Finset α) (a : α) :
+lemma powerset_insert [DecidableEq α] (s : Finset α) (a : α) :
     powerset (insert a s) = s.powerset ∪ s.powerset.image (insert a) := by
   ext t
   simp only [exists_prop, mem_powerset, mem_image, mem_union, subset_insert_iff]
@@ -152,11 +152,11 @@ def ssubsets (s : Finset α) : Finset (Finset α) :=
 #align finset.ssubsets Finset.ssubsets
 
 @[simp]
-theorem mem_ssubsets {s t : Finset α} : t ∈ s.ssubsets ↔ t ⊂ s := by
+lemma mem_ssubsets {s t : Finset α} : t ∈ s.ssubsets ↔ t ⊂ s := by
   rw [ssubsets, mem_erase, mem_powerset, ssubset_iff_subset_ne, and_comm]
 #align finset.mem_ssubsets Finset.mem_ssubsets
 
-theorem empty_mem_ssubsets {s : Finset α} (h : s.Nonempty) : ∅ ∈ s.ssubsets := by
+lemma empty_mem_ssubsets {s : Finset α} (h : s.Nonempty) : ∅ ∈ s.ssubsets := by
   rw [mem_ssubsets, ssubset_iff_subset_ne]
   exact ⟨empty_subset s, h.ne_empty.symm⟩
 #align finset.empty_mem_ssubsets Finset.empty_mem_ssubsets
@@ -200,23 +200,23 @@ def powersetLen (n : ℕ) (s : Finset α) : Finset (Finset α) :=
 #align finset.powerset_len Finset.powersetLen
 
 /-- **Formula for the Number of Combinations** -/
-theorem mem_powersetLen {n} {s t : Finset α} : s ∈ powersetLen n t ↔ s ⊆ t ∧ card s = n := by
+lemma mem_powersetLen {n} {s t : Finset α} : s ∈ powersetLen n t ↔ s ⊆ t ∧ card s = n := by
   cases s; simp [powersetLen, val_le_iff.symm]
 #align finset.mem_powerset_len Finset.mem_powersetLen
 
 @[simp]
-theorem powersetLen_mono {n} {s t : Finset α} (h : s ⊆ t) : powersetLen n s ⊆ powersetLen n t :=
+lemma powersetLen_mono {n} {s t : Finset α} (h : s ⊆ t) : powersetLen n s ⊆ powersetLen n t :=
   fun _u h' => mem_powersetLen.2 <| And.imp (fun h₂ => Subset.trans h₂ h) id (mem_powersetLen.1 h')
 #align finset.powerset_len_mono Finset.powersetLen_mono
 
 /-- **Formula for the Number of Combinations** -/
 @[simp]
-theorem card_powersetLen (n : ℕ) (s : Finset α) : card (powersetLen n s) = Nat.choose (card s) n :=
+lemma card_powersetLen (n : ℕ) (s : Finset α) : card (powersetLen n s) = Nat.choose (card s) n :=
   (card_pmap _ _ _).trans (Multiset.card_powersetLen n s.1)
 #align finset.card_powerset_len Finset.card_powersetLen
 
 @[simp]
-theorem powersetLen_zero (s : Finset α) : Finset.powersetLen 0 s = {∅} := by
+lemma powersetLen_zero (s : Finset α) : Finset.powersetLen 0 s = {∅} := by
   ext; rw [mem_powersetLen, mem_singleton, card_eq_zero]
   refine'
     ⟨fun h => h.2, fun h => by
@@ -225,17 +225,17 @@ theorem powersetLen_zero (s : Finset α) : Finset.powersetLen 0 s = {∅} := by
 #align finset.powerset_len_zero Finset.powersetLen_zero
 
 @[simp]
-theorem powersetLen_empty (n : ℕ) {s : Finset α} (h : s.card < n) : powersetLen n s = ∅ :=
+lemma powersetLen_empty (n : ℕ) {s : Finset α} (h : s.card < n) : powersetLen n s = ∅ :=
   Finset.card_eq_zero.mp (by rw [card_powersetLen, Nat.choose_eq_zero_of_lt h])
 #align finset.powerset_len_empty Finset.powersetLen_empty
 
-theorem powersetLen_eq_filter {n} {s : Finset α} :
+lemma powersetLen_eq_filter {n} {s : Finset α} :
     powersetLen n s = (powerset s).filter fun x => x.card = n := by
   ext
   simp [mem_powersetLen]
 #align finset.powerset_len_eq_filter Finset.powersetLen_eq_filter
 
-theorem powersetLen_succ_insert [DecidableEq α] {x : α} {s : Finset α} (h : x ∉ s) (n : ℕ) :
+lemma powersetLen_succ_insert [DecidableEq α] {x : α} {s : Finset α} (h : x ∉ s) (n : ℕ) :
     powersetLen n.succ (insert x s) =
     powersetLen n.succ s ∪ (powersetLen n s).image (insert x) := by
   rw [powersetLen_eq_filter, powerset_insert, filter_union, ← powersetLen_eq_filter]
@@ -249,7 +249,7 @@ theorem powersetLen_succ_insert [DecidableEq α] {x : α} {s : Finset α} (h : x
   simp [card_insert_of_not_mem this, Nat.succ_inj']
 #align finset.powerset_len_succ_insert Finset.powersetLen_succ_insert
 
-theorem powersetLen_nonempty {n : ℕ} {s : Finset α} (h : n ≤ s.card) :
+lemma powersetLen_nonempty {n : ℕ} {s : Finset α} (h : n ≤ s.card) :
     (powersetLen n s).Nonempty := by
   classical
     induction' s using Finset.induction_on with x s hx IH generalizing n
@@ -265,7 +265,7 @@ theorem powersetLen_nonempty {n : ℕ} {s : Finset α} (h : n ≤ s.card) :
 #align finset.powerset_len_nonempty Finset.powersetLen_nonempty
 
 @[simp]
-theorem powersetLen_self (s : Finset α) : powersetLen s.card s = {s} := by
+lemma powersetLen_self (s : Finset α) : powersetLen s.card s = {s} := by
   ext
   rw [mem_powersetLen, mem_singleton]
   constructor
@@ -274,13 +274,13 @@ theorem powersetLen_self (s : Finset α) : powersetLen s.card s = {s} := by
     simp
 #align finset.powerset_len_self Finset.powersetLen_self
 
-theorem pairwise_disjoint_powersetLen (s : Finset α) :
+lemma pairwise_disjoint_powersetLen (s : Finset α) :
     Pairwise fun i j => Disjoint (s.powersetLen i) (s.powersetLen j) := fun _i _j hij =>
   Finset.disjoint_left.mpr fun _x hi hj =>
     hij <| (mem_powersetLen.mp hi).2.symm.trans (mem_powersetLen.mp hj).2
 #align finset.pairwise_disjoint_powerset_len Finset.pairwise_disjoint_powersetLen
 
-theorem powerset_card_disjiUnion (s : Finset α) :
+lemma powerset_card_disjiUnion (s : Finset α) :
     Finset.powerset s =
       (range (s.card + 1)).disjiUnion (fun i => powersetLen i s)
         (s.pairwise_disjoint_powersetLen.set_pairwise _) := by
@@ -293,12 +293,12 @@ theorem powerset_card_disjiUnion (s : Finset α) :
     exact mem_powerset.mpr (mem_powersetLen.mp ha).1
 #align finset.powerset_card_disj_Union Finset.powerset_card_disjiUnion
 
-theorem powerset_card_biUnion [DecidableEq (Finset α)] (s : Finset α) :
+lemma powerset_card_biUnion [DecidableEq (Finset α)] (s : Finset α) :
     Finset.powerset s = (range (s.card + 1)).biUnion fun i => powersetLen i s := by
   simpa only [disjiUnion_eq_biUnion] using powerset_card_disjiUnion s
 #align finset.powerset_card_bUnion Finset.powerset_card_biUnion
 
-theorem powersetLen_sup [DecidableEq α] (u : Finset α) (n : ℕ) (hn : n < u.card) :
+lemma powersetLen_sup [DecidableEq α] (u : Finset α) (n : ℕ) (hn : n < u.card) :
     (powersetLen n.succ u).sup id = u := by
   apply le_antisymm
   · simp_rw [Finset.sup_le_iff, mem_powersetLen]
@@ -317,18 +317,18 @@ theorem powersetLen_sup [DecidableEq α] (u : Finset α) (n : ℕ) (hn : n < u.c
 #align finset.powerset_len_sup Finset.powersetLen_sup
 
 @[simp]
-theorem powersetLen_card_add (s : Finset α) {i : ℕ} (hi : 0 < i) :
+lemma powersetLen_card_add (s : Finset α) {i : ℕ} (hi : 0 < i) :
     s.powersetLen (s.card + i) = ∅ :=
   Finset.powersetLen_empty _ (lt_add_of_pos_right (Finset.card s) hi)
 #align finset.powerset_len_card_add Finset.powersetLen_card_add
 
 @[simp]
-theorem map_val_val_powersetLen (s : Finset α) (i : ℕ) :
+lemma map_val_val_powersetLen (s : Finset α) (i : ℕ) :
     (s.powersetLen i).val.map Finset.val = s.1.powersetLen i := by
   simp [Finset.powersetLen, map_pmap, pmap_eq_map, map_id']
 #align finset.map_val_val_powerset_len Finset.map_val_val_powersetLen
 
-theorem powersetLen_map {β : Type*} (f : α ↪ β) (n : ℕ) (s : Finset α) :
+lemma powersetLen_map {β : Type*} (f : α ↪ β) (n : ℕ) (s : Finset α) :
     powersetLen n (s.map f) = (powersetLen n s).map (mapEmbedding f).toEmbedding :=
   ext <| fun t => by
     simp only [card_map, mem_powersetLen, le_eq_subset, gt_iff_lt, mem_map, mapEmbedding_apply]

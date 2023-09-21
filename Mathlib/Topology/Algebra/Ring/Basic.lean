@@ -59,7 +59,7 @@ variable {α}
 
 /-- If `R` is a ring with a continuous multiplication, then negation is continuous as well since it
 is just multiplication with `-1`. -/
-theorem TopologicalSemiring.continuousNeg_of_mul [TopologicalSpace α] [NonAssocRing α]
+lemma TopologicalSemiring.continuousNeg_of_mul [TopologicalSpace α] [NonAssocRing α]
     [ContinuousMul α] : ContinuousNeg α where
   continuous_neg := by
     simpa using (continuous_const.mul continuous_id : Continuous fun x : α => -1 * x)
@@ -68,7 +68,7 @@ theorem TopologicalSemiring.continuousNeg_of_mul [TopologicalSpace α] [NonAssoc
 /-- If `R` is a ring which is a topological semiring, then it is automatically a topological
 ring. This exists so that one can place a topological ring structure on `R` without explicitly
 proving `continuous_neg`. -/
-theorem TopologicalSemiring.toTopologicalRing [TopologicalSpace α] [NonAssocRing α]
+lemma TopologicalSemiring.toTopologicalRing [TopologicalSpace α] [NonAssocRing α]
     (_ : TopologicalSemiring α) : TopologicalRing α where
   toContinuousNeg := TopologicalSemiring.continuousNeg_of_mul
 #align topological_semiring.to_topological_ring TopologicalSemiring.toTopologicalRing
@@ -106,20 +106,20 @@ def Subsemiring.topologicalClosure (s : Subsemiring α) : Subsemiring α :=
 #align subsemiring.topological_closure Subsemiring.topologicalClosure
 
 @[simp]
-theorem Subsemiring.topologicalClosure_coe (s : Subsemiring α) :
+lemma Subsemiring.topologicalClosure_coe (s : Subsemiring α) :
     (s.topologicalClosure : Set α) = _root_.closure (s : Set α) :=
   rfl
 #align subsemiring.topological_closure_coe Subsemiring.topologicalClosure_coe
 
-theorem Subsemiring.le_topologicalClosure (s : Subsemiring α) : s ≤ s.topologicalClosure :=
+lemma Subsemiring.le_topologicalClosure (s : Subsemiring α) : s ≤ s.topologicalClosure :=
   _root_.subset_closure
 #align subsemiring.le_topological_closure Subsemiring.le_topologicalClosure
 
-theorem Subsemiring.isClosed_topologicalClosure (s : Subsemiring α) :
+lemma Subsemiring.isClosed_topologicalClosure (s : Subsemiring α) :
     IsClosed (s.topologicalClosure : Set α) := isClosed_closure
 #align subsemiring.is_closed_topological_closure Subsemiring.isClosed_topologicalClosure
 
-theorem Subsemiring.topologicalClosure_minimal (s : Subsemiring α) {t : Subsemiring α} (h : s ≤ t)
+lemma Subsemiring.topologicalClosure_minimal (s : Subsemiring α) {t : Subsemiring α} (h : s ≤ t)
     (ht : IsClosed (t : Set α)) : s.topologicalClosure ≤ t :=
   closure_minimal h ht
 #align subsemiring.topological_closure_minimal Subsemiring.topologicalClosure_minimal
@@ -198,7 +198,7 @@ section
 
 variable {R : Type*} [NonUnitalNonAssocRing R] [TopologicalSpace R]
 
-theorem TopologicalRing.of_addGroup_of_nhds_zero [TopologicalAddGroup R]
+lemma TopologicalRing.of_addGroup_of_nhds_zero [TopologicalAddGroup R]
     (hmul : Tendsto (uncurry ((· * ·) : R → R → R)) (𝓝 0 ×ˢ 𝓝 0) <| 𝓝 0)
     (hmul_left : ∀ x₀ : R, Tendsto (fun x : R => x₀ * x) (𝓝 0) <| 𝓝 0)
     (hmul_right : ∀ x₀ : R, Tendsto (fun x : R => x * x₀) (𝓝 0) <| 𝓝 0) : TopologicalRing R where
@@ -207,7 +207,7 @@ theorem TopologicalRing.of_addGroup_of_nhds_zero [TopologicalAddGroup R]
       simpa only [ContinuousAt, mul_zero, zero_mul, nhds_prod_eq, AddMonoidHom.mul_apply]
 #align topological_ring.of_add_group_of_nhds_zero TopologicalRing.of_addGroup_of_nhds_zero
 
-theorem TopologicalRing.of_nhds_zero
+lemma TopologicalRing.of_nhds_zero
     (hadd : Tendsto (uncurry ((· + ·) : R → R → R)) (𝓝 0 ×ˢ 𝓝 0) <| 𝓝 0)
     (hneg : Tendsto (fun x => -x : R → R) (𝓝 0) (𝓝 0))
     (hmul : Tendsto (uncurry ((· * ·) : R → R → R)) (𝓝 0 ×ˢ 𝓝 0) <| 𝓝 0)
@@ -227,12 +227,12 @@ section
 variable [NonUnitalNonAssocRing α] [TopologicalRing α]
 
 /-- In a topological semiring, the left-multiplication `AddMonoidHom` is continuous. -/
-theorem mulLeft_continuous (x : α) : Continuous (AddMonoidHom.mulLeft x) :=
+lemma mulLeft_continuous (x : α) : Continuous (AddMonoidHom.mulLeft x) :=
   continuous_const.mul continuous_id
 #align mul_left_continuous mulLeft_continuous
 
 /-- In a topological semiring, the right-multiplication `AddMonoidHom` is continuous. -/
-theorem mulRight_continuous (x : α) : Continuous (AddMonoidHom.mulRight x) :=
+lemma mulRight_continuous (x : α) : Continuous (AddMonoidHom.mulRight x) :=
   continuous_id.mul continuous_const
 #align mul_right_continuous mulRight_continuous
 
@@ -250,15 +250,15 @@ def Subring.topologicalClosure (S : Subring α) : Subring α :=
     carrier := _root_.closure (S : Set α) }
 #align subring.topological_closure Subring.topologicalClosure
 
-theorem Subring.le_topologicalClosure (s : Subring α) : s ≤ s.topologicalClosure :=
+lemma Subring.le_topologicalClosure (s : Subring α) : s ≤ s.topologicalClosure :=
   _root_.subset_closure
 #align subring.le_topological_closure Subring.le_topologicalClosure
 
-theorem Subring.isClosed_topologicalClosure (s : Subring α) :
+lemma Subring.isClosed_topologicalClosure (s : Subring α) :
     IsClosed (s.topologicalClosure : Set α) := isClosed_closure
 #align subring.is_closed_topological_closure Subring.isClosed_topologicalClosure
 
-theorem Subring.topologicalClosure_minimal (s : Subring α) {t : Subring α} (h : s ≤ t)
+lemma Subring.topologicalClosure_minimal (s : Subring α) {t : Subring α} (h : s ≤ t)
     (ht : IsClosed (t : Set α)) : s.topologicalClosure ≤ t :=
   closure_minimal h ht
 #align subring.topological_closure_minimal Subring.topologicalClosure_minimal
@@ -300,12 +300,12 @@ instance inhabited {α : Type u} [Ring α] : Inhabited (RingTopology α) :=
       continuous_neg := continuous_top }⟩
 #align ring_topology.inhabited RingTopology.inhabited
 
-theorem toTopologicalSpace_injective :
+lemma toTopologicalSpace_injective :
     Injective (toTopologicalSpace : RingTopology α → TopologicalSpace α) := by
   intro f g _; cases f; cases g; congr
 
 @[ext]
-theorem ext {f g : RingTopology α} (h : f.IsOpen = g.IsOpen) : f = g :=
+lemma ext {f g : RingTopology α} (h : f.IsOpen = g.IsOpen) : f = g :=
   toTopologicalSpace_injective <| TopologicalSpace.ext h
 #align ring_topology.ext' RingTopology.ext
 
@@ -345,7 +345,7 @@ def coinduced {α β : Type*} [t : TopologicalSpace α] [Ring β] (f : α → β
   sInf { b : RingTopology β | t.coinduced f ≤ b.toTopologicalSpace }
 #align ring_topology.coinduced RingTopology.coinduced
 
-theorem coinduced_continuous {α β : Type*} [t : TopologicalSpace α] [Ring β] (f : α → β) :
+lemma coinduced_continuous {α β : Type*} [t : TopologicalSpace α] [Ring β] (f : α → β) :
     Continuous[t, (coinduced f).toTopologicalSpace] f :=
   continuous_sInf_rng.2 <| ball_image_iff.2 fun _ => continuous_iff_coinduced_le.2
 #align ring_topology.coinduced_continuous RingTopology.coinduced_continuous

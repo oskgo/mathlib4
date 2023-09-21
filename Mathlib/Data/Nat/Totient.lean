@@ -37,20 +37,20 @@ def totient (n : ℕ) : ℕ :=
 scoped notation "φ" => Nat.totient
 
 @[simp]
-theorem totient_zero : φ 0 = 0 :=
+lemma totient_zero : φ 0 = 0 :=
   rfl
 #align nat.totient_zero Nat.totient_zero
 
 @[simp]
-theorem totient_one : φ 1 = 1 := by simp [totient]
+lemma totient_one : φ 1 = 1 := by simp [totient]
 #align nat.totient_one Nat.totient_one
 
-theorem totient_eq_card_coprime (n : ℕ) : φ n = ((range n).filter n.Coprime).card :=
+lemma totient_eq_card_coprime (n : ℕ) : φ n = ((range n).filter n.Coprime).card :=
   rfl
 #align nat.totient_eq_card_coprime Nat.totient_eq_card_coprime
 
 /-- A characterisation of `Nat.totient` that avoids `Finset`. -/
-theorem totient_eq_card_lt_and_coprime (n : ℕ) : φ n = Nat.card { m | m < n ∧ n.Coprime m } := by
+lemma totient_eq_card_lt_and_coprime (n : ℕ) : φ n = Nat.card { m | m < n ∧ n.Coprime m } := by
   let e : { m | m < n ∧ n.Coprime m } ≃ Finset.filter n.Coprime (Finset.range n) :=
     { toFun := fun m => ⟨m, by simpa only [Finset.mem_filter, Finset.mem_range] using m.property⟩
       invFun := fun m => ⟨m, by simpa only [Finset.mem_filter, Finset.mem_range] using m.property⟩
@@ -59,27 +59,27 @@ theorem totient_eq_card_lt_and_coprime (n : ℕ) : φ n = Nat.card { m | m < n �
   rw [totient_eq_card_coprime, card_congr e, card_eq_fintype_card, Fintype.card_coe]
 #align nat.totient_eq_card_lt_and_coprime Nat.totient_eq_card_lt_and_coprime
 
-theorem totient_le (n : ℕ) : φ n ≤ n :=
+lemma totient_le (n : ℕ) : φ n ≤ n :=
   ((range n).card_filter_le _).trans_eq (card_range n)
 #align nat.totient_le Nat.totient_le
 
-theorem totient_lt (n : ℕ) (hn : 1 < n) : φ n < n :=
+lemma totient_lt (n : ℕ) (hn : 1 < n) : φ n < n :=
   (card_lt_card (filter_ssubset.2 ⟨0, by simp [hn.ne', pos_of_gt hn]⟩)).trans_eq (card_range n)
 #align nat.totient_lt Nat.totient_lt
 
-theorem totient_pos : ∀ {n : ℕ}, 0 < n → 0 < φ n
+lemma totient_pos : ∀ {n : ℕ}, 0 < n → 0 < φ n
   | 0 => by decide
   | 1 => by simp [totient]
   | n + 2 => fun _ => card_pos.2 ⟨1, mem_filter.2 ⟨mem_range.2 (by simp), coprime_one_right _⟩⟩
 #align nat.totient_pos Nat.totient_pos
 
-theorem filter_coprime_Ico_eq_totient (a n : ℕ) :
+lemma filter_coprime_Ico_eq_totient (a n : ℕ) :
     ((Ico n (n + a)).filter (Coprime a)).card = totient a := by
   rw [totient, filter_Ico_card_eq_of_periodic, count_eq_card_filter_range]
   exact periodic_coprime a
 #align nat.filter_coprime_Ico_eq_totient Nat.filter_coprime_Ico_eq_totient
 
-theorem Ico_filter_coprime_le {a : ℕ} (k n : ℕ) (a_pos : 0 < a) :
+lemma Ico_filter_coprime_le {a : ℕ} (k n : ℕ) (a_pos : 0 < a) :
     ((Ico k (k + n)).filter (Coprime a)).card ≤ totient a * (n / a + 1) := by
   conv_lhs => rw [← Nat.mod_add_div n a]
   induction' n / a with i ih
@@ -112,7 +112,7 @@ open ZMod
 /-- Note this takes an explicit `Fintype ((ZMod n)ˣ)` argument to avoid trouble with instance
 diamonds. -/
 @[simp]
-theorem _root_.ZMod.card_units_eq_totient (n : ℕ) [NeZero n] [Fintype (ZMod n)ˣ] :
+lemma _root_.ZMod.card_units_eq_totient (n : ℕ) [NeZero n] [Fintype (ZMod n)ˣ] :
     Fintype.card (ZMod n)ˣ = φ n :=
   calc
     Fintype.card (ZMod n)ˣ = Fintype.card { x : ZMod n // x.val.Coprime n } :=
@@ -124,7 +124,7 @@ theorem _root_.ZMod.card_units_eq_totient (n : ℕ) [NeZero n] [Fintype (ZMod n)
       rfl
 #align zmod.card_units_eq_totient ZMod.card_units_eq_totient
 
-theorem totient_even {n : ℕ} (hn : 2 < n) : Even n.totient := by
+lemma totient_even {n : ℕ} (hn : 2 < n) : Even n.totient := by
   haveI : Fact (1 < n) := ⟨one_lt_two.trans hn⟩
   haveI : NeZero n := NeZero.of_gt hn
   suffices 2 = orderOf (-1 : (ZMod n)ˣ) by
@@ -133,7 +133,7 @@ theorem totient_even {n : ℕ} (hn : 2 < n) : Even n.totient := by
   rw [← orderOf_units, Units.coe_neg_one, orderOf_neg_one, ringChar.eq (ZMod n) n, if_neg hn.ne']
 #align nat.totient_even Nat.totient_even
 
-theorem totient_mul {m n : ℕ} (h : m.Coprime n) : φ (m * n) = φ m * φ n :=
+lemma totient_mul {m n : ℕ} (h : m.Coprime n) : φ (m * n) = φ m * φ n :=
   if hmn0 : m * n = 0 then by
     cases' Nat.mul_eq_zero.1 hmn0 with h h <;>
       simp only [totient_zero, mul_zero, zero_mul, h]
@@ -147,7 +147,7 @@ theorem totient_mul {m n : ℕ} (h : m.Coprime n) : φ (m * n) = φ m * φ n :=
 #align nat.totient_mul Nat.totient_mul
 
 /-- For `d ∣ n`, the totient of `n/d` equals the number of values `k < n` such that `gcd n k = d` -/
-theorem totient_div_of_dvd {n d : ℕ} (hnd : d ∣ n) :
+lemma totient_div_of_dvd {n d : ℕ} (hnd : d ∣ n) :
     φ (n / d) = (filter (fun k : ℕ => n.gcd k = d) (range n)).card := by
   rcases d.eq_zero_or_pos with (rfl | hd0); · simp [eq_zero_of_zero_dvd hnd]
   rcases hnd with ⟨x, rfl⟩
@@ -167,7 +167,7 @@ theorem totient_div_of_dvd {n d : ℕ} (hnd : d ∣ n) :
     rwa [gcd_mul_left, mul_right_eq_self_iff hd0] at hb2
 #align nat.totient_div_of_dvd Nat.totient_div_of_dvd
 
-theorem sum_totient (n : ℕ) : n.divisors.sum φ = n := by
+lemma sum_totient (n : ℕ) : n.divisors.sum φ = n := by
   rcases n.eq_zero_or_pos with (rfl | hn)
   · simp
   rw [← sum_div_divisors n φ]
@@ -179,14 +179,14 @@ theorem sum_totient (n : ℕ) : n.divisors.sum φ = n := by
   exact sum_congr rfl fun x hx => totient_div_of_dvd (dvd_of_mem_divisors hx)
 #align nat.sum_totient Nat.sum_totient
 
-theorem sum_totient' (n : ℕ) : (∑ m in (range n.succ).filter (· ∣ n), φ m) = n := by
+lemma sum_totient' (n : ℕ) : (∑ m in (range n.succ).filter (· ∣ n), φ m) = n := by
   convert sum_totient _ using 1
   simp only [Nat.divisors, sum_filter, range_eq_Ico]
   rw [sum_eq_sum_Ico_succ_bot] <;> simp
 #align nat.sum_totient' Nat.sum_totient'
 
 /-- When `p` is prime, then the totient of `p ^ (n + 1)` is `p ^ n * (p - 1)` -/
-theorem totient_prime_pow_succ {p : ℕ} (hp : p.Prime) (n : ℕ) : φ (p ^ (n + 1)) = p ^ n * (p - 1) :=
+lemma totient_prime_pow_succ {p : ℕ} (hp : p.Prime) (n : ℕ) : φ (p ^ (n + 1)) = p ^ n * (p - 1) :=
   calc
     φ (p ^ (n + 1)) = ((range (p ^ (n + 1))).filter (Coprime (p ^ (n + 1)))).card :=
       totient_eq_card_coprime _
@@ -216,17 +216,17 @@ theorem totient_prime_pow_succ {p : ℕ} (hp : p.Prime) (n : ℕ) : φ (p ^ (n +
 #align nat.totient_prime_pow_succ Nat.totient_prime_pow_succ
 
 /-- When `p` is prime, then the totient of `p ^ n` is `p ^ (n - 1) * (p - 1)` -/
-theorem totient_prime_pow {p : ℕ} (hp : p.Prime) {n : ℕ} (hn : 0 < n) :
+lemma totient_prime_pow {p : ℕ} (hp : p.Prime) {n : ℕ} (hn : 0 < n) :
     φ (p ^ n) = p ^ (n - 1) * (p - 1) := by
   rcases exists_eq_succ_of_ne_zero (pos_iff_ne_zero.1 hn) with ⟨m, rfl⟩
   exact totient_prime_pow_succ hp _
 #align nat.totient_prime_pow Nat.totient_prime_pow
 
-theorem totient_prime {p : ℕ} (hp : p.Prime) : φ p = p - 1 := by
+lemma totient_prime {p : ℕ} (hp : p.Prime) : φ p = p - 1 := by
   rw [← pow_one p, totient_prime_pow hp] <;> simp
 #align nat.totient_prime Nat.totient_prime
 
-theorem totient_eq_iff_prime {p : ℕ} (hp : 0 < p) : p.totient = p - 1 ↔ p.Prime := by
+lemma totient_eq_iff_prime {p : ℕ} (hp : 0 < p) : p.totient = p - 1 ↔ p.Prime := by
   refine' ⟨fun h => _, totient_prime⟩
   replace hp : 1 < p
   · apply lt_of_le_of_ne
@@ -241,14 +241,14 @@ theorem totient_eq_iff_prime {p : ℕ} (hp : 0 < p) : p.totient = p - 1 ↔ p.Pr
   rwa [succ_le_iff, pos_iff_ne_zero]
 #align nat.totient_eq_iff_prime Nat.totient_eq_iff_prime
 
-theorem card_units_zmod_lt_sub_one {p : ℕ} (hp : 1 < p) [Fintype (ZMod p)ˣ] :
+lemma card_units_zmod_lt_sub_one {p : ℕ} (hp : 1 < p) [Fintype (ZMod p)ˣ] :
     Fintype.card (ZMod p)ˣ ≤ p - 1 := by
   haveI : NeZero p := ⟨(pos_of_gt hp).ne'⟩
   rw [ZMod.card_units_eq_totient p]
   exact Nat.le_pred_of_lt (Nat.totient_lt p hp)
 #align nat.card_units_zmod_lt_sub_one Nat.card_units_zmod_lt_sub_one
 
-theorem prime_iff_card_units (p : ℕ) [Fintype (ZMod p)ˣ] :
+lemma prime_iff_card_units (p : ℕ) [Fintype (ZMod p)ˣ] :
     p.Prime ↔ Fintype.card (ZMod p)ˣ = p - 1 := by
   cases' eq_zero_or_neZero p with hp hp
   · subst hp
@@ -260,11 +260,11 @@ theorem prime_iff_card_units (p : ℕ) [Fintype (ZMod p)ˣ] :
 #align nat.prime_iff_card_units Nat.prime_iff_card_units
 
 @[simp]
-theorem totient_two : φ 2 = 1 :=
+lemma totient_two : φ 2 = 1 :=
   (totient_prime prime_two).trans rfl
 #align nat.totient_two Nat.totient_two
 
-theorem totient_eq_one_iff : ∀ {n : ℕ}, n.totient = 1 ↔ n = 1 ∨ n = 2
+lemma totient_eq_one_iff : ∀ {n : ℕ}, n.totient = 1 ↔ n = 1 ∨ n = 2
   | 0 => by simp
   | 1 => by simp
   | 2 => by simp
@@ -280,7 +280,7 @@ We prove several different statements of this formula. -/
 
 
 /-- Euler's product formula for the totient function. -/
-theorem totient_eq_prod_factorization {n : ℕ} (hn : n ≠ 0) :
+lemma totient_eq_prod_factorization {n : ℕ} (hn : n ≠ 0) :
     φ n = n.factorization.prod fun p k => p ^ (k - 1) * (p - 1) := by
   rw [multiplicative_factorization φ (@totient_mul) totient_one hn]
   apply Finsupp.prod_congr _
@@ -290,7 +290,7 @@ theorem totient_eq_prod_factorization {n : ℕ} (hn : n ≠ 0) :
 #align nat.totient_eq_prod_factorization Nat.totient_eq_prod_factorization
 
 /-- Euler's product formula for the totient function. -/
-theorem totient_mul_prod_factors (n : ℕ) :
+lemma totient_mul_prod_factors (n : ℕ) :
     (φ n * ∏ p in n.factors.toFinset, p) = n * ∏ p in n.factors.toFinset, (p - 1) := by
   by_cases hn : n = 0; · simp [hn]
   rw [totient_eq_prod_factorization hn]
@@ -302,7 +302,7 @@ theorem totient_mul_prod_factors (n : ℕ) :
 #align nat.totient_mul_prod_factors Nat.totient_mul_prod_factors
 
 /-- Euler's product formula for the totient function. -/
-theorem totient_eq_div_factors_mul (n : ℕ) :
+lemma totient_eq_div_factors_mul (n : ℕ) :
     φ n = (n / ∏ p in n.factors.toFinset, p) * ∏ p in n.factors.toFinset, (p - 1) := by
   rw [← mul_div_left n.totient, totient_mul_prod_factors, mul_comm,
     Nat.mul_div_assoc _ (prod_prime_factors_dvd n), mul_comm]
@@ -311,7 +311,7 @@ theorem totient_eq_div_factors_mul (n : ℕ) :
 #align nat.totient_eq_div_factors_mul Nat.totient_eq_div_factors_mul
 
 /-- Euler's product formula for the totient function. -/
-theorem totient_eq_mul_prod_factors (n : ℕ) :
+lemma totient_eq_mul_prod_factors (n : ℕ) :
     (φ n : ℚ) = n * ∏ p in n.factors.toFinset, (1 - (p : ℚ)⁻¹) := by
   by_cases hn : n = 0
   · simp [hn]
@@ -327,7 +327,7 @@ theorem totient_eq_mul_prod_factors (n : ℕ) :
   rw [sub_mul, one_mul, mul_comm, mul_inv_cancel hp', cast_pred hp]
 #align nat.totient_eq_mul_prod_factors Nat.totient_eq_mul_prod_factors
 
-theorem totient_gcd_mul_totient_mul (a b : ℕ) : φ (a.gcd b) * φ (a * b) = φ a * φ b * a.gcd b := by
+lemma totient_gcd_mul_totient_mul (a b : ℕ) : φ (a.gcd b) * φ (a * b) = φ a * φ b * a.gcd b := by
   have shuffle :
     ∀ a1 a2 b1 b2 c1 c2 : ℕ,
       b1 ∣ a1 → b2 ∣ a2 → a1 / b1 * c1 * (a2 / b2 * c2) = a1 * a2 / (b1 * b2) * (c1 * c2) := by
@@ -346,7 +346,7 @@ theorem totient_gcd_mul_totient_mul (a b : ℕ) : φ (a.gcd b) * φ (a * b) = φ
     exact mul_dvd_mul (prod_prime_factors_dvd a) (prod_prime_factors_dvd b)
 #align nat.totient_gcd_mul_totient_mul Nat.totient_gcd_mul_totient_mul
 
-theorem totient_super_multiplicative (a b : ℕ) : φ a * φ b ≤ φ (a * b) := by
+lemma totient_super_multiplicative (a b : ℕ) : φ a * φ b ≤ φ (a * b) := by
   let d := a.gcd b
   rcases(zero_le a).eq_or_lt with (rfl | ha0)
   · simp
@@ -356,7 +356,7 @@ theorem totient_super_multiplicative (a b : ℕ) : φ a * φ b ≤ φ (a * b) :=
   apply mul_le_mul_left' (Nat.totient_le d)
 #align nat.totient_super_multiplicative Nat.totient_super_multiplicative
 
-theorem totient_dvd_of_dvd {a b : ℕ} (h : a ∣ b) : φ a ∣ φ b := by
+lemma totient_dvd_of_dvd {a b : ℕ} (h : a ∣ b) : φ a ∣ φ b := by
   rcases eq_or_ne a 0 with (rfl | ha0)
   · simp [zero_dvd_iff.1 h]
   rcases eq_or_ne b 0 with (rfl | hb0)
@@ -370,14 +370,14 @@ theorem totient_dvd_of_dvd {a b : ℕ} (h : a ∣ b) : φ a ∣ φ b := by
   exact pow_dvd_pow p (tsub_le_tsub_right ((factorization_le_iff_dvd ha0 hb0).2 h p) 1)
 #align nat.totient_dvd_of_dvd Nat.totient_dvd_of_dvd
 
-theorem totient_mul_of_prime_of_dvd {p n : ℕ} (hp : p.Prime) (h : p ∣ n) :
+lemma totient_mul_of_prime_of_dvd {p n : ℕ} (hp : p.Prime) (h : p ∣ n) :
     (p * n).totient = p * n.totient := by
   have h1 := totient_gcd_mul_totient_mul p n
   rw [gcd_eq_left h, mul_assoc] at h1
   simpa [(totient_pos hp.pos).ne', mul_comm] using h1
 #align nat.totient_mul_of_prime_of_dvd Nat.totient_mul_of_prime_of_dvd
 
-theorem totient_mul_of_prime_of_not_dvd {p n : ℕ} (hp : p.Prime) (h : ¬p ∣ n) :
+lemma totient_mul_of_prime_of_not_dvd {p n : ℕ} (hp : p.Prime) (h : ¬p ∣ n) :
     (p * n).totient = (p - 1) * n.totient := by
   rw [totient_mul _, totient_prime hp]
   simpa [h] using coprime_or_dvd_of_prime hp n

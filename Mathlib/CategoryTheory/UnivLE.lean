@@ -19,7 +19,7 @@ open CategoryTheory
 
 noncomputable section
 
-theorem UnivLE.ofEssSurj.{u, v} (w : EssSurj (uliftFunctor.{u, v} : Type v ⥤ Type max u v)) :
+lemma UnivLE.ofEssSurj.{u, v} (w : EssSurj (uliftFunctor.{u, v} : Type v ⥤ Type max u v)) :
     UnivLE.{u, v} :=
   fun a => by
     obtain ⟨a', ⟨m⟩⟩ := w.mem_essImage a
@@ -29,7 +29,7 @@ instance [UnivLE.{u, v}] : EssSurj (uliftFunctor.{u, v} : Type v ⥤ Type max u 
   mem_essImage α :=
     ⟨Shrink α, ⟨Equiv.toIso (Equiv.ulift.trans (equivShrink α).symm)⟩⟩
 
-theorem UnivLE_iff_essSurj.{u, v} :
+lemma UnivLE_iff_essSurj.{u, v} :
     UnivLE.{u, v} ↔ EssSurj (uliftFunctor.{u, v} : Type v ⥤ Type max u v) :=
   ⟨fun _ => inferInstance, fun w => UnivLE.ofEssSurj w⟩
 

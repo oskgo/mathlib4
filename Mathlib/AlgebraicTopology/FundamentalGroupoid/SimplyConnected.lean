@@ -38,7 +38,7 @@ class SimplyConnectedSpace (X : Type*) [TopologicalSpace X] : Prop where
 #align simply_connected_space SimplyConnectedSpace
 #align simply_connected_def simply_connected_def
 
-theorem simply_connected_iff_unique_homotopic (X : Type*) [TopologicalSpace X] :
+lemma simply_connected_iff_unique_homotopic (X : Type*) [TopologicalSpace X] :
     SimplyConnectedSpace X ↔
       Nonempty X ∧ ∀ x y : X, Nonempty (Unique (Path.Homotopic.Quotient x y)) := by
   rw [simply_connected_def, equiv_punit_iff_unique]; rfl
@@ -60,7 +60,7 @@ instance (priority := 100) : PathConnectedSpace X :=
     Joined := fun x y => ⟨(unique_homotopic.2 x y).some.default.out⟩ }
 
 /-- In a simply connected space, any two paths are homotopic -/
-theorem paths_homotopic {x y : X} (p₁ p₂ : Path x y) : Path.Homotopic p₁ p₂ :=
+lemma paths_homotopic {x y : X} (p₁ p₂ : Path x y) : Path.Homotopic p₁ p₂ :=
   Quotient.eq.mp (@Subsingleton.elim (Path.Homotopic.Quotient x y) _ _ _)
 #align simply_connected_space.paths_homotopic SimplyConnectedSpace.paths_homotopic
 
@@ -78,7 +78,7 @@ attribute [local instance] Path.Homotopic.setoid
 
 /-- A space is simply connected iff it is path connected, and there is at most one path
   up to homotopy between any two points. -/
-theorem simply_connected_iff_paths_homotopic {Y : Type*} [TopologicalSpace Y] :
+lemma simply_connected_iff_paths_homotopic {Y : Type*} [TopologicalSpace Y] :
     SimplyConnectedSpace Y ↔
       PathConnectedSpace Y ∧ ∀ x y : Y, Subsingleton (Path.Homotopic.Quotient x y) :=
   ⟨by intro; constructor <;> infer_instance, fun h => by
@@ -87,7 +87,7 @@ theorem simply_connected_iff_paths_homotopic {Y : Type*} [TopologicalSpace Y] :
 #align simply_connected_iff_paths_homotopic simply_connected_iff_paths_homotopic
 
 /-- Another version of `simply_connected_iff_paths_homotopic` -/
-theorem simply_connected_iff_paths_homotopic' {Y : Type*} [TopologicalSpace Y] :
+lemma simply_connected_iff_paths_homotopic' {Y : Type*} [TopologicalSpace Y] :
     SimplyConnectedSpace Y ↔
       PathConnectedSpace Y ∧ ∀ {x y : Y} (p₁ p₂ : Path x y), Path.Homotopic p₁ p₂ := by
   convert simply_connected_iff_paths_homotopic (Y := Y)

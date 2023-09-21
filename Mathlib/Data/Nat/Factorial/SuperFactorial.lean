@@ -33,23 +33,23 @@ section SuperFactorial
 variable {n : ℕ}
 
 @[simp]
-theorem superFactorial_zero : sf 0 = 1 :=
+lemma superFactorial_zero : sf 0 = 1 :=
   rfl
 
-theorem superFactorial_succ (n : ℕ) : (sf n.succ) = (n + 1)! * sf n :=
-  rfl
-
-@[simp]
-theorem superFactorial_one : sf 1 = 1 :=
+lemma superFactorial_succ (n : ℕ) : (sf n.succ) = (n + 1)! * sf n :=
   rfl
 
 @[simp]
-theorem superFactorial_two : sf 2 = 2 :=
+lemma superFactorial_one : sf 1 = 1 :=
+  rfl
+
+@[simp]
+lemma superFactorial_two : sf 2 = 2 :=
   rfl
 
 variable {R : Type*} [CommRing R]
 
-theorem det_vandermonde_id_eq_superFactorial (n : ℕ) :
+lemma det_vandermonde_id_eq_superFactorial (n : ℕ) :
     (Matrix.vandermonde (fun (i : Fin (n + 1)) ↦ (i : R))).det = Nat.superFactorial n := by
   induction' n with n hn
   · simp [Matrix.det_vandermonde]

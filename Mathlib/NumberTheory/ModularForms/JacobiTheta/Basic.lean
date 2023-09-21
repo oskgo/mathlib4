@@ -33,7 +33,7 @@ noncomputable def jacobiTheta (z : ℂ) : ℂ :=
   ∑' n : ℤ, cexp (π * I * (n : ℂ) ^ 2 * z)
 #align jacobi_theta jacobiTheta
 
-theorem norm_exp_mul_sq_le {z : ℂ} (hz : 0 < z.im) (n : ℤ) :
+lemma norm_exp_mul_sq_le {z : ℂ} (hz : 0 < z.im) (n : ℤ) :
     ‖cexp (π * I * (n : ℂ) ^ 2 * z)‖ ≤ rexp (-π * z.im) ^ n.natAbs := by
   let y := rexp (-π * z.im)
   have h : y < 1 := exp_lt_one_iff.mpr (mul_neg_of_neg_of_pos (neg_lt_zero.mpr pi_pos) hz)
@@ -50,7 +50,7 @@ theorem norm_exp_mul_sq_le {z : ℂ} (hz : 0 < z.im) (n : ℤ) :
     exact pow_le_pow_of_le_one (exp_pos _).le h.le ((sq n.natAbs).symm ▸ n.natAbs.le_mul_self)
 #align norm_exp_mul_sq_le norm_exp_mul_sq_le
 
-theorem exists_summable_bound_exp_mul_sq {R : ℝ} (hR : 0 < R) :
+lemma exists_summable_bound_exp_mul_sq {R : ℝ} (hR : 0 < R) :
     ∃ bd : ℤ → ℝ, Summable bd ∧ ∀ {τ : ℂ} (_ : R ≤ τ.im) (n : ℤ),
       ‖cexp (π * I * (n : ℂ) ^ 2 * τ)‖ ≤ bd n := by
   let y := rexp (-π * R)
@@ -64,20 +64,20 @@ theorem exists_summable_bound_exp_mul_sq {R : ℝ} (hR : 0 < R) :
       summable_geometric_of_lt_1 (Real.exp_pos _).le h
 #align exists_summable_bound_exp_mul_sq exists_summable_bound_exp_mul_sq
 
-theorem summable_exp_mul_sq {z : ℂ} (hz : 0 < z.im) :
+lemma summable_exp_mul_sq {z : ℂ} (hz : 0 < z.im) :
     Summable fun n : ℤ => cexp (π * I * (n : ℂ) ^ 2 * z) :=
   let ⟨_, h, h'⟩ := exists_summable_bound_exp_mul_sq hz
   summable_norm_iff.mp (summable_of_nonneg_of_le (fun _ => norm_nonneg _) (h' <| le_refl _) h)
 #align summable_exp_mul_sq summable_exp_mul_sq
 
-theorem jacobiTheta_two_add (z : ℂ) : jacobiTheta (2 + z) = jacobiTheta z := by
+lemma jacobiTheta_two_add (z : ℂ) : jacobiTheta (2 + z) = jacobiTheta z := by
   refine' tsum_congr fun n => _
   suffices cexp (↑π * I * (n : ℂ) ^ 2 * 2) = 1 by rw [mul_add, Complex.exp_add, this, one_mul]
   rw [(by push_cast; ring : ↑π * I * ↑n ^ 2 * 2 = ↑(n ^ 2) * (2 * π * I)), Complex.exp_int_mul,
     Complex.exp_two_pi_mul_I, one_zpow]
 #align jacobi_theta_two_add jacobiTheta_two_add
 
-theorem jacobiTheta_T_sq_smul (τ : ℍ) : jacobiTheta ↑(ModularGroup.T ^ 2 • τ) = jacobiTheta τ := by
+lemma jacobiTheta_T_sq_smul (τ : ℍ) : jacobiTheta ↑(ModularGroup.T ^ 2 • τ) = jacobiTheta τ := by
   suffices ↑(ModularGroup.T ^ 2 • τ) = (2 : ℂ) + ↑τ by simp_rw [this, jacobiTheta_two_add]
   have : ModularGroup.T ^ (2 : ℕ) = ModularGroup.T ^ (2 : ℤ) := rfl
   simp_rw [this, UpperHalfPlane.modular_T_zpow_smul, UpperHalfPlane.coe_vadd]
@@ -85,7 +85,7 @@ theorem jacobiTheta_T_sq_smul (τ : ℍ) : jacobiTheta ↑(ModularGroup.T ^ 2 �
 set_option linter.uppercaseLean3 false in
 #align jacobi_theta_T_sq_smul jacobiTheta_T_sq_smul
 
-theorem jacobiTheta_S_smul (τ : ℍ) :
+lemma jacobiTheta_S_smul (τ : ℍ) :
     jacobiTheta ↑(ModularGroup.S • τ) = (-I * τ) ^ (1 / 2 : ℂ) * jacobiTheta τ := by
   unfold jacobiTheta
   rw [UpperHalfPlane.modular_S_smul, UpperHalfPlane.coe_mk]
@@ -113,7 +113,7 @@ theorem jacobiTheta_S_smul (τ : ℍ) :
 set_option linter.uppercaseLean3 false in
 #align jacobi_theta_S_smul jacobiTheta_S_smul
 
-theorem hasSum_nat_jacobiTheta {z : ℂ} (hz : 0 < im z) :
+lemma hasSum_nat_jacobiTheta {z : ℂ} (hz : 0 < im z) :
     HasSum (fun n : ℕ => cexp (π * I * ((n : ℂ) + 1) ^ 2 * z)) ((jacobiTheta z - 1) / 2) := by
   have := (summable_exp_mul_sq hz).hasSum.sum_nat_of_sum_int
   rw [← @hasSum_nat_add_iff' ℂ _ _ _ _ 1] at this
@@ -125,14 +125,14 @@ theorem hasSum_nat_jacobiTheta {z : ℂ} (hz : 0 < im z) :
   simp_rw [mul_div_cancel (G₀ := ℂ) _ two_ne_zero]
 #align has_sum_nat_jacobi_theta hasSum_nat_jacobiTheta
 
-theorem jacobiTheta_eq_tsum_nat {z : ℂ} (hz : 0 < im z) :
+lemma jacobiTheta_eq_tsum_nat {z : ℂ} (hz : 0 < im z) :
     jacobiTheta z = ↑1 + ↑2 * ∑' n : ℕ, cexp (π * I * ((n : ℂ) + 1) ^ 2 * z) := by
   rw [(hasSum_nat_jacobiTheta hz).tsum_eq, mul_div_cancel' _ (two_ne_zero' ℂ), ← add_sub_assoc,
     add_sub_cancel']
 #align jacobi_theta_eq_tsum_nat jacobiTheta_eq_tsum_nat
 
 /-- An explicit upper bound for `‖jacobiTheta τ - 1‖`. -/
-theorem norm_jacobiTheta_sub_one_le {z : ℂ} (hz : 0 < im z) :
+lemma norm_jacobiTheta_sub_one_le {z : ℂ} (hz : 0 < im z) :
     ‖jacobiTheta z - 1‖ ≤ 2 / (1 - rexp (-π * z.im)) * rexp (-π * z.im) := by
   suffices ‖∑' n : ℕ, cexp (π * I * ((n : ℂ) + 1) ^ 2 * z)‖ ≤
       rexp (-π * z.im) / (1 - rexp (-π * z.im)) by
@@ -158,7 +158,7 @@ theorem norm_jacobiTheta_sub_one_le {z : ℂ} (hz : 0 < im z) :
 #align norm_jacobi_theta_sub_one_le norm_jacobiTheta_sub_one_le
 
 /-- The norm of `jacobiTheta τ - 1` decays exponentially as `im τ → ∞`. -/
-theorem isBigO_at_im_infty_jacobiTheta_sub_one :
+lemma isBigO_at_im_infty_jacobiTheta_sub_one :
     (fun τ => jacobiTheta τ - 1) =O[comap im atTop] fun τ => rexp (-π * τ.im) := by
   simp_rw [IsBigO, IsBigOWith, Filter.eventually_comap, Filter.eventually_atTop]
   refine' ⟨2 / (1 - rexp (-π)), 1, fun y hy z hz =>
@@ -173,7 +173,7 @@ theorem isBigO_at_im_infty_jacobiTheta_sub_one :
 set_option linter.uppercaseLean3 false in
 #align is_O_at_im_infty_jacobi_theta_sub_one isBigO_at_im_infty_jacobiTheta_sub_one
 
-theorem differentiableAt_jacobiTheta {z : ℂ} (hz : 0 < im z) :
+lemma differentiableAt_jacobiTheta {z : ℂ} (hz : 0 < im z) :
     DifferentiableAt ℂ jacobiTheta z := by
   suffices ∀ (y : ℝ) (_ : 0 < y),
       DifferentiableOn ℂ (fun z => ∑' n : ℤ, cexp (π * I * (n : ℂ) ^ 2 * z)) {w : ℂ | y < im w} by
@@ -189,6 +189,6 @@ theorem differentiableAt_jacobiTheta {z : ℂ} (hz : 0 < im z) :
   exact differentiableOn_tsum_of_summable_norm bd_s h1 h2 fun i w hw => le_bd (le_of_lt hw) i
 #align differentiable_at_jacobi_theta differentiableAt_jacobiTheta
 
-theorem continuousAt_jacobiTheta {z : ℂ} (hz : 0 < im z) : ContinuousAt jacobiTheta z :=
+lemma continuousAt_jacobiTheta {z : ℂ} (hz : 0 < im z) : ContinuousAt jacobiTheta z :=
   (differentiableAt_jacobiTheta hz).continuousAt
 #align continuous_at_jacobi_theta continuousAt_jacobiTheta

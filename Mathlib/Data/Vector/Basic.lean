@@ -36,13 +36,13 @@ attribute [simp] head_cons tail_cons
 instance [Inhabited α] : Inhabited (Vector α n) :=
   ⟨ofFn default⟩
 
-theorem toList_injective : Function.Injective (@toList α n) :=
+lemma toList_injective : Function.Injective (@toList α n) :=
   Subtype.val_injective
 #align vector.to_list_injective Vector.toList_injective
 
 /-- Two `v w : Vector α n` are equal iff they are equal at every single index. -/
 @[ext]
-theorem ext : ∀ {v w : Vector α n} (_ : ∀ m : Fin n, Vector.get v m = Vector.get w m), v = w
+lemma ext : ∀ {v w : Vector α n} (_ : ∀ m : Fin n, Vector.get v m = Vector.get w m), v = w
   | ⟨v, hv⟩, ⟨w, hw⟩, h =>
     Subtype.eq (List.ext_get (by rw [hv, hw]) fun m hm _ => h ⟨m, hv ▸ hm⟩)
 #align vector.ext Vector.ext
@@ -53,40 +53,40 @@ instance zero_subsingleton : Subsingleton (Vector α 0) :=
 #align vector.zero_subsingleton Vector.zero_subsingleton
 
 @[simp]
-theorem cons_val (a : α) : ∀ v : Vector α n, (a ::ᵥ v).val = a :: v.val
+lemma cons_val (a : α) : ∀ v : Vector α n, (a ::ᵥ v).val = a :: v.val
   | ⟨_, _⟩ => rfl
 #align vector.cons_val Vector.cons_val
 
 #align vector.cons_head Vector.head_cons
 #align vector.cons_tail Vector.tail_cons
 
-theorem eq_cons_iff (a : α) (v : Vector α n.succ) (v' : Vector α n) :
+lemma eq_cons_iff (a : α) (v : Vector α n.succ) (v' : Vector α n) :
     v = a ::ᵥ v' ↔ v.head = a ∧ v.tail = v' :=
   ⟨fun h => h.symm ▸ ⟨head_cons a v', tail_cons a v'⟩, fun h =>
     _root_.trans (cons_head_tail v).symm (by rw [h.1, h.2])⟩
 #align vector.eq_cons_iff Vector.eq_cons_iff
 
-theorem ne_cons_iff (a : α) (v : Vector α n.succ) (v' : Vector α n) :
+lemma ne_cons_iff (a : α) (v : Vector α n.succ) (v' : Vector α n) :
     v ≠ a ::ᵥ v' ↔ v.head ≠ a ∨ v.tail ≠ v' := by rw [Ne.def, eq_cons_iff a v v', not_and_or]
 #align vector.ne_cons_iff Vector.ne_cons_iff
 
-theorem exists_eq_cons (v : Vector α n.succ) : ∃ (a : α) (as : Vector α n), v = a ::ᵥ as :=
+lemma exists_eq_cons (v : Vector α n.succ) : ∃ (a : α) (as : Vector α n), v = a ::ᵥ as :=
   ⟨v.head, v.tail, (eq_cons_iff v.head v v.tail).2 ⟨rfl, rfl⟩⟩
 #align vector.exists_eq_cons Vector.exists_eq_cons
 
 @[simp]
-theorem toList_ofFn : ∀ {n} (f : Fin n → α), toList (ofFn f) = List.ofFn f
+lemma toList_ofFn : ∀ {n} (f : Fin n → α), toList (ofFn f) = List.ofFn f
   | 0, f => rfl
   | n + 1, f => by rw [ofFn, List.ofFn_succ, toList_cons, toList_ofFn]
 #align vector.to_list_of_fn Vector.toList_ofFn
 
 @[simp]
-theorem mk_toList : ∀ (v : Vector α n) (h), (⟨toList v, h⟩ : Vector α n) = v
+lemma mk_toList : ∀ (v : Vector α n) (h), (⟨toList v, h⟩ : Vector α n) = v
   | ⟨_, _⟩, _ => rfl
 #align vector.mk_to_list Vector.mk_toList
 
 
-@[simp] theorem length_val (v : Vector α n) : v.val.length = n := v.2
+@[simp] lemma length_val (v : Vector α n) : v.val.length = n := v.2
 
 -- porting notes: not used in mathlib and coercions done differently in Lean 4
 -- @[simp]
@@ -96,63 +96,63 @@ theorem mk_toList : ∀ (v : Vector α n) (h), (⟨toList v, h⟩ : Vector α n)
 #noalign vector.length_coe
 
 @[simp]
-theorem toList_map {β : Type*} (v : Vector α n) (f : α → β) : (v.map f).toList = v.toList.map f :=
+lemma toList_map {β : Type*} (v : Vector α n) (f : α → β) : (v.map f).toList = v.toList.map f :=
   by cases v; rfl
 #align vector.to_list_map Vector.toList_map
 
 @[simp]
-theorem head_map {β : Type*} (v : Vector α (n + 1)) (f : α → β) : (v.map f).head = f v.head := by
+lemma head_map {β : Type*} (v : Vector α (n + 1)) (f : α → β) : (v.map f).head = f v.head := by
   obtain ⟨a, v', h⟩ := Vector.exists_eq_cons v
   rw [h, map_cons, head_cons, head_cons]
 #align vector.head_map Vector.head_map
 
 @[simp]
-theorem tail_map {β : Type*} (v : Vector α (n + 1)) (f : α → β) :
+lemma tail_map {β : Type*} (v : Vector α (n + 1)) (f : α → β) :
     (v.map f).tail = v.tail.map f := by
   obtain ⟨a, v', h⟩ := Vector.exists_eq_cons v
   rw [h, map_cons, tail_cons, tail_cons]
 #align vector.tail_map Vector.tail_map
 
-theorem get_eq_get (v : Vector α n) (i : Fin n) :
+lemma get_eq_get (v : Vector α n) (i : Fin n) :
     v.get i = v.toList.get (Fin.cast v.toList_length.symm i) :=
   rfl
 #align vector.nth_eq_nth_le Vector.get_eq_getₓ
 
 -- porting notes: `nthLe` deprecated for `get`
 @[deprecated get_eq_get]
-theorem nth_eq_nthLe :
+lemma nth_eq_nthLe :
     ∀ (v : Vector α n) (i), get v i = v.toList.nthLe i.1 (by rw [toList_length]; exact i.2)
   | ⟨_, _⟩, _ => rfl
 
 @[simp]
-theorem get_replicate (a : α) (i : Fin n) : (Vector.replicate n a).get i = a := by
+lemma get_replicate (a : α) (i : Fin n) : (Vector.replicate n a).get i = a := by
   apply List.get_replicate
 #align vector.nth_repeat Vector.get_replicate
 
 @[simp]
-theorem get_map {β : Type*} (v : Vector α n) (f : α → β) (i : Fin n) :
+lemma get_map {β : Type*} (v : Vector α n) (f : α → β) (i : Fin n) :
     (v.map f).get i = f (v.get i) := by
   cases v; simp [Vector.map, get_eq_get]; rfl
 #align vector.nth_map Vector.get_map
 
 @[simp]
-theorem map₂_nil (f : α → β → γ) : Vector.map₂ f nil nil = nil :=
+lemma map₂_nil (f : α → β → γ) : Vector.map₂ f nil nil = nil :=
   rfl
 
 @[simp]
-theorem map₂_cons (hd₁ : α) (tl₁ : Vector α n) (hd₂ : β) (tl₂ : Vector β n) (f : α → β → γ) :
+lemma map₂_cons (hd₁ : α) (tl₁ : Vector α n) (hd₂ : β) (tl₂ : Vector β n) (f : α → β → γ) :
     Vector.map₂ f (hd₁ ::ᵥ tl₁) (hd₂ ::ᵥ tl₂) = f hd₁ hd₂ ::ᵥ (Vector.map₂ f tl₁ tl₂) :=
   rfl
 
 @[simp]
-theorem get_ofFn {n} (f : Fin n → α) (i) : get (ofFn f) i = f i := by
+lemma get_ofFn {n} (f : Fin n → α) (i) : get (ofFn f) i = f i := by
   conv_rhs => erw [← List.get_ofFn f ⟨i, by simp⟩]
   simp only [get_eq_get]
   congr <;> simp [Fin.heq_ext_iff]
 #align vector.nth_of_fn Vector.get_ofFn
 
 @[simp]
-theorem ofFn_get (v : Vector α n) : ofFn (get v) = v := by
+lemma ofFn_get (v : Vector α n) : ofFn (get v) = v := by
   rcases v with ⟨l, rfl⟩
   apply toList_injective
   dsimp
@@ -164,7 +164,7 @@ def _root_.Equiv.vectorEquivFin (α : Type*) (n : ℕ) : Vector α n ≃ (Fin n 
   ⟨Vector.get, Vector.ofFn, Vector.ofFn_get, fun f => funext <| Vector.get_ofFn f⟩
 #align equiv.vector_equiv_fin Equiv.vectorEquivFin
 
-theorem get_tail (x : Vector α n) (i) :
+lemma get_tail (x : Vector α n) (i) :
     x.tail.get i = x.get ⟨i.1 + 1, lt_tsub_iff_right.mp i.2⟩ := by
   cases' i with i ih; dsimp
   rcases x with ⟨_ | _, h⟩ <;> try rfl
@@ -174,29 +174,29 @@ theorem get_tail (x : Vector α n) (i) :
 #align vector.nth_tail Vector.get_tail
 
 @[simp]
-theorem get_tail_succ : ∀ (v : Vector α n.succ) (i : Fin n), get (tail v) i = get v i.succ
+lemma get_tail_succ : ∀ (v : Vector α n.succ) (i : Fin n), get (tail v) i = get v i.succ
   | ⟨a :: l, e⟩, ⟨i, h⟩ => by simp [get_eq_get]; rfl
 #align vector.nth_tail_succ Vector.get_tail_succ
 
 @[simp]
-theorem tail_val : ∀ v : Vector α n.succ, v.tail.val = v.val.tail
+lemma tail_val : ∀ v : Vector α n.succ, v.tail.val = v.val.tail
   | ⟨_ :: _, _⟩ => rfl
 #align vector.tail_val Vector.tail_val
 
 /-- The `tail` of a `nil` vector is `nil`. -/
 @[simp]
-theorem tail_nil : (@nil α).tail = nil :=
+lemma tail_nil : (@nil α).tail = nil :=
   rfl
 #align vector.tail_nil Vector.tail_nil
 
 /-- The `tail` of a vector made up of one element is `nil`. -/
 @[simp]
-theorem singleton_tail : ∀ (v : Vector α 1), v.tail = Vector.nil
+lemma singleton_tail : ∀ (v : Vector α 1), v.tail = Vector.nil
   | ⟨[_], _⟩ => rfl
 #align vector.singleton_tail Vector.singleton_tail
 
 @[simp]
-theorem tail_ofFn {n : ℕ} (f : Fin n.succ → α) : tail (ofFn f) = ofFn fun i => f i.succ :=
+lemma tail_ofFn {n : ℕ} (f : Fin n.succ → α) : tail (ofFn f) = ofFn fun i => f i.succ :=
   (ofFn_get _).symm.trans <| by
     congr
     funext i
@@ -205,41 +205,41 @@ theorem tail_ofFn {n : ℕ} (f : Fin n.succ → α) : tail (ofFn f) = ofFn fun i
 #align vector.tail_of_fn Vector.tail_ofFn
 
 @[simp]
-theorem toList_empty (v : Vector α 0) : v.toList = [] :=
+lemma toList_empty (v : Vector α 0) : v.toList = [] :=
   List.length_eq_zero.mp v.2
 #align vector.to_list_empty Vector.toList_empty
 
 /-- The list that makes up a `Vector` made up of a single element,
 retrieved via `toList`, is equal to the list of that single element. -/
 @[simp]
-theorem toList_singleton (v : Vector α 1) : v.toList = [v.head] := by
+lemma toList_singleton (v : Vector α 1) : v.toList = [v.head] := by
   rw [← v.cons_head_tail]
   simp only [toList_cons, toList_nil, head_cons, eq_self_iff_true, and_self_iff, singleton_tail]
 #align vector.to_list_singleton Vector.toList_singleton
 
 @[simp]
-theorem empty_toList_eq_ff (v : Vector α (n + 1)) : v.toList.isEmpty = false :=
+lemma empty_toList_eq_ff (v : Vector α (n + 1)) : v.toList.isEmpty = false :=
   match v with
   | ⟨_ :: _, _⟩ => rfl
 #align vector.empty_to_list_eq_ff Vector.empty_toList_eq_ff
 
-theorem not_empty_toList (v : Vector α (n + 1)) : ¬v.toList.isEmpty := by
+lemma not_empty_toList (v : Vector α (n + 1)) : ¬v.toList.isEmpty := by
   simp only [empty_toList_eq_ff, Bool.coe_sort_false, not_false_iff]
 #align vector.not_empty_to_list Vector.not_empty_toList
 
 /-- Mapping under `id` does not change a vector. -/
 @[simp]
-theorem map_id {n : ℕ} (v : Vector α n) : Vector.map id v = v :=
+lemma map_id {n : ℕ} (v : Vector α n) : Vector.map id v = v :=
   Vector.eq _ _ (by simp only [List.map_id, Vector.toList_map])
 #align vector.map_id Vector.map_id
 
-theorem nodup_iff_injective_get {v : Vector α n} : v.toList.Nodup ↔ Function.Injective v.get := by
+lemma nodup_iff_injective_get {v : Vector α n} : v.toList.Nodup ↔ Function.Injective v.get := by
   cases' v with l hl
   subst hl
   exact List.nodup_iff_injective_get
 #align vector.nodup_iff_nth_inj Vector.nodup_iff_injective_get
 
-theorem head?_toList : ∀ v : Vector α n.succ, (toList v).head? = some (head v)
+lemma head?_toList : ∀ v : Vector α n.succ, (toList v).head? = some (head v)
   | ⟨_ :: _, _⟩ => rfl
 #align vector.head'_to_list Vector.head?_toList
 
@@ -250,39 +250,39 @@ def reverse (v : Vector α n) : Vector α n :=
 
 /-- The `List` of a vector after a `reverse`, retrieved by `toList` is equal
 to the `List.reverse` after retrieving a vector's `toList`. -/
-theorem toList_reverse {v : Vector α n} : v.reverse.toList = v.toList.reverse :=
+lemma toList_reverse {v : Vector α n} : v.reverse.toList = v.toList.reverse :=
   rfl
 #align vector.to_list_reverse Vector.toList_reverse
 
 @[simp]
-theorem reverse_reverse {v : Vector α n} : v.reverse.reverse = v := by
+lemma reverse_reverse {v : Vector α n} : v.reverse.reverse = v := by
   cases v
   simp [Vector.reverse]
 #align vector.reverse_reverse Vector.reverse_reverse
 
 @[simp]
-theorem get_zero : ∀ v : Vector α n.succ, get v 0 = head v
+lemma get_zero : ∀ v : Vector α n.succ, get v 0 = head v
   | ⟨_ :: _, _⟩ => rfl
 #align vector.nth_zero Vector.get_zero
 
 @[simp]
-theorem head_ofFn {n : ℕ} (f : Fin n.succ → α) : head (ofFn f) = f 0 := by
+lemma head_ofFn {n : ℕ} (f : Fin n.succ → α) : head (ofFn f) = f 0 := by
   rw [← get_zero, get_ofFn]
 #align vector.head_of_fn Vector.head_ofFn
 
 --@[simp] Porting note: simp can prove it
-theorem get_cons_zero (a : α) (v : Vector α n) : get (a ::ᵥ v) 0 = a := by simp [get_zero]
+lemma get_cons_zero (a : α) (v : Vector α n) : get (a ::ᵥ v) 0 = a := by simp [get_zero]
 #align vector.nth_cons_zero Vector.get_cons_zero
 
 /-- Accessing the nth element of a vector made up
 of one element `x : α` is `x` itself. -/
 @[simp]
-theorem get_cons_nil : ∀ {ix : Fin 1} (x : α), get (x ::ᵥ nil) ix = x
+lemma get_cons_nil : ∀ {ix : Fin 1} (x : α), get (x ::ᵥ nil) ix = x
   | ⟨0, _⟩, _ => rfl
 #align vector.nth_cons_nil Vector.get_cons_nil
 
 @[simp]
-theorem get_cons_succ (a : α) (v : Vector α n) (i : Fin n) : get (a ::ᵥ v) i.succ = get v i := by
+lemma get_cons_succ (a : α) (v : Vector α n) (i : Fin n) : get (a ::ᵥ v) i.succ = get v i := by
   rw [← get_tail_succ, tail_cons]
 #align vector.nth_cons_succ Vector.get_cons_succ
 
@@ -292,12 +292,12 @@ def last (v : Vector α (n + 1)) : α :=
 #align vector.last Vector.last
 
 /-- The last element of a `Vector`, given that the vector is at least one element. -/
-theorem last_def {v : Vector α (n + 1)} : v.last = v.get (Fin.last n) :=
+lemma last_def {v : Vector α (n + 1)} : v.last = v.get (Fin.last n) :=
   rfl
 #align vector.last_def Vector.last_def
 
 /-- The `last` element of a vector is the `head` of the `reverse` vector. -/
-theorem reverse_get_zero {v : Vector α (n + 1)} : v.reverse.head = v.last := by
+lemma reverse_get_zero {v : Vector α (n + 1)} : v.reverse.head = v.last := by
   rw [← get_zero, last_def, get_eq_get, get_eq_get]
   simp_rw [toList_reverse]
   rw [← Option.some_inj, Fin.cast, Fin.cast, ← List.get?_eq_get, ← List.get?_eq_get,
@@ -324,7 +324,7 @@ def scanl : Vector β (n + 1) :=
 
 /-- Providing an empty vector to `scanl` gives the starting value `b : β`. -/
 @[simp]
-theorem scanl_nil : scanl f b nil = b ::ᵥ nil :=
+lemma scanl_nil : scanl f b nil = b ::ᵥ nil :=
   rfl
 #align vector.scanl_nil Vector.scanl_nil
 
@@ -335,7 +335,7 @@ into the provided starting value `b : β` and the recursed `scanl`
 This lemma is the `cons` version of `scanl_get`.
 -/
 @[simp]
-theorem scanl_cons (x : α) : scanl f b (x ::ᵥ v) = b ::ᵥ scanl f (f b x) v := by
+lemma scanl_cons (x : α) : scanl f b (x ::ᵥ v) = b ::ᵥ scanl f (f b x) v := by
   simp only [scanl, toList_cons, List.scanl]; dsimp
   simp only [cons]; rfl
 #align vector.scanl_cons Vector.scanl_cons
@@ -344,7 +344,7 @@ theorem scanl_cons (x : α) : scanl f b (x ::ᵥ v) = b ::ᵥ scanl f (f b x) v 
 of the underlying `List` of the original `Vector`.
 -/
 @[simp]
-theorem scanl_val : ∀ {v : Vector α n}, (scanl f b v).val = List.scanl f b v.val
+lemma scanl_val : ∀ {v : Vector α n}, (scanl f b v).val = List.scanl f b v.val
   | _ => rfl
 #align vector.scanl_val Vector.scanl_val
 
@@ -352,7 +352,7 @@ theorem scanl_val : ∀ {v : Vector α n}, (scanl f b v).val = List.scanl f b v.
 of the `toList` of the original `Vector`.
 -/
 @[simp]
-theorem toList_scanl : (scanl f b v).toList = List.scanl f b v.toList :=
+lemma toList_scanl : (scanl f b v).toList = List.scanl f b v.toList :=
   rfl
 #align vector.to_list_scanl Vector.toList_scanl
 
@@ -361,7 +361,7 @@ theorem toList_scanl : (scanl f b v).toList = List.scanl f b v.toList :=
 and the mapped `f b x : β` as the last value.
 -/
 @[simp]
-theorem scanl_singleton (v : Vector α 1) : scanl f b v = b ::ᵥ f b v.head ::ᵥ nil := by
+lemma scanl_singleton (v : Vector α 1) : scanl f b v = b ::ᵥ f b v.head ::ᵥ nil := by
   rw [← cons_head_tail v]
   simp only [scanl_cons, scanl_nil, head_cons, singleton_tail]
 #align vector.scanl_singleton Vector.scanl_singleton
@@ -370,7 +370,7 @@ theorem scanl_singleton (v : Vector α 1) : scanl f b v = b ::ᵥ f b v.head ::�
 retrieved via `head`, is the starting value `b : β`.
 -/
 @[simp]
-theorem scanl_head : (scanl f b v).head = b := by
+lemma scanl_head : (scanl f b v).head = b := by
   cases n
   · have : v = nil := by simp only [Nat.zero_eq, eq_iff_true_of_subsingleton]
     simp only [this, scanl_nil, head_cons]
@@ -387,7 +387,7 @@ function `f : β → α → β` of the `castSucc i` element of
 This lemma is the `get` version of `scanl_cons`.
 -/
 @[simp]
-theorem scanl_get (i : Fin n) :
+lemma scanl_get (i : Fin n) :
     (scanl f b v).get i.succ = f ((scanl f b v).get (Fin.castSucc i)) (v.get i) := by
   cases' n with n
   · exact i.elim0
@@ -413,7 +413,7 @@ def mOfFn {m} [Monad m] {α : Type u} : ∀ {n}, (Fin n → m α) → m (Vector 
     pure (a ::ᵥ v)
 #align vector.m_of_fn Vector.mOfFn
 
-theorem mOfFn_pure {m} [Monad m] [LawfulMonad m] {α} :
+lemma mOfFn_pure {m} [Monad m] [LawfulMonad m] {α} :
     ∀ {n} (f : Fin n → α), (@mOfFn m _ _ _ fun i => pure (f i)) = pure (ofFn f)
   | 0, f => rfl
   | n + 1, f => by
@@ -432,12 +432,12 @@ def mmap {m} [Monad m] {α} {β : Type u} (f : α → m β) : ∀ {n}, Vector α
 #align vector.mmap Vector.mmap
 
 @[simp]
-theorem mmap_nil {m} [Monad m] {α β} (f : α → m β) : mmap f nil = pure nil :=
+lemma mmap_nil {m} [Monad m] {α β} (f : α → m β) : mmap f nil = pure nil :=
   rfl
 #align vector.mmap_nil Vector.mmap_nil
 
 @[simp]
-theorem mmap_cons {m} [Monad m] {α β} (f : α → m β) (a) :
+lemma mmap_cons {m} [Monad m] {α β} (f : α → m β) (a) :
     ∀ {n} (v : Vector α n),
       mmap f (a ::ᵥ v) = do
         let h' ← f a
@@ -555,22 +555,22 @@ def insertNth (a : α) (i : Fin (n + 1)) (v : Vector α n) : Vector α (n + 1) :
     exact i.2⟩
 #align vector.insert_nth Vector.insertNth
 
-theorem insertNth_val {i : Fin (n + 1)} {v : Vector α n} :
+lemma insertNth_val {i : Fin (n + 1)} {v : Vector α n} :
     (v.insertNth a i).val = v.val.insertNth i.1 a :=
   rfl
 #align vector.insert_nth_val Vector.insertNth_val
 
 @[simp]
-theorem removeNth_val {i : Fin n} : ∀ {v : Vector α n}, (removeNth i v).val = v.val.removeNth i
+lemma removeNth_val {i : Fin n} : ∀ {v : Vector α n}, (removeNth i v).val = v.val.removeNth i
   | _ => rfl
 #align vector.remove_nth_val Vector.removeNth_val
 
-theorem removeNth_insertNth {v : Vector α n} {i : Fin (n + 1)} :
+lemma removeNth_insertNth {v : Vector α n} {i : Fin (n + 1)} :
     removeNth i (insertNth a i v) = v :=
   Subtype.eq <| List.removeNth_insertNth i.1 v.1
 #align vector.remove_nth_insert_nth Vector.removeNth_insertNth
 
-theorem removeNth_insertNth' {v : Vector α (n + 1)} :
+lemma removeNth_insertNth' {v : Vector α (n + 1)} :
     ∀ {i : Fin (n + 1)} {j : Fin (n + 2)},
       removeNth (j.succAbove i) (insertNth a j v) = insertNth a (i.predAbove j) (removeNth i v)
   | ⟨i, hi⟩, ⟨j, hj⟩ => by
@@ -591,7 +591,7 @@ theorem removeNth_insertNth' {v : Vector α (n + 1)} :
       · simpa [not_lt] using hij
 #align vector.remove_nth_insert_nth' Vector.removeNth_insertNth'
 
-theorem insertNth_comm (a b : α) (i j : Fin (n + 1)) (h : i ≤ j) :
+lemma insertNth_comm (a b : α) (i j : Fin (n + 1)) (h : i ≤ j) :
     ∀ v : Vector α n,
       (v.insertNth a i).insertNth b j.succ = (v.insertNth b j).insertNth a (Fin.castSucc i)
   | ⟨l, hl⟩ => by
@@ -614,17 +614,17 @@ def set (v : Vector α n) (i : Fin n) (a : α) : Vector α n :=
 #align vector.update_nth Vector.set
 
 @[simp]
-theorem toList_set (v : Vector α n) (i : Fin n) (a : α) :
+lemma toList_set (v : Vector α n) (i : Fin n) (a : α) :
     (v.set i a).toList = v.toList.set i a :=
   rfl
 #align vector.to_list_update_nth Vector.toList_set
 
 @[simp]
-theorem get_set_same (v : Vector α n) (i : Fin n) (a : α) : (v.set i a).get i = a := by
+lemma get_set_same (v : Vector α n) (i : Fin n) (a : α) : (v.set i a).get i = a := by
   cases v; cases i; simp [Vector.set, get_eq_get]
 #align vector.nth_update_nth_same Vector.get_set_same
 
-theorem get_set_of_ne {v : Vector α n} {i j : Fin n} (h : i ≠ j) (a : α) :
+lemma get_set_of_ne {v : Vector α n} {i j : Fin n} (h : i ≠ j) (a : α) :
     (v.set i a).get j = v.get j := by
   cases v; cases i; cases j
   simp [Vector.set, Vector.get_eq_get, List.get_set_of_ne (Fin.vne_of_ne h)]
@@ -632,20 +632,20 @@ theorem get_set_of_ne {v : Vector α n} {i j : Fin n} (h : i ≠ j) (a : α) :
   · simpa using h
 #align vector.nth_update_nth_of_ne Vector.get_set_of_ne
 
-theorem get_set_eq_if {v : Vector α n} {i j : Fin n} (a : α) :
+lemma get_set_eq_if {v : Vector α n} {i j : Fin n} (a : α) :
     (v.set i a).get j = if i = j then a else v.get j := by
   split_ifs <;> (try simp [*]); rwa [get_set_of_ne]
 #align vector.nth_update_nth_eq_if Vector.get_set_eq_if
 
 @[to_additive]
-theorem prod_set [Monoid α] (v : Vector α n) (i : Fin n) (a : α) :
+lemma prod_set [Monoid α] (v : Vector α n) (i : Fin n) (a : α) :
     (v.set i a).toList.prod = (v.take i).toList.prod * a * (v.drop (i + 1)).toList.prod := by
   refine' (List.prod_set v.toList i a).trans _
   simp_all
 #align vector.prod_update_nth Vector.prod_set
 
 @[to_additive]
-theorem prod_set' [CommGroup α] (v : Vector α n) (i : Fin n) (a : α) :
+lemma prod_set' [CommGroup α] (v : Vector α n) (i : Fin n) (a : α) :
     (v.set i a).toList.prod = v.toList.prod * (v.get i)⁻¹ * a := by
   refine' (List.prod_set' v.toList i a).trans _
   simp [get_eq_get, mul_assoc]; rfl
@@ -683,12 +683,12 @@ section
 variable {α β : Type u}
 
 @[simp]
-protected theorem traverse_def (f : α → F β) (x : α) :
+protected lemma traverse_def (f : α → F β) (x : α) :
     ∀ xs : Vector α n, (x ::ᵥ xs).traverse f = cons <$> f x <*> xs.traverse f := by
   rintro ⟨xs, rfl⟩; rfl
 #align vector.traverse_def Vector.traverse_def
 
-protected theorem id_traverse : ∀ x : Vector α n, x.traverse (pure : _ → Id _) = x := by
+protected lemma id_traverse : ∀ x : Vector α n, x.traverse (pure : _ → Id _) = x := by
   rintro ⟨x, rfl⟩; dsimp [Vector.traverse, cast]
   induction' x with x xs IH; · rfl
   simp! [IH]; rfl
@@ -705,7 +705,7 @@ variable {α β γ : Type u}
 -- We need to turn off the linter here as
 -- the `LawfulTraversable` instance below expects a particular signature.
 @[nolint unusedArguments]
-protected theorem comp_traverse (f : β → F γ) (g : α → G β) (x : Vector α n) :
+protected lemma comp_traverse (f : β → F γ) (g : α → G β) (x : Vector α n) :
     Vector.traverse (Comp.mk ∘ Functor.map f ∘ g) x =
       Comp.mk (Vector.traverse f <$> Vector.traverse g x) := by
   induction' x using Vector.inductionOn with n x xs ih
@@ -715,14 +715,14 @@ protected theorem comp_traverse (f : β → F γ) (g : α → G β) (x : Vector 
     simp [functor_norm, (· ∘ ·)]
 #align vector.comp_traverse Vector.comp_traverse
 
-protected theorem traverse_eq_map_id {α β} (f : α → β) :
+protected lemma traverse_eq_map_id {α β} (f : α → β) :
     ∀ x : Vector α n, x.traverse ((pure: _ → Id _) ∘ f) = (pure: _ → Id _) (map f x) := by
   rintro ⟨x, rfl⟩; simp!; induction x <;> simp! [*, functor_norm] <;> rfl
 #align vector.traverse_eq_map_id Vector.traverse_eq_map_id
 
 variable (η : ApplicativeTransformation F G)
 
-protected theorem naturality {α β : Type _} (f : α → F β) (x : Vector α n) :
+protected lemma naturality {α β : Type _} (f : α → F β) (x : Vector α n) :
     η (x.traverse f) = x.traverse (@η _ ∘ f) := by
   induction' x using Vector.inductionOn with n x xs ih
   · simp! [functor_norm, cast, η.preserves_pure]
@@ -770,7 +770,7 @@ section Simp
 variable (xs : Vector α n)
 
 @[simp]
-theorem replicate_succ (val : α) :
+lemma replicate_succ (val : α) :
     replicate (n+1) val = val ::ᵥ (replicate n val) :=
   rfl
 
@@ -778,16 +778,16 @@ section Append
 variable (ys : Vector α m)
 
 @[simp]
-theorem get_append_cons_zero : get (append (x ::ᵥ xs) ys) ⟨0, by simp⟩ = x :=
+lemma get_append_cons_zero : get (append (x ::ᵥ xs) ys) ⟨0, by simp⟩ = x :=
   rfl
 
 @[simp]
-theorem get_append_cons_succ {i : Fin (n + m)} {h} :
+lemma get_append_cons_succ {i : Fin (n + m)} {h} :
     get (append (x ::ᵥ xs) ys) ⟨i+1, h⟩ = get (append xs ys) i :=
   rfl
 
 @[simp]
-theorem append_nil : append xs nil = xs := by
+lemma append_nil : append xs nil = xs := by
   cases xs; simp [append]
 
 end Append
@@ -795,7 +795,7 @@ end Append
 variable (ys : Vector β n)
 
 @[simp]
-theorem get_map₂ (v₁ : Vector α n) (v₂ : Vector β n) (f : α → β → γ) (i : Fin n) :
+lemma get_map₂ (v₁ : Vector α n) (v₂ : Vector β n) (f : α → β → γ) (i : Fin n) :
     get (map₂ f v₁ v₂) i = f (get v₁ i) (get v₂ i) := by
   clear * - v₁ v₂
   induction v₁, v₂ using inductionOn₂
@@ -808,7 +808,7 @@ theorem get_map₂ (v₁ : Vector α n) (v₂ : Vector β n) (f : α → β → 
     · simp only [get_cons_succ, ih]
 
 @[simp]
-theorem mapAccumr_cons :
+lemma mapAccumr_cons :
     mapAccumr f (x ::ᵥ xs) s
     = let r := mapAccumr f xs s
       let q := f x r.1
@@ -816,7 +816,7 @@ theorem mapAccumr_cons :
   rfl
 
 @[simp]
-theorem mapAccumr₂_cons :
+lemma mapAccumr₂_cons :
     mapAccumr₂ f (x ::ᵥ xs) (y ::ᵥ ys) s
     = let r := mapAccumr₂ f xs ys s
       let q := f x y r.1

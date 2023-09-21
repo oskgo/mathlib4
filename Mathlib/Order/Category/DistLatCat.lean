@@ -43,7 +43,7 @@ def of (α : Type*) [DistribLattice α] : DistLatCat :=
 #align DistLat.of DistLatCat.of
 
 @[simp]
-theorem coe_of (α : Type*) [DistribLattice α] : ↥(of α) = α :=
+lemma coe_of (α : Type*) [DistribLattice α] : ↥(of α) = α :=
   rfl
 #align DistLat.coe_of DistLatCat.coe_of
 
@@ -95,7 +95,7 @@ def dualEquiv : DistLatCat ≌ DistLatCat where
 
 end DistLatCat
 
-theorem distLatCat_dual_comp_forget_to_latCat :
+lemma distLatCat_dual_comp_forget_to_latCat :
     DistLatCat.dual ⋙ forget₂ DistLatCat LatCat = forget₂ DistLatCat LatCat ⋙ LatCat.dual :=
   rfl
 #align DistLat_dual_comp_forget_to_Lat distLatCat_dual_comp_forget_to_latCat

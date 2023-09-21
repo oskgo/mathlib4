@@ -48,12 +48,12 @@ open Finset
 
 variable {M : Matrix n n R}
 
-theorem charmatrix_apply_natDegree [Nontrivial R] (i j : n) :
+lemma charmatrix_apply_natDegree [Nontrivial R] (i j : n) :
     (charmatrix M i j).natDegree = ite (i = j) 1 0 := by
   by_cases i = j <;> simp [h, ← degree_eq_iff_natDegree_eq_of_pos (Nat.succ_pos 0)]
 #align charmatrix_apply_nat_degree charmatrix_apply_natDegree
 
-theorem charmatrix_apply_natDegree_le (i j : n) :
+lemma charmatrix_apply_natDegree_le (i j : n) :
     (charmatrix M i j).natDegree ≤ ite (i = j) 1 0 := by
   split_ifs with h <;> simp [h, natDegree_X_sub_C_le]
 #align charmatrix_apply_nat_degree_le charmatrix_apply_natDegree_le
@@ -62,7 +62,7 @@ namespace Matrix
 
 variable (M)
 
-theorem charpoly_sub_diagonal_degree_lt :
+lemma charpoly_sub_diagonal_degree_lt :
     (M.charpoly - ∏ i : n, (X - C (M i i))).degree < ↑(Fintype.card n - 1) := by
   rw [charpoly, det_apply', ← insert_erase (mem_univ (Equiv.refl n)),
     sum_insert (not_mem_erase (Equiv.refl n) univ), add_comm]
@@ -82,7 +82,7 @@ theorem charpoly_sub_diagonal_degree_lt :
   apply charmatrix_apply_natDegree_le
 #align matrix.charpoly_sub_diagonal_degree_lt Matrix.charpoly_sub_diagonal_degree_lt
 
-theorem charpoly_coeff_eq_prod_coeff_of_le {k : ℕ} (h : Fintype.card n - 1 ≤ k) :
+lemma charpoly_coeff_eq_prod_coeff_of_le {k : ℕ} (h : Fintype.card n - 1 ≤ k) :
     M.charpoly.coeff k = (∏ i : n, (X - C (M i i))).coeff k := by
   apply eq_of_sub_eq_zero; rw [← coeff_sub]
   apply Polynomial.coeff_eq_zero_of_degree_lt
@@ -90,14 +90,14 @@ theorem charpoly_coeff_eq_prod_coeff_of_le {k : ℕ} (h : Fintype.card n - 1 ≤
   rw [Nat.cast_le]; apply h
 #align matrix.charpoly_coeff_eq_prod_coeff_of_le Matrix.charpoly_coeff_eq_prod_coeff_of_le
 
-theorem det_of_card_zero (h : Fintype.card n = 0) (M : Matrix n n R) : M.det = 1 := by
+lemma det_of_card_zero (h : Fintype.card n = 0) (M : Matrix n n R) : M.det = 1 := by
   rw [Fintype.card_eq_zero_iff] at h
   suffices M = 1 by simp [this]
   ext i
   exact h.elim i
 #align matrix.det_of_card_zero Matrix.det_of_card_zero
 
-theorem charpoly_degree_eq_dim [Nontrivial R] (M : Matrix n n R) :
+lemma charpoly_degree_eq_dim [Nontrivial R] (M : Matrix n n R) :
     M.charpoly.degree = Fintype.card n := by
   by_cases h : Fintype.card n = 0
   · rw [h]
@@ -123,12 +123,12 @@ theorem charpoly_degree_eq_dim [Nontrivial R] (M : Matrix n n R) :
   apply h
 #align matrix.charpoly_degree_eq_dim Matrix.charpoly_degree_eq_dim
 
-@[simp] theorem charpoly_natDegree_eq_dim [Nontrivial R] (M : Matrix n n R) :
+@[simp] lemma charpoly_natDegree_eq_dim [Nontrivial R] (M : Matrix n n R) :
     M.charpoly.natDegree = Fintype.card n :=
   natDegree_eq_of_degree_eq_some (charpoly_degree_eq_dim M)
 #align matrix.charpoly_nat_degree_eq_dim Matrix.charpoly_natDegree_eq_dim
 
-theorem charpoly_monic (M : Matrix n n R) : M.charpoly.Monic := by
+lemma charpoly_monic (M : Matrix n n R) : M.charpoly.Monic := by
   nontriviality R -- porting note: was simply `nontriviality`
   by_cases h : Fintype.card n = 0
   · rw [charpoly, det_of_card_zero h]
@@ -150,7 +150,7 @@ theorem charpoly_monic (M : Matrix n n R) : M.charpoly.Monic := by
 #align matrix.charpoly_monic Matrix.charpoly_monic
 
 /-- See also `Matrix.coeff_charpolyRev_eq_neg_trace`. -/
-theorem trace_eq_neg_charpoly_coeff [Nonempty n] (M : Matrix n n R) :
+lemma trace_eq_neg_charpoly_coeff [Nonempty n] (M : Matrix n n R) :
     trace M = -M.charpoly.coeff (Fintype.card n - 1) := by
   rw [charpoly_coeff_eq_prod_coeff_of_le _ le_rfl, Fintype.card,
     prod_X_sub_C_coeff_card_pred univ (fun i : n => M i i) Fintype.card_pos, neg_neg, trace]
@@ -158,7 +158,7 @@ theorem trace_eq_neg_charpoly_coeff [Nonempty n] (M : Matrix n n R) :
 #align matrix.trace_eq_neg_charpoly_coeff Matrix.trace_eq_neg_charpoly_coeff
 
 -- I feel like this should use `Polynomial.algHom_eval₂_algebraMap`
-theorem matPolyEquiv_eval (M : Matrix n n R[X]) (r : R) (i j : n) :
+lemma matPolyEquiv_eval (M : Matrix n n R[X]) (r : R) (i j : n) :
     (matPolyEquiv M).eval ((scalar n) r) i j = (M i j).eval r := by
   unfold Polynomial.eval
   rw [Polynomial.eval₂_def, Polynomial.eval₂_def]  -- porting note: was `unfold eval₂`
@@ -180,7 +180,7 @@ theorem matPolyEquiv_eval (M : Matrix n n R[X]) (r : R) (i j : n) :
     simp only [mul_zero]  -- porting note: added
 #align matrix.mat_poly_equiv_eval Matrix.matPolyEquiv_eval
 
-theorem eval_det (M : Matrix n n R[X]) (r : R) :
+lemma eval_det (M : Matrix n n R[X]) (r : R) :
     Polynomial.eval r M.det = (Polynomial.eval (scalar n r) (matPolyEquiv M)).det := by
   rw [Polynomial.eval, ← coe_eval₂RingHom, RingHom.map_det]
   apply congr_arg det
@@ -190,7 +190,7 @@ theorem eval_det (M : Matrix n n R[X]) (r : R) :
   exact matPolyEquiv_eval _ _ _ _
 #align matrix.eval_det Matrix.eval_det
 
-theorem det_eq_sign_charpoly_coeff (M : Matrix n n R) :
+lemma det_eq_sign_charpoly_coeff (M : Matrix n n R) :
     M.det = (-1) ^ Fintype.card n * M.charpoly.coeff 0 := by
   rw [coeff_zero_eq_eval_zero, charpoly, eval_det, matPolyEquiv_charmatrix, ← det_smul]
   simp
@@ -200,7 +200,7 @@ end Matrix
 
 variable {p : ℕ} [Fact p.Prime]
 
-theorem matPolyEquiv_eq_x_pow_sub_c {K : Type*} (k : ℕ) [Field K] (M : Matrix n n K) :
+lemma matPolyEquiv_eq_x_pow_sub_c {K : Type*} (k : ℕ) [Field K] (M : Matrix n n K) :
     matPolyEquiv ((expand K k : K[X] →+* K[X]).mapMatrix (charmatrix (M ^ k))) =
       X ^ k - C (M ^ k) := by
   -- porting note: `i` and `j` are used later on, but were not mentioned in mathlib3
@@ -224,7 +224,7 @@ namespace Matrix
 
 /-- Any matrix polynomial `p` is equivalent under evaluation to `p %ₘ M.charpoly`; that is, `p`
 is equivalent to a polynomial with degree less than the dimension of the matrix. -/
-theorem aeval_eq_aeval_mod_charpoly (M : Matrix n n R) (p : R[X]) :
+lemma aeval_eq_aeval_mod_charpoly (M : Matrix n n R) (p : R[X]) :
     aeval M p = aeval M (p %ₘ M.charpoly) :=
   (aeval_modByMonic_eq_self_of_root M.charpoly_monic M.aeval_self_charpoly).symm
 #align matrix.aeval_eq_aeval_mod_charpoly Matrix.aeval_eq_aeval_mod_charpoly
@@ -232,7 +232,7 @@ theorem aeval_eq_aeval_mod_charpoly (M : Matrix n n R) (p : R[X]) :
 /-- Any matrix power can be computed as the sum of matrix powers less than `Fintype.card n`.
 
 TODO: add the statement for negative powers phrased with `zpow`. -/
-theorem pow_eq_aeval_mod_charpoly (M : Matrix n n R) (k : ℕ) :
+lemma pow_eq_aeval_mod_charpoly (M : Matrix n n R) (k : ℕ) :
     M ^ k = aeval M (X ^ k %ₘ M.charpoly) := by rw [← aeval_eq_aeval_mod_charpoly, map_pow, aeval_X]
 #align matrix.pow_eq_aeval_mod_charpoly Matrix.pow_eq_aeval_mod_charpoly
 
@@ -240,7 +240,7 @@ end Matrix
 
 section Ideal
 
-theorem coeff_charpoly_mem_ideal_pow {I : Ideal R} (h : ∀ i j, M i j ∈ I) (k : ℕ) :
+lemma coeff_charpoly_mem_ideal_pow {I : Ideal R} (h : ∀ i j, M i j ∈ I) (k : ℕ) :
     M.charpoly.coeff k ∈ I ^ (Fintype.card n - k) := by
   delta charpoly
   rw [Matrix.det_apply, finset_sum_coeff]

@@ -25,20 +25,20 @@ variable {α : Type*} {β : Type*}
 open Classical
 
 -- `x` and `y` are explicit here, as they are often needed to guide typechecking of `h`.
-theorem nontrivial_of_lt [Preorder α] (x y : α) (h : x < y) : Nontrivial α :=
+lemma nontrivial_of_lt [Preorder α] (x y : α) (h : x < y) : Nontrivial α :=
   ⟨⟨x, y, ne_of_lt h⟩⟩
 #align nontrivial_of_lt nontrivial_of_lt
 
-theorem exists_pair_lt (α : Type*) [Nontrivial α] [LinearOrder α] : ∃ x y : α, x < y := by
+lemma exists_pair_lt (α : Type*) [Nontrivial α] [LinearOrder α] : ∃ x y : α, x < y := by
   rcases exists_pair_ne α with ⟨x, y, hxy⟩
   cases lt_or_gt_of_ne hxy <;> exact ⟨_, _, ‹_›⟩
 #align exists_pair_lt exists_pair_lt
 
-theorem nontrivial_iff_lt [LinearOrder α] : Nontrivial α ↔ ∃ x y : α, x < y :=
+lemma nontrivial_iff_lt [LinearOrder α] : Nontrivial α ↔ ∃ x y : α, x < y :=
   ⟨fun h ↦ @exists_pair_lt α h _, fun ⟨x, y, h⟩ ↦ nontrivial_of_lt x y h⟩
 #align nontrivial_iff_lt nontrivial_iff_lt
 
-theorem Subtype.nontrivial_iff_exists_ne (p : α → Prop) (x : Subtype p) :
+lemma Subtype.nontrivial_iff_exists_ne (p : α → Prop) (x : Subtype p) :
     Nontrivial (Subtype p) ↔ ∃ (y : α) (_ : p y), y ≠ x := by
   simp only [_root_.nontrivial_iff_exists_ne x, Subtype.exists, Ne.def, Subtype.ext_iff]
 #align subtype.nontrivial_iff_exists_ne Subtype.nontrivial_iff_exists_ne
@@ -60,7 +60,7 @@ instance Option.nontrivial [Nonempty α] : Nontrivial (Option α) := by
   exact ⟨none, some default, fun .⟩
 
 /-- Pushforward a `Nontrivial` instance along an injective function. -/
-protected theorem Function.Injective.nontrivial [Nontrivial α] {f : α → β}
+protected lemma Function.Injective.nontrivial [Nontrivial α] {f : α → β}
     (hf : Function.Injective f) : Nontrivial β :=
   let ⟨x, y, h⟩ := exists_pair_ne α
   ⟨⟨f x, f y, hf.ne h⟩⟩
@@ -68,7 +68,7 @@ protected theorem Function.Injective.nontrivial [Nontrivial α] {f : α → β}
 
 /-- An injective function from a nontrivial type has an argument at
 which it does not take a given value. -/
-protected theorem Function.Injective.exists_ne [Nontrivial α] {f : α → β}
+protected lemma Function.Injective.exists_ne [Nontrivial α] {f : α → β}
     (hf : Function.Injective f) (y : β) : ∃ x, f x ≠ y := by
   rcases exists_pair_ne α with ⟨x₁, x₂, hx⟩
   by_cases h:f x₂ = y
@@ -87,7 +87,7 @@ namespace Pi
 variable {I : Type*} {f : I → Type*}
 
 /-- A pi type is nontrivial if it's nonempty everywhere and nontrivial somewhere. -/
-theorem nontrivial_at (i' : I) [inst : ∀ i, Nonempty (f i)] [Nontrivial (f i')] :
+lemma nontrivial_at (i' : I) [inst : ∀ i, Nonempty (f i)] [Nontrivial (f i')] :
     Nontrivial (∀ i : I, f i) := by
   letI := Classical.decEq (∀ i : I, f i)
   exact (Function.update_injective (fun i ↦ Classical.choice (inst i)) i').nontrivial
@@ -107,10 +107,10 @@ instance Function.nontrivial [h : Nonempty α] [Nontrivial β] : Nontrivial (α 
   h.elim fun a ↦ Pi.nontrivial_at a
 
 @[nontriviality]
-protected theorem Subsingleton.le [Preorder α] [Subsingleton α] (x y : α) : x ≤ y :=
+protected lemma Subsingleton.le [Preorder α] [Subsingleton α] (x y : α) : x ≤ y :=
   le_of_eq (Subsingleton.elim x y)
 #align subsingleton.le Subsingleton.le
 
 @[to_additive]
-theorem Subsingleton.eq_one [One α] [Subsingleton α] (a : α) : a = 1 :=
+lemma Subsingleton.eq_one [One α] [Subsingleton α] (a : α) : a = 1 :=
   Subsingleton.elim _ _

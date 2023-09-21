@@ -43,19 +43,19 @@ def antidiagonal (f : α →₀ ℕ) : Finset ((α →₀ ℕ) × (α →₀ ℕ
 #align finsupp.antidiagonal Finsupp.antidiagonal
 
 @[simp]
-theorem mem_antidiagonal {f : α →₀ ℕ} {p : (α →₀ ℕ) × (α →₀ ℕ)} :
+lemma mem_antidiagonal {f : α →₀ ℕ} {p : (α →₀ ℕ) × (α →₀ ℕ)} :
     p ∈ antidiagonal f ↔ p.1 + p.2 = f := by
   rcases p with ⟨p₁, p₂⟩
   simp [antidiagonal, antidiagonal', ← and_assoc, Multiset.toFinsupp_eq_iff,
     ← Multiset.toFinsupp_eq_iff (f := f)]
 #align finsupp.mem_antidiagonal Finsupp.mem_antidiagonal
 
-theorem swap_mem_antidiagonal {n : α →₀ ℕ} {f : (α →₀ ℕ) × (α →₀ ℕ)} :
+lemma swap_mem_antidiagonal {n : α →₀ ℕ} {f : (α →₀ ℕ) × (α →₀ ℕ)} :
     f.swap ∈ antidiagonal n ↔ f ∈ antidiagonal n := by
   simp only [mem_antidiagonal, add_comm, Prod.swap]
 #align finsupp.swap_mem_antidiagonal Finsupp.swap_mem_antidiagonal
 
-theorem antidiagonal_filter_fst_eq (f g : α →₀ ℕ)
+lemma antidiagonal_filter_fst_eq (f g : α →₀ ℕ)
     [D : ∀ p : (α →₀ ℕ) × (α →₀ ℕ), Decidable (p.1 = g)] :
     ((antidiagonal f).filter fun p ↦ p.1 = g) = if g ≤ f then {(g, f - g)} else ∅ := by
   ext ⟨a, b⟩
@@ -70,7 +70,7 @@ theorem antidiagonal_filter_fst_eq (f g : α →₀ ℕ)
     exact add_tsub_cancel_of_le h
 #align finsupp.antidiagonal_filter_fst_eq Finsupp.antidiagonal_filter_fst_eq
 
-theorem antidiagonal_filter_snd_eq (f g : α →₀ ℕ)
+lemma antidiagonal_filter_snd_eq (f g : α →₀ ℕ)
     [D : ∀ p : (α →₀ ℕ) × (α →₀ ℕ), Decidable (p.2 = g)] :
     ((antidiagonal f).filter fun p ↦ p.2 = g) = if g ≤ f then {(f - g, g)} else ∅ := by
   ext ⟨a, b⟩
@@ -86,11 +86,11 @@ theorem antidiagonal_filter_snd_eq (f g : α →₀ ℕ)
 #align finsupp.antidiagonal_filter_snd_eq Finsupp.antidiagonal_filter_snd_eq
 
 @[simp]
-theorem antidiagonal_zero : antidiagonal (0 : α →₀ ℕ) = singleton (0, 0) := rfl
+lemma antidiagonal_zero : antidiagonal (0 : α →₀ ℕ) = singleton (0, 0) := rfl
 #align finsupp.antidiagonal_zero Finsupp.antidiagonal_zero
 
 @[to_additive]
-theorem prod_antidiagonal_swap {M : Type*} [CommMonoid M] (n : α →₀ ℕ)
+lemma prod_antidiagonal_swap {M : Type*} [CommMonoid M] (n : α →₀ ℕ)
     (f : (α →₀ ℕ) → (α →₀ ℕ) → M) :
     ∏ p in antidiagonal n, f p.1 p.2 = ∏ p in antidiagonal n, f p.2 p.1 :=
   Finset.prod_bij (fun p _hp ↦ p.swap) (fun _p ↦ swap_mem_antidiagonal.2) (fun _p _hp ↦ rfl)
@@ -100,7 +100,7 @@ theorem prod_antidiagonal_swap {M : Type*} [CommMonoid M] (n : α →₀ ℕ)
 #align finsupp.sum_antidiagonal_swap Finsupp.sum_antidiagonal_swap
 
 @[simp]
-theorem antidiagonal_single (a : α) (n : ℕ) :
+lemma antidiagonal_single (a : α) (n : ℕ) :
     antidiagonal (single a n) = (Finset.Nat.antidiagonal n).map
       (Function.Embedding.prodMap ⟨_, single_injective a⟩ ⟨_, single_injective a⟩) := by
   ext ⟨x, y⟩

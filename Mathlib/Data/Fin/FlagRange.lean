@@ -28,7 +28,7 @@ variable {α : Type _} [PartialOrder α] [BoundedOrder α] {n : ℕ} {f : Fin (n
 - `fₖ₊₁` weakly covers `fₖ` for all `0 ≤ k < n`;
   this means that `fₖ ≤ fₖ₊₁` and there is no `c` such that `fₖ<c<fₖ₊₁`.
 Then the range of `f` is a maximal chain. -/
-theorem IsMaxChain.range_fin_of_covby (h0 : f 0 = ⊥) (hlast : f (.last n) = ⊤)
+lemma IsMaxChain.range_fin_of_covby (h0 : f 0 = ⊥) (hlast : f (.last n) = ⊤)
     (hcovby : ∀ k : Fin n, f k.castSucc ⩿ f k.succ) :
     IsMaxChain (· ≤ ·) (range f) := by
   have hmono : Monotone f := Fin.monotone_iff_le_succ.2 fun k ↦ (hcovby k).1
@@ -54,6 +54,6 @@ def Flag.rangeFin (f : Fin (n + 1) → α) (h0 : f 0 = ⊥) (hlast : f (.last n)
   Chain' := (IsMaxChain.range_fin_of_covby h0 hlast hcovby).1
   max_chain' := (IsMaxChain.range_fin_of_covby h0 hlast hcovby).2
 
-@[simp] theorem Flag.mem_rangeFin {x h0 hlast hcovby} :
+@[simp] lemma Flag.mem_rangeFin {x h0 hlast hcovby} :
     x ∈ rangeFin f h0 hlast hcovby ↔ ∃ k, f k = x :=
   Iff.rfl

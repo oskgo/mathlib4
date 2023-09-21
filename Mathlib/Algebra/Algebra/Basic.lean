@@ -142,27 +142,27 @@ section CommSemiringSemiring
 variable {R A : Type*} [CommSemiring R] [Semiring A] [Algebra R A]
 
 @[simp, norm_cast]
-theorem coe_zero : (↑(0 : R) : A) = 0 :=
+lemma coe_zero : (↑(0 : R) : A) = 0 :=
   map_zero (algebraMap R A)
 #align algebra_map.coe_zero algebraMap.coe_zero
 
 @[simp, norm_cast]
-theorem coe_one : (↑(1 : R) : A) = 1 :=
+lemma coe_one : (↑(1 : R) : A) = 1 :=
   map_one (algebraMap R A)
 #align algebra_map.coe_one algebraMap.coe_one
 
 @[norm_cast]
-theorem coe_add (a b : R) : (↑(a + b : R) : A) = ↑a + ↑b :=
+lemma coe_add (a b : R) : (↑(a + b : R) : A) = ↑a + ↑b :=
   map_add (algebraMap R A) a b
 #align algebra_map.coe_add algebraMap.coe_add
 
 @[norm_cast]
-theorem coe_mul (a b : R) : (↑(a * b : R) : A) = ↑a * ↑b :=
+lemma coe_mul (a b : R) : (↑(a * b : R) : A) = ↑a * ↑b :=
   map_mul (algebraMap R A) a b
 #align algebra_map.coe_mul algebraMap.coe_mul
 
 @[norm_cast]
-theorem coe_pow (a : R) (n : ℕ) : (↑(a ^ n : R) : A) = (a : A) ^ n :=
+lemma coe_pow (a : R) (n : ℕ) : (↑(a ^ n : R) : A) = (a : A) ^ n :=
   map_pow (algebraMap R A) _ _
 #align algebra_map.coe_pow algebraMap.coe_pow
 
@@ -173,7 +173,7 @@ section CommRingRing
 variable {R A : Type*} [CommRing R] [Ring A] [Algebra R A]
 
 @[norm_cast]
-theorem coe_neg (x : R) : (↑(-x : R) : A) = -↑x :=
+lemma coe_neg (x : R) : (↑(-x : R) : A) = -↑x :=
   map_neg (algebraMap R A) x
 #align algebra_map.coe_neg algebraMap.coe_neg
 
@@ -187,14 +187,14 @@ open BigOperators
 
 -- direct to_additive fails because of some mix-up with polynomials
 @[norm_cast]
-theorem coe_prod {ι : Type*} {s : Finset ι} (a : ι → R) :
+lemma coe_prod {ι : Type*} {s : Finset ι} (a : ι → R) :
     (↑(∏ i : ι in s, a i : R) : A) = ∏ i : ι in s, (↑(a i) : A) :=
   map_prod (algebraMap R A) a s
 #align algebra_map.coe_prod algebraMap.coe_prod
 
 -- to_additive fails for some reason
 @[norm_cast]
-theorem coe_sum {ι : Type*} {s : Finset ι} (a : ι → R) :
+lemma coe_sum {ι : Type*} {s : Finset ι} (a : ι → R) :
     ↑(∑ i : ι in s, a i) = ∑ i : ι in s, (↑(a i) : A) :=
   map_sum (algebraMap R A) a s
 #align algebra_map.coe_sum algebraMap.coe_sum
@@ -208,12 +208,12 @@ section FieldNontrivial
 variable {R A : Type*} [Field R] [CommSemiring A] [Nontrivial A] [Algebra R A]
 
 @[norm_cast, simp]
-theorem coe_inj {a b : R} : (↑a : A) = ↑b ↔ a = b :=
+lemma coe_inj {a b : R} : (↑a : A) = ↑b ↔ a = b :=
   (algebraMap R A).injective.eq_iff
 #align algebra_map.coe_inj algebraMap.coe_inj
 
 @[norm_cast, simp]
-theorem lift_map_eq_zero_iff (a : R) : (↑a : A) = 0 ↔ a = 0 :=
+lemma lift_map_eq_zero_iff (a : R) : (↑a : A) = 0 ↔ a = 0 :=
   map_eq_zero_iff _ (algebraMap R A).injective
 #align algebra_map.lift_map_eq_zero_iff algebraMap.lift_map_eq_zero_iff
 
@@ -224,17 +224,17 @@ section SemifieldSemidivisionRing
 variable {R : Type*} (A : Type*) [Semifield R] [DivisionSemiring A] [Algebra R A]
 
 @[norm_cast]
-theorem coe_inv (r : R) : ↑r⁻¹ = ((↑r)⁻¹ : A) :=
+lemma coe_inv (r : R) : ↑r⁻¹ = ((↑r)⁻¹ : A) :=
   map_inv₀ (algebraMap R A) r
 #align algebra_map.coe_inv algebraMap.coe_inv
 
 @[norm_cast]
-theorem coe_div (r s : R) : ↑(r / s) = (↑r / ↑s : A) :=
+lemma coe_div (r s : R) : ↑(r / s) = (↑r / ↑s : A) :=
   map_div₀ (algebraMap R A) r s
 #align algebra_map.coe_div algebraMap.coe_div
 
 @[norm_cast]
-theorem coe_zpow (r : R) (z : ℤ) : ↑(r ^ z) = (r : A) ^ z :=
+lemma coe_zpow (r : R) (z : ℤ) : ↑(r ^ z) = (r : A) ^ z :=
   map_zpow₀ (algebraMap R A) r z
 #align algebra_map.coe_zpow algebraMap.coe_zpow
 
@@ -246,7 +246,7 @@ variable (R A : Type*) [Field R] [DivisionRing A] [Algebra R A]
 
 -- porting note: todo: drop implicit args
 @[norm_cast]
-theorem coe_ratCast (q : ℚ) : ↑(q : R) = (q : A) :=
+lemma coe_ratCast (q : ℚ) : ↑(q : R) = (q : A) :=
   @map_ratCast (R →+* A) R A _ _ _ (algebraMap R A) q
 #align algebra_map.coe_rat_cast algebraMap.coe_ratCast
 
@@ -268,7 +268,7 @@ def RingHom.toAlgebra {R S} [CommSemiring R] [CommSemiring S] (i : R →+* S) : 
   i.toAlgebra' fun _ => mul_comm _
 #align ring_hom.to_algebra RingHom.toAlgebra
 
-theorem RingHom.algebraMap_toAlgebra {R S} [CommSemiring R] [CommSemiring S] (i : R →+* S) :
+lemma RingHom.algebraMap_toAlgebra {R S} [CommSemiring R] [CommSemiring S] (i : R →+* S) :
     @algebraMap R S _ _ i.toAlgebra = i :=
   rfl
 #align ring_hom.algebra_map_to_algebra RingHom.algebraMap_toAlgebra
@@ -319,7 +319,7 @@ variable [Semiring A] [Algebra R A] [Semiring B] [Algebra R B]
 it suffices to check the `algebraMap`s agree.
 -/
 @[ext]
-theorem algebra_ext {R : Type*} [CommSemiring R] {A : Type*} [Semiring A] (P Q : Algebra R A)
+lemma algebra_ext {R : Type*} [CommSemiring R] {A : Type*} [Semiring A] (P Q : Algebra R A)
     (h : ∀ r : R, (haveI := P; algebraMap R A r) = haveI := Q; algebraMap R A r) :
     P = Q := by
   replace h : P.toRingHom = Q.toRingHom := FunLike.ext _ _ h
@@ -344,33 +344,33 @@ instance (priority := 200) toModule : Module R A where
 -- porting note: this caused deterministic timeouts later in mathlib3 but not in mathlib 4.
 -- attribute [instance 0] Algebra.toSMul
 
-theorem smul_def (r : R) (x : A) : r • x = algebraMap R A r * x :=
+lemma smul_def (r : R) (x : A) : r • x = algebraMap R A r * x :=
   Algebra.smul_def' r x
 #align algebra.smul_def Algebra.smul_def
 
-theorem algebraMap_eq_smul_one (r : R) : algebraMap R A r = r • (1 : A) :=
+lemma algebraMap_eq_smul_one (r : R) : algebraMap R A r = r • (1 : A) :=
   calc
     algebraMap R A r = algebraMap R A r * 1 := (mul_one _).symm
     _ = r • (1 : A) := (Algebra.smul_def r 1).symm
 #align algebra.algebra_map_eq_smul_one Algebra.algebraMap_eq_smul_one
 
-theorem algebraMap_eq_smul_one' : ⇑(algebraMap R A) = fun r => r • (1 : A) :=
+lemma algebraMap_eq_smul_one' : ⇑(algebraMap R A) = fun r => r • (1 : A) :=
   funext algebraMap_eq_smul_one
 #align algebra.algebra_map_eq_smul_one' Algebra.algebraMap_eq_smul_one'
 
 /-- `mul_comm` for `Algebra`s when one element is from the base ring. -/
-theorem commutes (r : R) (x : A) : algebraMap R A r * x = x * algebraMap R A r :=
+lemma commutes (r : R) (x : A) : algebraMap R A r * x = x * algebraMap R A r :=
   Algebra.commutes' r x
 #align algebra.commutes Algebra.commutes
 
 /-- `mul_left_comm` for `Algebra`s when one element is from the base ring. -/
-theorem left_comm (x : A) (r : R) (y : A) :
+lemma left_comm (x : A) (r : R) (y : A) :
     x * (algebraMap R A r * y) = algebraMap R A r * (x * y) := by
   rw [← mul_assoc, ← commutes, mul_assoc]
 #align algebra.left_comm Algebra.left_comm
 
 /-- `mul_right_comm` for `Algebra`s when one element is from the base ring. -/
-theorem right_comm (x : A) (r : R) (y : A) : x * algebraMap R A r * y = x * y * algebraMap R A r :=
+lemma right_comm (x : A) (r : R) (y : A) : x * algebraMap R A r * y = x * y * algebraMap R A r :=
   by rw [mul_assoc, commutes, ← mul_assoc]
 #align algebra.right_comm Algebra.right_comm
 
@@ -384,19 +384,19 @@ instance _root_.IsScalarTower.right : IsScalarTower R A A :=
 /-- This is just a special case of the global `mul_smul_comm` lemma that requires less typeclass
 search (and was here first). -/
 @[simp]
-protected theorem mul_smul_comm (s : R) (x y : A) : x * s • y = s • (x * y) := by
+protected lemma mul_smul_comm (s : R) (x y : A) : x * s • y = s • (x * y) := by
   rw [smul_def, smul_def, left_comm]
 #align algebra.mul_smul_comm Algebra.mul_smul_comm
 
 /-- This is just a special case of the global `smul_mul_assoc` lemma that requires less typeclass
 search (and was here first). -/
 @[simp]
-protected theorem smul_mul_assoc (r : R) (x y : A) : r • x * y = r • (x * y) :=
+protected lemma smul_mul_assoc (r : R) (x y : A) : r • x * y = r • (x * y) :=
   smul_mul_assoc r x y
 #align algebra.smul_mul_assoc Algebra.smul_mul_assoc
 
 @[simp]
-theorem _root_.smul_algebraMap {α : Type*} [Monoid α] [MulDistribMulAction α A]
+lemma _root_.smul_algebraMap {α : Type*} [Monoid α] [MulDistribMulAction α A]
     [SMulCommClass α R A] (a : α) (r : R) : a • algebraMap R A r = algebraMap R A r := by
   rw [algebraMap_eq_smul_one, smul_comm a r (1 : A), smul_one]
 #align smul_algebra_map smul_algebraMap
@@ -424,11 +424,11 @@ protected def linearMap : R →ₗ[R] A :=
 #align algebra.linear_map Algebra.linearMap
 
 @[simp]
-theorem linearMap_apply (r : R) : Algebra.linearMap R A r = algebraMap R A r :=
+lemma linearMap_apply (r : R) : Algebra.linearMap R A r = algebraMap R A r :=
   rfl
 #align algebra.linear_map_apply Algebra.linearMap_apply
 
-theorem coe_linearMap : ⇑(Algebra.linearMap R A) = algebraMap R A :=
+lemma coe_linearMap : ⇑(Algebra.linearMap R A) = algebraMap R A :=
   rfl
 #align algebra.coe_linear_map Algebra.coe_linearMap
 
@@ -441,16 +441,16 @@ variable {R A}
 namespace id
 
 @[simp]
-theorem map_eq_id : algebraMap R R = RingHom.id _ :=
+lemma map_eq_id : algebraMap R R = RingHom.id _ :=
   rfl
 #align algebra.id.map_eq_id Algebra.id.map_eq_id
 
-theorem map_eq_self (x : R) : algebraMap R R x = x :=
+lemma map_eq_self (x : R) : algebraMap R R x = x :=
   rfl
 #align algebra.id.map_eq_self Algebra.id.map_eq_self
 
 @[simp]
-theorem smul_eq_mul (x y : R) : x • y = x * y :=
+lemma smul_eq_mul (x y : R) : x • y = x * y :=
   rfl
 #align algebra.id.smul_eq_mul Algebra.id.smul_eq_mul
 
@@ -469,7 +469,7 @@ instance _root_.PUnit.algebra : Algebra R PUnit where
 #align punit.algebra PUnit.algebra
 
 @[simp]
-theorem algebraMap_pUnit (r : R) : algebraMap R PUnit r = PUnit.unit :=
+lemma algebraMap_pUnit (r : R) : algebraMap R PUnit r = PUnit.unit :=
   rfl
 #align algebra.algebra_map_punit Algebra.algebraMap_pUnit
 
@@ -485,13 +485,13 @@ instance _root_.ULift.algebra : Algebra R (ULift A) :=
     smul_def' := fun r x => ULift.down_injective <| Algebra.smul_def' r x.down }
 #align ulift.algebra ULift.algebra
 
-theorem _root_.ULift.algebraMap_eq (r : R) :
+lemma _root_.ULift.algebraMap_eq (r : R) :
     algebraMap R (ULift A) r = ULift.up (algebraMap R A r) :=
   rfl
 #align ulift.algebra_map_eq ULift.algebraMap_eq
 
 @[simp]
-theorem _root_.ULift.down_algebraMap (r : R) : (algebraMap R (ULift A) r).down = algebraMap R A r :=
+lemma _root_.ULift.down_algebraMap (r : R) : (algebraMap R (ULift A) r).down = algebraMap R A r :=
   rfl
 #align ulift.down_algebra_map ULift.down_algebraMap
 
@@ -505,16 +505,16 @@ instance ofSubsemiring (S : Subsemiring R) : Algebra S A where
   smul_def' r x := Algebra.smul_def (r : R) x
 #align algebra.of_subsemiring Algebra.ofSubsemiring
 
-theorem algebraMap_ofSubsemiring (S : Subsemiring R) :
+lemma algebraMap_ofSubsemiring (S : Subsemiring R) :
     (algebraMap S R : S →+* R) = Subsemiring.subtype S :=
   rfl
 #align algebra.algebra_map_of_subsemiring Algebra.algebraMap_ofSubsemiring
 
-theorem coe_algebraMap_ofSubsemiring (S : Subsemiring R) : (algebraMap S R : S → R) = Subtype.val :=
+lemma coe_algebraMap_ofSubsemiring (S : Subsemiring R) : (algebraMap S R : S → R) = Subtype.val :=
   rfl
 #align algebra.coe_algebra_map_of_subsemiring Algebra.coe_algebraMap_ofSubsemiring
 
-theorem algebraMap_ofSubsemiring_apply (S : Subsemiring R) (x : S) : algebraMap S R x = x :=
+lemma algebraMap_ofSubsemiring_apply (S : Subsemiring R) (x : S) : algebraMap S R x = x :=
   rfl
 #align algebra.algebra_map_of_subsemiring_apply Algebra.algebraMap_ofSubsemiring_apply
 
@@ -527,17 +527,17 @@ instance ofSubring {R A : Type*} [CommRing R] [Ring A] [Algebra R A] (S : Subrin
   smul_def' r x := Algebra.smul_def (r : R) x
 #align algebra.of_subring Algebra.ofSubring
 
-theorem algebraMap_ofSubring {R : Type*} [CommRing R] (S : Subring R) :
+lemma algebraMap_ofSubring {R : Type*} [CommRing R] (S : Subring R) :
     (algebraMap S R : S →+* R) = Subring.subtype S :=
   rfl
 #align algebra.algebra_map_of_subring Algebra.algebraMap_ofSubring
 
-theorem coe_algebraMap_ofSubring {R : Type*} [CommRing R] (S : Subring R) :
+lemma coe_algebraMap_ofSubring {R : Type*} [CommRing R] (S : Subring R) :
     (algebraMap S R : S → R) = Subtype.val :=
   rfl
 #align algebra.coe_algebra_map_of_subring Algebra.coe_algebraMap_ofSubring
 
-theorem algebraMap_ofSubring_apply {R : Type*} [CommRing R] (S : Subring R) (x : S) :
+lemma algebraMap_ofSubring_apply {R : Type*} [CommRing R] (S : Subring R) (x : S) :
     algebraMap S R x = x :=
   rfl
 #align algebra.algebra_map_of_subring_apply Algebra.algebraMap_ofSubring_apply
@@ -548,7 +548,7 @@ def algebraMapSubmonoid (S : Type*) [Semiring S] [Algebra R S] (M : Submonoid R)
   M.map (algebraMap R S)
 #align algebra.algebra_map_submonoid Algebra.algebraMapSubmonoid
 
-theorem mem_algebraMapSubmonoid_of_mem {S : Type*} [Semiring S] [Algebra R S] {M : Submonoid R}
+lemma mem_algebraMapSubmonoid_of_mem {S : Type*} [Semiring S] [Algebra R S] {M : Submonoid R}
     (x : M) : algebraMap R S x ∈ algebraMapSubmonoid S M :=
   Set.mem_image_of_mem (algebraMap R S) x.2
 #align algebra.mem_algebra_map_submonoid_of_mem Algebra.mem_algebraMapSubmonoid_of_mem
@@ -559,11 +559,11 @@ section CommSemiring
 
 variable [CommSemiring R]
 
-theorem mul_sub_algebraMap_commutes [Ring A] [Algebra R A] (x : A) (r : R) :
+lemma mul_sub_algebraMap_commutes [Ring A] [Algebra R A] (x : A) (r : R) :
     x * (x - algebraMap R A r) = (x - algebraMap R A r) * x := by rw [mul_sub, ← commutes, sub_mul]
 #align algebra.mul_sub_algebra_map_commutes Algebra.mul_sub_algebraMap_commutes
 
-theorem mul_sub_algebraMap_pow_commutes [Ring A] [Algebra R A] (x : A) (r : R) (n : ℕ) :
+lemma mul_sub_algebraMap_pow_commutes [Ring A] [Algebra R A] (x : A) (r : R) (n : ℕ) :
     x * (x - algebraMap R A r) ^ n = (x - algebraMap R A r) ^ n * x := by
   induction' n with n ih
   · simp
@@ -606,16 +606,16 @@ instance End.instAlgebra : Algebra R (Module.End S M) :=
 -- to prove this is a special case of the above
 example : Algebra R (Module.End R M) := End.instAlgebra _ _ _
 
-theorem algebraMap_end_eq_smul_id (a : R) : algebraMap R (End S M) a = a • LinearMap.id :=
+lemma algebraMap_end_eq_smul_id (a : R) : algebraMap R (End S M) a = a • LinearMap.id :=
   rfl
 
 @[simp]
-theorem algebraMap_end_apply (a : R) (m : M) : algebraMap R (End S M) a m = a • m :=
+lemma algebraMap_end_apply (a : R) (m : M) : algebraMap R (End S M) a m = a • m :=
   rfl
 #align module.algebra_map_End_apply Module.algebraMap_end_applyₓ
 
 @[simp]
-theorem ker_algebraMap_end (K : Type u) (V : Type v) [Field K] [AddCommGroup V] [Module K V] (a : K)
+lemma ker_algebraMap_end (K : Type u) (V : Type v) [Field K] [AddCommGroup V] [Module K V] (a : K)
     (ha : a ≠ 0) : LinearMap.ker ((algebraMap K (End K V)) a) = ⊥ :=
   LinearMap.ker_smul _ _ ha
 #align module.ker_algebra_map_End Module.ker_algebraMap_end
@@ -624,7 +624,7 @@ section
 
 variable {R M}
 
-theorem End_algebraMap_isUnit_inv_apply_eq_iff {x : R}
+lemma End_algebraMap_isUnit_inv_apply_eq_iff {x : R}
     (h : IsUnit (algebraMap R (Module.End S M) x)) (m m' : M) :
     (↑(h.unit⁻¹) : Module.End S M) m = m' ↔ m = x • m' :=
   { mp := fun H => ((congr_arg h.unit H).symm.trans (End_isUnit_apply_inv_apply_of_isUnit h _)).symm
@@ -635,7 +635,7 @@ theorem End_algebraMap_isUnit_inv_apply_eq_iff {x : R}
         rfl }
 #align module.End_algebra_map_is_unit_inv_apply_eq_iff Module.End_algebraMap_isUnit_inv_apply_eq_iff
 
-theorem End_algebraMap_isUnit_inv_apply_eq_iff' {x : R}
+lemma End_algebraMap_isUnit_inv_apply_eq_iff' {x : R}
     (h : IsUnit (algebraMap R (Module.End S M) x)) (m m' : M) :
     m' = (↑h.unit⁻¹ : Module.End S M) m ↔ m = x • m' :=
   { mp := fun H => ((congr_arg h.unit H).trans (End_isUnit_apply_inv_apply_of_isUnit h _)).symm
@@ -657,12 +657,12 @@ variable {R : Type*} {A : Type*} {B : Type*} [CommSemiring R] [Semiring A] [Semi
 
 /-- An alternate statement of `LinearMap.map_smul` for when `algebraMap` is more convenient to
 work with than `•`. -/
-theorem map_algebraMap_mul (f : A →ₗ[R] B) (a : A) (r : R) :
+lemma map_algebraMap_mul (f : A →ₗ[R] B) (a : A) (r : R) :
     f (algebraMap R A r * a) = algebraMap R B r * f a := by
   rw [← Algebra.smul_def, ← Algebra.smul_def, map_smul]
 #align linear_map.map_algebra_map_mul LinearMap.map_algebraMap_mul
 
-theorem map_mul_algebraMap (f : A →ₗ[R] B) (a : A) (r : R) :
+lemma map_mul_algebraMap (f : A →ₗ[R] B) (a : A) (r : R) :
     f (a * algebraMap R A r) = f a * algebraMap R B r := by
   rw [← Algebra.commutes, ← Algebra.commutes, map_algebraMap_mul]
 #align linear_map.map_mul_algebra_map LinearMap.map_mul_algebraMap
@@ -696,7 +696,7 @@ variable {R S : Type*}
 -- porting note: changed `[Ring R] [Ring S]` to `[Semiring R] [Semiring S]`
 -- otherwise, Lean failed to find a `Subsingleton (ℚ →+* S)` instance
 @[simp]
-theorem map_rat_algebraMap [Semiring R] [Semiring S] [Algebra ℚ R] [Algebra ℚ S] (f : R →+* S)
+lemma map_rat_algebraMap [Semiring R] [Semiring S] [Algebra ℚ R] [Algebra ℚ S] (f : R →+* S)
     (r : ℚ) : f (algebraMap ℚ R r) = algebraMap ℚ S r :=
   RingHom.ext_iff.1 (Subsingleton.elim (f.comp (algebraMap ℚ R)) (algebraMap ℚ S)) r
 #align ring_hom.map_rat_algebra_map RingHom.map_rat_algebraMap
@@ -716,7 +716,7 @@ instance algebraRat {α} [DivisionRing α] [CharZero α] : Algebra ℚ α where
 example : algebraRat = Algebra.id ℚ :=
   rfl
 
-@[simp] theorem algebraMap_rat_rat : algebraMap ℚ ℚ = RingHom.id ℚ := rfl
+@[simp] lemma algebraMap_rat_rat : algebraMap ℚ ℚ = RingHom.id ℚ := rfl
 #align algebra_map_rat_rat algebraMap_rat_rat
 
 instance algebra_rat_subsingleton {α} [Semiring α] : Subsingleton (Algebra ℚ α) :=
@@ -741,7 +741,7 @@ instance (priority := 99) algebraInt : Algebra ℤ R where
 
 /-- A special case of `eq_intCast'` that happens to be true definitionally -/
 @[simp]
-theorem algebraMap_int_eq : algebraMap ℤ R = Int.castRingHom R :=
+lemma algebraMap_int_eq : algebraMap ℤ R = Int.castRingHom R :=
   rfl
 #align algebra_map_int_eq algebraMap_int_eq
 
@@ -764,7 +764,7 @@ open Algebra
 
 Cannot be an instance because there is no `Injective (algebraMap R A)` typeclass.
 -/
-theorem of_algebraMap_injective [CommSemiring R] [Semiring A] [Algebra R A] [NoZeroDivisors A]
+lemma of_algebraMap_injective [CommSemiring R] [Semiring A] [Algebra R A] [NoZeroDivisors A]
     (h : Function.Injective (algebraMap R A)) : NoZeroSMulDivisors R A :=
   ⟨fun hcx => (mul_eq_zero.mp ((smul_def _ _).symm.trans hcx)).imp_left
     (map_eq_zero_iff (algebraMap R A) h).mp⟩
@@ -772,7 +772,7 @@ theorem of_algebraMap_injective [CommSemiring R] [Semiring A] [Algebra R A] [NoZ
 
 variable (R A)
 
-theorem algebraMap_injective [CommRing R] [Ring A] [Nontrivial A] [Algebra R A]
+lemma algebraMap_injective [CommRing R] [Ring A] [Nontrivial A] [Algebra R A]
     [NoZeroSMulDivisors R A] : Function.Injective (algebraMap R A) := by
   -- porting note: todo: drop implicit args
   have := @smul_left_injective R A CommRing.toRing Ring.toAddCommGroup Algebra.toModule
@@ -780,7 +780,7 @@ theorem algebraMap_injective [CommRing R] [Ring A] [Nontrivial A] [Algebra R A]
   simpa only [algebraMap_eq_smul_one'] using this
 #align no_zero_smul_divisors.algebra_map_injective NoZeroSMulDivisors.algebraMap_injective
 
-theorem _root_.NeZero.of_noZeroSMulDivisors (n : ℕ) [CommRing R] [NeZero (n : R)] [Ring A]
+lemma _root_.NeZero.of_noZeroSMulDivisors (n : ℕ) [CommRing R] [NeZero (n : R)] [Ring A]
     [Nontrivial A] [Algebra R A] [NoZeroSMulDivisors R A] : NeZero (n : A) :=
   -- porting note: todo: drop implicit args
   @NeZero.nat_of_injective R A (R →+* A) _ _ n ‹_› _ _ <|
@@ -789,7 +789,7 @@ theorem _root_.NeZero.of_noZeroSMulDivisors (n : ℕ) [CommRing R] [NeZero (n : 
 
 variable {R A}
 
-theorem iff_algebraMap_injective [CommRing R] [Ring A] [IsDomain A] [Algebra R A] :
+lemma iff_algebraMap_injective [CommRing R] [Ring A] [IsDomain A] [Algebra R A] :
     NoZeroSMulDivisors R A ↔ Function.Injective (algebraMap R A) :=
   ⟨@NoZeroSMulDivisors.algebraMap_injective R A _ _ _ _, NoZeroSMulDivisors.of_algebraMap_injective⟩
 #align no_zero_smul_divisors.iff_algebra_map_injective NoZeroSMulDivisors.iff_algebraMap_injective
@@ -827,21 +827,21 @@ variable (A : Type*) [Semiring A] [Algebra R A]
 variable {M : Type*} [AddCommMonoid M] [Module A M] [Module R M] [IsScalarTower R A M]
 variable {N : Type*} [AddCommMonoid N] [Module A N] [Module R N] [IsScalarTower R A N]
 
-theorem algebra_compatible_smul (r : R) (m : M) : r • m = (algebraMap R A) r • m := by
+lemma algebra_compatible_smul (r : R) (m : M) : r • m = (algebraMap R A) r • m := by
   rw [← one_smul A m, ← smul_assoc, Algebra.smul_def, mul_one, one_smul]
 #align algebra_compatible_smul algebra_compatible_smul
 
 @[simp]
-theorem algebraMap_smul (r : R) (m : M) : (algebraMap R A) r • m = r • m :=
+lemma algebraMap_smul (r : R) (m : M) : (algebraMap R A) r • m = r • m :=
   (algebra_compatible_smul A r m).symm
 #align algebra_map_smul algebraMap_smul
 
-theorem intCast_smul {k V : Type*} [CommRing k] [AddCommGroup V] [Module k V] (r : ℤ) (x : V) :
+lemma intCast_smul {k V : Type*} [CommRing k] [AddCommGroup V] [Module k V] (r : ℤ) (x : V) :
     (r : k) • x = r • x :=
   algebraMap_smul k r x
 #align int_cast_smul intCast_smul
 
-theorem NoZeroSMulDivisors.trans (R A M : Type*) [CommRing R] [Ring A] [IsDomain A] [Algebra R A]
+lemma NoZeroSMulDivisors.trans (R A M : Type*) [CommRing R] [Ring A] [IsDomain A] [Algebra R A]
     [AddCommGroup M] [Module R M] [Module A M] [IsScalarTower R A M] [NoZeroSMulDivisors R A]
     [NoZeroSMulDivisors A M] : NoZeroSMulDivisors R M := by
   refine' ⟨fun {r m} h => _⟩
@@ -875,7 +875,7 @@ instance (priority := 200) Algebra.to_smulCommClass {R A} [CommSemiring R] [Semi
   IsScalarTower.to_smulCommClass
 #align algebra.to_smul_comm_class Algebra.to_smulCommClass
 
-theorem smul_algebra_smul_comm (r : R) (a : A) (m : M) : a • r • m = r • a • m :=
+lemma smul_algebra_smul_comm (r : R) (a : A) (m : M) : a • r • m = r • a • m :=
   smul_comm _ _ _
 #align smul_algebra_smul_comm smul_algebra_smul_comm
 
@@ -911,7 +911,7 @@ variable [AddCommMonoid M] [Module R M] [Module S M] [IsScalarTower R S M]
 variable [AddCommMonoid N] [Module R N] [Module S N] [IsScalarTower R S N]
 
 @[simp]
-theorem LinearMap.ker_restrictScalars (f : M →ₗ[S] N) :
+lemma LinearMap.ker_restrictScalars (f : M →ₗ[S] N) :
     LinearMap.ker (f.restrictScalars R) = f.ker.restrictScalars R :=
   rfl
 #align linear_map.ker_restrict_scalars LinearMap.ker_restrictScalars

@@ -62,34 +62,34 @@ namespace DualNumber
 open TrivSqZeroExt
 
 @[simp]
-theorem fst_eps [Zero R] [One R] : fst ε = (0 : R) :=
+lemma fst_eps [Zero R] [One R] : fst ε = (0 : R) :=
   fst_inr _ _
 #align dual_number.fst_eps DualNumber.fst_eps
 
 @[simp]
-theorem snd_eps [Zero R] [One R] : snd ε = (1 : R) :=
+lemma snd_eps [Zero R] [One R] : snd ε = (1 : R) :=
   snd_inr _ _
 #align dual_number.snd_eps DualNumber.snd_eps
 
 /-- A version of `TrivSqZeroExt.snd_mul` with `*` instead of `•`. -/
 @[simp]
-theorem snd_mul [Semiring R] (x y : R[ε]) : snd (x * y) = fst x * snd y + snd x * fst y :=
+lemma snd_mul [Semiring R] (x y : R[ε]) : snd (x * y) = fst x * snd y + snd x * fst y :=
   TrivSqZeroExt.snd_mul _ _
 #align dual_number.snd_mul DualNumber.snd_mul
 
 @[simp]
-theorem eps_mul_eps [Semiring R] : (ε * ε : R[ε]) = 0 :=
+lemma eps_mul_eps [Semiring R] : (ε * ε : R[ε]) = 0 :=
   inr_mul_inr _ _ _
 #align dual_number.eps_mul_eps DualNumber.eps_mul_eps
 
 @[simp]
-theorem inr_eq_smul_eps [MulZeroOneClass R] (r : R) : inr r = (r • ε : R[ε]) :=
+lemma inr_eq_smul_eps [MulZeroOneClass R] (r : R) : inr r = (r • ε : R[ε]) :=
   ext (mul_zero r).symm (mul_one r).symm
 #align dual_number.inr_eq_smul_eps DualNumber.inr_eq_smul_eps
 
 /-- For two algebra morphisms out of `R[ε]` to agree, it suffices for them to agree on `ε`. -/
 @[ext]
-theorem algHom_ext {A} [CommSemiring R] [Semiring A] [Algebra R A] ⦃f g : R[ε] →ₐ[R] A⦄
+lemma algHom_ext {A} [CommSemiring R] [Semiring A] [Algebra R A] ⦃f g : R[ε] →ₐ[R] A⦄
     (h : f ε = g ε) : f = g :=
   algHom_ext' <| LinearMap.ext_ring <| h
 #align dual_number.alg_hom_ext DualNumber.algHom_ext
@@ -113,13 +113,13 @@ def lift : { e : A // e * e = 0 } ≃ (R[ε] →ₐ[R] A) :=
 
 -- When applied to `ε`, `DualNumber.lift` produces the element of `A` that squares to 0.
 -- @[simp] -- Porting note: simp can prove this
-theorem lift_apply_eps (e : { e : A // e * e = 0 }) : @lift R _ _ _ _ e (ε : R[ε]) = e := by
+lemma lift_apply_eps (e : { e : A // e * e = 0 }) : @lift R _ _ _ _ e (ε : R[ε]) = e := by
   simp only [lift_apply_apply, fst_eps, map_zero, snd_eps, one_smul, zero_add]
 #align dual_number.lift_apply_eps DualNumber.lift_apply_eps
 
 -- Lifting `DualNumber.eps` itself gives the identity.
 @[simp]
-theorem lift_eps : lift ⟨ε, eps_mul_eps⟩ = AlgHom.id R R[ε] :=
+lemma lift_eps : lift ⟨ε, eps_mul_eps⟩ = AlgHom.id R R[ε] :=
   algHom_ext <| lift_apply_eps _
 #align dual_number.lift_eps DualNumber.lift_eps
 

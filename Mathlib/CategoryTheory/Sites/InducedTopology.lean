@@ -58,7 +58,7 @@ namespace LocallyCoverDense
 
 variable [Full G] [Faithful G] (Hld : LocallyCoverDense K G)
 
-theorem pushforward_cover_iff_cover_pullback {X : C} (S : Sieve X) :
+lemma pushforward_cover_iff_cover_pullback {X : C} (S : Sieve X) :
     K _ (S.functorPushforward G) ↔ ∃ T : K (G.obj X), T.val.functorPullback G = S := by
   constructor
   · intro hS
@@ -98,18 +98,18 @@ def inducedTopology : GrothendieckTopology C where
 #align category_theory.locally_cover_dense.induced_topology CategoryTheory.LocallyCoverDense.inducedTopology
 
 /-- `G` is cover-lifting wrt the induced topology. -/
-theorem inducedTopology_coverLifting : CoverLifting Hld.inducedTopology K G :=
+lemma inducedTopology_coverLifting : CoverLifting Hld.inducedTopology K G :=
   ⟨@fun _ S hS => Hld ⟨S, hS⟩⟩
 #align category_theory.locally_cover_dense.induced_topology_cover_lifting CategoryTheory.LocallyCoverDense.inducedTopology_coverLifting
 
 /-- `G` is cover-preserving wrt the induced topology. -/
-theorem inducedTopology_coverPreserving : CoverPreserving Hld.inducedTopology K G :=
+lemma inducedTopology_coverPreserving : CoverPreserving Hld.inducedTopology K G :=
   ⟨@fun _ _ hS => hS⟩
 #align category_theory.locally_cover_dense.induced_topology_cover_preserving CategoryTheory.LocallyCoverDense.inducedTopology_coverPreserving
 
 end LocallyCoverDense
 
-theorem CoverDense.locallyCoverDense [Full G] (H : CoverDense K G) : LocallyCoverDense K G := by
+lemma CoverDense.locallyCoverDense [Full G] (H : CoverDense K G) : LocallyCoverDense K G := by
   intro X T
   refine' K.superset_covering _ (K.bind_covering T.property fun Y f _ => H.is_cover Y)
   rintro Y _ ⟨Z, _, f, hf, ⟨W, g, f', rfl : _ = _⟩, rfl⟩
@@ -128,7 +128,7 @@ abbrev CoverDense.inducedTopology [Full G] [Faithful G] (H : CoverDense K G) :
 
 variable (J)
 
-theorem over_forget_locallyCoverDense (X : C) : LocallyCoverDense J (Over.forget X) := by
+lemma over_forget_locallyCoverDense (X : C) : LocallyCoverDense J (Over.forget X) := by
   intro Y T
   convert T.property
   ext Z f

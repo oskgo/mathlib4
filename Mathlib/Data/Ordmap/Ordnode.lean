@@ -138,9 +138,9 @@ def size : Ordnode α → ℕ
   | node sz _ _ _ => sz
 #align ordnode.size Ordnode.size
 
-theorem size_nil : size (nil : Ordnode α) = 0 :=
+lemma size_nil : size (nil : Ordnode α) = 0 :=
   rfl
-theorem size_node (sz : ℕ) (l : Ordnode α) (x : α) (r : Ordnode α) : size (node sz l x r) = sz :=
+lemma size_node (sz : ℕ) (l : Ordnode α) (x : α) (r : Ordnode α) : size (node sz l x r) = sz :=
   rfl
 
 attribute [eqns size_nil size_node] size

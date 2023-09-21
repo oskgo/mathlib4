@@ -134,17 +134,17 @@ initialize_simps_projections NonUnitalStarAlgHom
   (toFun → apply)
 
 @[simp]
-protected theorem coe_coe {F : Type*} [NonUnitalStarAlgHomClass F R A B] (f : F) :
+protected lemma coe_coe {F : Type*} [NonUnitalStarAlgHomClass F R A B] (f : F) :
   ⇑(f : A →⋆ₙₐ[R] B) = f := rfl
 #align non_unital_star_alg_hom.coe_coe NonUnitalStarAlgHom.coe_coe
 
 @[simp]
-theorem coe_toNonUnitalAlgHom {f : A →⋆ₙₐ[R] B} : (f.toNonUnitalAlgHom : A → B) = f :=
+lemma coe_toNonUnitalAlgHom {f : A →⋆ₙₐ[R] B} : (f.toNonUnitalAlgHom : A → B) = f :=
   rfl
 #align non_unital_star_alg_hom.coe_to_non_unital_alg_hom NonUnitalStarAlgHom.coe_toNonUnitalAlgHom
 
 @[ext]
-theorem ext {f g : A →⋆ₙₐ[R] B} (h : ∀ x, f x = g x) : f = g :=
+lemma ext {f g : A →⋆ₙₐ[R] B} (h : ∀ x, f x = g x) : f = g :=
   FunLike.ext _ _ h
 #align non_unital_star_alg_hom.ext NonUnitalStarAlgHom.ext
 
@@ -161,30 +161,30 @@ protected def copy (f : A →⋆ₙₐ[R] B) (f' : A → B) (h : f' = f) : A →
 #align non_unital_star_alg_hom.copy NonUnitalStarAlgHom.copy
 
 @[simp]
-theorem coe_copy (f : A →⋆ₙₐ[R] B) (f' : A → B) (h : f' = f) : ⇑(f.copy f' h) = f' :=
+lemma coe_copy (f : A →⋆ₙₐ[R] B) (f' : A → B) (h : f' = f) : ⇑(f.copy f' h) = f' :=
   rfl
 #align non_unital_star_alg_hom.coe_copy NonUnitalStarAlgHom.coe_copy
 
-theorem copy_eq (f : A →⋆ₙₐ[R] B) (f' : A → B) (h : f' = f) : f.copy f' h = f :=
+lemma copy_eq (f : A →⋆ₙₐ[R] B) (f' : A → B) (h : f' = f) : f.copy f' h = f :=
   FunLike.ext' h
 #align non_unital_star_alg_hom.copy_eq NonUnitalStarAlgHom.copy_eq
 
 -- porting note: doesn't align with Mathlib 3 because `NonUnitalStarAlgHom.mk` has a new signature
 @[simp]
-theorem coe_mk (f : A → B) (h₁ h₂ h₃ h₄ h₅) :
+lemma coe_mk (f : A → B) (h₁ h₂ h₃ h₄ h₅) :
     ((⟨⟨⟨⟨f, h₁⟩, h₂, h₃⟩, h₄⟩, h₅⟩ : A →⋆ₙₐ[R] B) : A → B) = f :=
   rfl
 #align non_unital_star_alg_hom.coe_mk NonUnitalStarAlgHom.coe_mkₓ
 
 -- this is probably the more useful lemma for Lean 4 and should likely replace `coe_mk` above
 @[simp]
-theorem coe_mk' (f : A →ₙₐ[R] B) (h) :
+lemma coe_mk' (f : A →ₙₐ[R] B) (h) :
     ((⟨f, h⟩ : A →⋆ₙₐ[R] B) : A → B) = f :=
   rfl
 
 -- porting note: doesn't align with Mathlib 3 because `NonUnitalStarAlgHom.mk` has a new signature
 @[simp]
-theorem mk_coe (f : A →⋆ₙₐ[R] B) (h₁ h₂ h₃ h₄ h₅) :
+lemma mk_coe (f : A →⋆ₙₐ[R] B) (h₁ h₂ h₃ h₄ h₅) :
     (⟨⟨⟨⟨f, h₁⟩, h₂, h₃⟩, h₄⟩, h₅⟩ : A →⋆ₙₐ[R] B) = f := by
   ext
   rfl
@@ -200,7 +200,7 @@ protected def id : A →⋆ₙₐ[R] A :=
 #align non_unital_star_alg_hom.id NonUnitalStarAlgHom.id
 
 @[simp]
-theorem coe_id : ⇑(NonUnitalStarAlgHom.id R A) = id :=
+lemma coe_id : ⇑(NonUnitalStarAlgHom.id R A) = id :=
   rfl
 #align non_unital_star_alg_hom.coe_id NonUnitalStarAlgHom.coe_id
 
@@ -216,28 +216,28 @@ def comp (f : B →⋆ₙₐ[R] C) (g : A →⋆ₙₐ[R] B) : A →⋆ₙₐ[R]
 #align non_unital_star_alg_hom.comp NonUnitalStarAlgHom.comp
 
 @[simp]
-theorem coe_comp (f : B →⋆ₙₐ[R] C) (g : A →⋆ₙₐ[R] B) : ⇑(comp f g) = f ∘ g :=
+lemma coe_comp (f : B →⋆ₙₐ[R] C) (g : A →⋆ₙₐ[R] B) : ⇑(comp f g) = f ∘ g :=
   rfl
 #align non_unital_star_alg_hom.coe_comp NonUnitalStarAlgHom.coe_comp
 
 @[simp]
-theorem comp_apply (f : B →⋆ₙₐ[R] C) (g : A →⋆ₙₐ[R] B) (a : A) : comp f g a = f (g a) :=
+lemma comp_apply (f : B →⋆ₙₐ[R] C) (g : A →⋆ₙₐ[R] B) (a : A) : comp f g a = f (g a) :=
   rfl
 #align non_unital_star_alg_hom.comp_apply NonUnitalStarAlgHom.comp_apply
 
 @[simp]
-theorem comp_assoc (f : C →⋆ₙₐ[R] D) (g : B →⋆ₙₐ[R] C) (h : A →⋆ₙₐ[R] B) :
+lemma comp_assoc (f : C →⋆ₙₐ[R] D) (g : B →⋆ₙₐ[R] C) (h : A →⋆ₙₐ[R] B) :
     (f.comp g).comp h = f.comp (g.comp h) :=
   rfl
 #align non_unital_star_alg_hom.comp_assoc NonUnitalStarAlgHom.comp_assoc
 
 @[simp]
-theorem id_comp (f : A →⋆ₙₐ[R] B) : (NonUnitalStarAlgHom.id _ _).comp f = f :=
+lemma id_comp (f : A →⋆ₙₐ[R] B) : (NonUnitalStarAlgHom.id _ _).comp f = f :=
   ext fun _ => rfl
 #align non_unital_star_alg_hom.id_comp NonUnitalStarAlgHom.id_comp
 
 @[simp]
-theorem comp_id (f : A →⋆ₙₐ[R] B) : f.comp (NonUnitalStarAlgHom.id _ _) = f :=
+lemma comp_id (f : A →⋆ₙₐ[R] B) : f.comp (NonUnitalStarAlgHom.id _ _) = f :=
   ext fun _ => rfl
 #align non_unital_star_alg_hom.comp_id NonUnitalStarAlgHom.comp_id
 
@@ -249,11 +249,11 @@ instance : Monoid (A →⋆ₙₐ[R] A) where
   mul_one := comp_id
 
 @[simp]
-theorem coe_one : ((1 : A →⋆ₙₐ[R] A) : A → A) = id :=
+lemma coe_one : ((1 : A →⋆ₙₐ[R] A) : A → A) = id :=
   rfl
 #align non_unital_star_alg_hom.coe_one NonUnitalStarAlgHom.coe_one
 
-theorem one_apply (a : A) : (1 : A →⋆ₙₐ[R] A) a = a :=
+lemma one_apply (a : A) : (1 : A →⋆ₙₐ[R] A) a = a :=
   rfl
 #align non_unital_star_alg_hom.one_apply NonUnitalStarAlgHom.one_apply
 
@@ -281,11 +281,11 @@ instance : MonoidWithZero (A →⋆ₙₐ[R] A) :=
     mul_zero := fun f => ext fun _ => map_zero f }
 
 @[simp]
-theorem coe_zero : ((0 : A →⋆ₙₐ[R] B) : A → B) = 0 :=
+lemma coe_zero : ((0 : A →⋆ₙₐ[R] B) : A → B) = 0 :=
   rfl
 #align non_unital_star_alg_hom.coe_zero NonUnitalStarAlgHom.coe_zero
 
-theorem zero_apply (a : A) : (0 : A →⋆ₙₐ[R] B) a = 0 :=
+lemma zero_apply (a : A) : (0 : A →⋆ₙₐ[R] B) a = 0 :=
   rfl
 #align non_unital_star_alg_hom.zero_apply NonUnitalStarAlgHom.zero_apply
 
@@ -373,7 +373,7 @@ instance : StarAlgHomClass (A →⋆ₐ[R] B) R A B
   map_star f := f.map_star'
 
 @[simp]
-protected theorem coe_coe {F : Type*} [StarAlgHomClass F R A B] (f : F) : ⇑(f : A →⋆ₐ[R] B) = f :=
+protected lemma coe_coe {F : Type*} [StarAlgHomClass F R A B] (f : F) : ⇑(f : A →⋆ₐ[R] B) = f :=
   rfl
 #align star_alg_hom.coe_coe StarAlgHom.coe_coe
 
@@ -384,12 +384,12 @@ def Simps.apply (f : A →⋆ₐ[R] B) : A → B := f
 initialize_simps_projections StarAlgHom (toFun → apply)
 
 @[simp]
-theorem coe_toAlgHom {f : A →⋆ₐ[R] B} : (f.toAlgHom : A → B) = f :=
+lemma coe_toAlgHom {f : A →⋆ₐ[R] B} : (f.toAlgHom : A → B) = f :=
   rfl
 #align star_alg_hom.coe_to_alg_hom StarAlgHom.coe_toAlgHom
 
 @[ext]
-theorem ext {f g : A →⋆ₐ[R] B} (h : ∀ x, f x = g x) : f = g :=
+lemma ext {f g : A →⋆ₐ[R] B} (h : ∀ x, f x = g x) : f = g :=
   FunLike.ext _ _ h
 #align star_alg_hom.ext StarAlgHom.ext
 
@@ -407,30 +407,30 @@ protected def copy (f : A →⋆ₐ[R] B) (f' : A → B) (h : f' = f) : A →⋆
 #align star_alg_hom.copy StarAlgHom.copy
 
 @[simp]
-theorem coe_copy (f : A →⋆ₐ[R] B) (f' : A → B) (h : f' = f) : ⇑(f.copy f' h) = f' :=
+lemma coe_copy (f : A →⋆ₐ[R] B) (f' : A → B) (h : f' = f) : ⇑(f.copy f' h) = f' :=
   rfl
 #align star_alg_hom.coe_copy StarAlgHom.coe_copy
 
-theorem copy_eq (f : A →⋆ₐ[R] B) (f' : A → B) (h : f' = f) : f.copy f' h = f :=
+lemma copy_eq (f : A →⋆ₐ[R] B) (f' : A → B) (h : f' = f) : f.copy f' h = f :=
   FunLike.ext' h
 #align star_alg_hom.copy_eq StarAlgHom.copy_eq
 
 -- porting note: doesn't align with Mathlib 3 because `StarAlgHom.mk` has a new signature
 @[simp]
-theorem coe_mk (f : A → B) (h₁ h₂ h₃ h₄ h₅ h₆) :
+lemma coe_mk (f : A → B) (h₁ h₂ h₃ h₄ h₅ h₆) :
     ((⟨⟨⟨⟨⟨f, h₁⟩, h₂⟩, h₃, h₄⟩, h₅⟩, h₆⟩ : A →⋆ₐ[R] B) : A → B) = f :=
   rfl
 #align star_alg_hom.coe_mk StarAlgHom.coe_mkₓ
 
 -- this is probably the more useful lemma for Lean 4 and should likely replace `coe_mk` above
 @[simp]
-theorem coe_mk' (f : A →ₐ[R] B) (h) :
+lemma coe_mk' (f : A →ₐ[R] B) (h) :
     ((⟨f, h⟩ : A →⋆ₐ[R] B) : A → B) = f :=
   rfl
 
 -- porting note: doesn't align with Mathlib 3 because `StarAlgHom.mk` has a new signature
 @[simp]
-theorem mk_coe (f : A →⋆ₐ[R] B) (h₁ h₂ h₃ h₄ h₅ h₆) :
+lemma mk_coe (f : A →⋆ₐ[R] B) (h₁ h₂ h₃ h₄ h₅ h₆) :
     (⟨⟨⟨⟨⟨f, h₁⟩, h₂⟩, h₃, h₄⟩, h₅⟩, h₆⟩ : A →⋆ₐ[R] B) = f := by
   ext
   rfl
@@ -446,7 +446,7 @@ protected def id : A →⋆ₐ[R] A :=
 #align star_alg_hom.id StarAlgHom.id
 
 @[simp]
-theorem coe_id : ⇑(StarAlgHom.id R A) = id :=
+lemma coe_id : ⇑(StarAlgHom.id R A) = id :=
   rfl
 #align star_alg_hom.coe_id StarAlgHom.coe_id
 
@@ -464,28 +464,28 @@ def comp (f : B →⋆ₐ[R] C) (g : A →⋆ₐ[R] B) : A →⋆ₐ[R] C :=
 #align star_alg_hom.comp StarAlgHom.comp
 
 @[simp]
-theorem coe_comp (f : B →⋆ₐ[R] C) (g : A →⋆ₐ[R] B) : ⇑(comp f g) = f ∘ g :=
+lemma coe_comp (f : B →⋆ₐ[R] C) (g : A →⋆ₐ[R] B) : ⇑(comp f g) = f ∘ g :=
   rfl
 #align star_alg_hom.coe_comp StarAlgHom.coe_comp
 
 @[simp]
-theorem comp_apply (f : B →⋆ₐ[R] C) (g : A →⋆ₐ[R] B) (a : A) : comp f g a = f (g a) :=
+lemma comp_apply (f : B →⋆ₐ[R] C) (g : A →⋆ₐ[R] B) (a : A) : comp f g a = f (g a) :=
   rfl
 #align star_alg_hom.comp_apply StarAlgHom.comp_apply
 
 @[simp]
-theorem comp_assoc (f : C →⋆ₐ[R] D) (g : B →⋆ₐ[R] C) (h : A →⋆ₐ[R] B) :
+lemma comp_assoc (f : C →⋆ₐ[R] D) (g : B →⋆ₐ[R] C) (h : A →⋆ₐ[R] B) :
     (f.comp g).comp h = f.comp (g.comp h) :=
   rfl
 #align star_alg_hom.comp_assoc StarAlgHom.comp_assoc
 
 @[simp]
-theorem id_comp (f : A →⋆ₐ[R] B) : (StarAlgHom.id _ _).comp f = f :=
+lemma id_comp (f : A →⋆ₐ[R] B) : (StarAlgHom.id _ _).comp f = f :=
   ext fun _ => rfl
 #align star_alg_hom.id_comp StarAlgHom.id_comp
 
 @[simp]
-theorem comp_id (f : A →⋆ₐ[R] B) : f.comp (StarAlgHom.id _ _) = f :=
+lemma comp_id (f : A →⋆ₐ[R] B) : f.comp (StarAlgHom.id _ _) = f :=
   ext fun _ => rfl
 #align star_alg_hom.comp_id StarAlgHom.comp_id
 
@@ -502,7 +502,7 @@ def toNonUnitalStarAlgHom (f : A →⋆ₐ[R] B) : A →⋆ₙₐ[R] B :=
 #align star_alg_hom.to_non_unital_star_alg_hom StarAlgHom.toNonUnitalStarAlgHom
 
 @[simp]
-theorem coe_toNonUnitalStarAlgHom (f : A →⋆ₐ[R] B) : (f.toNonUnitalStarAlgHom : A → B) = f :=
+lemma coe_toNonUnitalStarAlgHom (f : A →⋆ₐ[R] B) : (f.toNonUnitalStarAlgHom : A → B) = f :=
   rfl
 #align star_alg_hom.coe_to_non_unital_star_alg_hom StarAlgHom.coe_toNonUnitalStarAlgHom
 
@@ -544,22 +544,22 @@ def prod (f : A →⋆ₙₐ[R] B) (g : A →⋆ₙₐ[R] C) : A →⋆ₙₐ[R]
     map_star' := fun x => by simp [map_star, Prod.star_def] }
 #align non_unital_star_alg_hom.prod NonUnitalStarAlgHom.prod
 
-theorem coe_prod (f : A →⋆ₙₐ[R] B) (g : A →⋆ₙₐ[R] C) : ⇑(f.prod g) = Pi.prod f g :=
+lemma coe_prod (f : A →⋆ₙₐ[R] B) (g : A →⋆ₙₐ[R] C) : ⇑(f.prod g) = Pi.prod f g :=
   rfl
 #align non_unital_star_alg_hom.coe_prod NonUnitalStarAlgHom.coe_prod
 
 @[simp]
-theorem fst_prod (f : A →⋆ₙₐ[R] B) (g : A →⋆ₙₐ[R] C) : (fst R B C).comp (prod f g) = f := by
+lemma fst_prod (f : A →⋆ₙₐ[R] B) (g : A →⋆ₙₐ[R] C) : (fst R B C).comp (prod f g) = f := by
   ext; rfl
 #align non_unital_star_alg_hom.fst_prod NonUnitalStarAlgHom.fst_prod
 
 @[simp]
-theorem snd_prod (f : A →⋆ₙₐ[R] B) (g : A →⋆ₙₐ[R] C) : (snd R B C).comp (prod f g) = g := by
+lemma snd_prod (f : A →⋆ₙₐ[R] B) (g : A →⋆ₙₐ[R] C) : (snd R B C).comp (prod f g) = g := by
   ext; rfl
 #align non_unital_star_alg_hom.snd_prod NonUnitalStarAlgHom.snd_prod
 
 @[simp]
-theorem prod_fst_snd : prod (fst R A B) (snd R A B) = 1 :=
+lemma prod_fst_snd : prod (fst R A B) (snd R A B) = 1 :=
   FunLike.coe_injective Pi.prod_fst_snd
 #align non_unital_star_alg_hom.prod_fst_snd NonUnitalStarAlgHom.prod_fst_snd
 
@@ -595,20 +595,20 @@ def inr : B →⋆ₙₐ[R] A × B :=
 variable {R A B}
 
 @[simp]
-theorem coe_inl : (inl R A B : A → A × B) = fun x => (x, 0) :=
+lemma coe_inl : (inl R A B : A → A × B) = fun x => (x, 0) :=
   rfl
 #align non_unital_star_alg_hom.coe_inl NonUnitalStarAlgHom.coe_inl
 
-theorem inl_apply (x : A) : inl R A B x = (x, 0) :=
+lemma inl_apply (x : A) : inl R A B x = (x, 0) :=
   rfl
 #align non_unital_star_alg_hom.inl_apply NonUnitalStarAlgHom.inl_apply
 
 @[simp]
-theorem coe_inr : (inr R A B : B → A × B) = Prod.mk 0 :=
+lemma coe_inr : (inr R A B : B → A × B) = Prod.mk 0 :=
   rfl
 #align non_unital_star_alg_hom.coe_inr NonUnitalStarAlgHom.coe_inr
 
-theorem inr_apply (x : B) : inr R A B x = (0, x) :=
+lemma inr_apply (x : B) : inr R A B x = (0, x) :=
   rfl
 #align non_unital_star_alg_hom.inr_apply NonUnitalStarAlgHom.inr_apply
 
@@ -641,22 +641,22 @@ def prod (f : A →⋆ₐ[R] B) (g : A →⋆ₐ[R] C) : A →⋆ₐ[R] B × C :
   { f.toAlgHom.prod g.toAlgHom with map_star' := fun x => by simp [Prod.star_def, map_star] }
 #align star_alg_hom.prod StarAlgHom.prod
 
-theorem coe_prod (f : A →⋆ₐ[R] B) (g : A →⋆ₐ[R] C) : ⇑(f.prod g) = Pi.prod f g :=
+lemma coe_prod (f : A →⋆ₐ[R] B) (g : A →⋆ₐ[R] C) : ⇑(f.prod g) = Pi.prod f g :=
   rfl
 #align star_alg_hom.coe_prod StarAlgHom.coe_prod
 
 @[simp]
-theorem fst_prod (f : A →⋆ₐ[R] B) (g : A →⋆ₐ[R] C) : (fst R B C).comp (prod f g) = f := by
+lemma fst_prod (f : A →⋆ₐ[R] B) (g : A →⋆ₐ[R] C) : (fst R B C).comp (prod f g) = f := by
   ext; rfl
 #align star_alg_hom.fst_prod StarAlgHom.fst_prod
 
 @[simp]
-theorem snd_prod (f : A →⋆ₐ[R] B) (g : A →⋆ₐ[R] C) : (snd R B C).comp (prod f g) = g := by
+lemma snd_prod (f : A →⋆ₐ[R] B) (g : A →⋆ₐ[R] C) : (snd R B C).comp (prod f g) = g := by
   ext; rfl
 #align star_alg_hom.snd_prod StarAlgHom.snd_prod
 
 @[simp]
-theorem prod_fst_snd : prod (fst R A B) (snd R A B) = 1 :=
+lemma prod_fst_snd : prod (fst R A B) (snd R A B) = 1 :=
   FunLike.coe_injective Pi.prod_fst_snd
 #align star_alg_hom.prod_fst_snd StarAlgHom.prod_fst_snd
 
@@ -796,7 +796,7 @@ instance : StarAlgEquivClass (A ≃⋆ₐ[R] B) R A B
   map_smul := map_smul'
 
 @[simp]
-theorem toRingEquiv_eq_coe (e : A ≃⋆ₐ[R] B) : e.toRingEquiv = e :=
+lemma toRingEquiv_eq_coe (e : A ≃⋆ₐ[R] B) : e.toRingEquiv = e :=
   rfl
 
 -- Porting note: this is no longer useful
@@ -806,11 +806,11 @@ theorem toRingEquiv_eq_coe (e : A ≃⋆ₐ[R] B) : e.toRingEquiv = e :=
 --  ⟨StarAlgEquiv.toFun⟩
 
 @[ext]
-theorem ext {f g : A ≃⋆ₐ[R] B} (h : ∀ a, f a = g a) : f = g :=
+lemma ext {f g : A ≃⋆ₐ[R] B} (h : ∀ a, f a = g a) : f = g :=
   FunLike.ext f g h
 #align star_alg_equiv.ext StarAlgEquiv.ext
 
-theorem ext_iff {f g : A ≃⋆ₐ[R] B} : f = g ↔ ∀ a, f a = g a :=
+lemma ext_iff {f g : A ≃⋆ₐ[R] B} : f = g ↔ ∀ a, f a = g a :=
   FunLike.ext_iff
 #align star_alg_equiv.ext_iff StarAlgEquiv.ext_iff
 
@@ -826,7 +826,7 @@ instance : Inhabited (A ≃⋆ₐ[R] A) :=
   ⟨refl⟩
 
 @[simp]
-theorem coe_refl : ⇑(refl : A ≃⋆ₐ[R] A) = id :=
+lemma coe_refl : ⇑(refl : A ≃⋆ₐ[R] A) = id :=
   rfl
 #align star_alg_equiv.coe_refl StarAlgEquiv.coe_refl
 
@@ -856,30 +856,30 @@ initialize_simps_projections StarAlgEquiv (toFun → apply, invFun → symm_appl
 
 -- Porting note: use `EquivLike.inv` instead of `invFun`
 @[simp]
-theorem invFun_eq_symm {e : A ≃⋆ₐ[R] B} : EquivLike.inv e = e.symm :=
+lemma invFun_eq_symm {e : A ≃⋆ₐ[R] B} : EquivLike.inv e = e.symm :=
   rfl
 #align star_alg_equiv.inv_fun_eq_symm StarAlgEquiv.invFun_eq_symm
 
 @[simp]
-theorem symm_symm (e : A ≃⋆ₐ[R] B) : e.symm.symm = e := by
+lemma symm_symm (e : A ≃⋆ₐ[R] B) : e.symm.symm = e := by
   ext
   rfl
 #align star_alg_equiv.symm_symm StarAlgEquiv.symm_symm
 
-theorem symm_bijective : Function.Bijective (symm : (A ≃⋆ₐ[R] B) → B ≃⋆ₐ[R] A) :=
+lemma symm_bijective : Function.Bijective (symm : (A ≃⋆ₐ[R] B) → B ≃⋆ₐ[R] A) :=
   Equiv.bijective ⟨symm, symm, symm_symm, symm_symm⟩
 #align star_alg_equiv.symm_bijective StarAlgEquiv.symm_bijective
 
 -- porting note: doesn't align with Mathlib 3 because `StarAlgEquiv.mk` has a new signature
 @[simp]
-theorem mk_coe' (e : A ≃⋆ₐ[R] B) (f h₁ h₂ h₃ h₄ h₅ h₆) :
+lemma mk_coe' (e : A ≃⋆ₐ[R] B) (f h₁ h₂ h₃ h₄ h₅ h₆) :
     (⟨⟨⟨f, e, h₁, h₂⟩, h₃, h₄⟩, h₅, h₆⟩ : B ≃⋆ₐ[R] A) = e.symm :=
   symm_bijective.injective <| ext fun _ => rfl
 #align star_alg_equiv.mk_coe' StarAlgEquiv.mk_coe'ₓ
 
 -- porting note: doesn't align with Mathlib 3 because `StarAlgEquiv.mk` has a new signature
 @[simp]
-theorem symm_mk (f f') (h₁ h₂ h₃ h₄ h₅ h₆) :
+lemma symm_mk (f f') (h₁ h₂ h₃ h₄ h₅ h₆) :
     (⟨⟨⟨f, f', h₁, h₂⟩, h₃, h₄⟩, h₅, h₆⟩ : A ≃⋆ₐ[R] B).symm =
       { (⟨⟨⟨f, f', h₁, h₂⟩, h₃, h₄⟩, h₅, h₆⟩ : A ≃⋆ₐ[R] B).symm with
         toFun := f'
@@ -888,17 +888,17 @@ theorem symm_mk (f f') (h₁ h₂ h₃ h₄ h₅ h₆) :
 #align star_alg_equiv.symm_mk StarAlgEquiv.symm_mkₓ
 
 @[simp]
-theorem refl_symm : (StarAlgEquiv.refl : A ≃⋆ₐ[R] A).symm = StarAlgEquiv.refl :=
+lemma refl_symm : (StarAlgEquiv.refl : A ≃⋆ₐ[R] A).symm = StarAlgEquiv.refl :=
   rfl
 #align star_alg_equiv.refl_symm StarAlgEquiv.refl_symm
 
 -- should be a `simp` lemma, but causes a linter timeout
-theorem to_ringEquiv_symm (f : A ≃⋆ₐ[R] B) : (f : A ≃+* B).symm = f.symm :=
+lemma to_ringEquiv_symm (f : A ≃⋆ₐ[R] B) : (f : A ≃+* B).symm = f.symm :=
   rfl
 #align star_alg_equiv.to_ring_equiv_symm StarAlgEquiv.to_ringEquiv_symm
 
 @[simp]
-theorem symm_to_ringEquiv (e : A ≃⋆ₐ[R] B) : (e.symm : B ≃+* A) = (e : A ≃+* B).symm :=
+lemma symm_to_ringEquiv (e : A ≃⋆ₐ[R] B) : (e.symm : B ≃+* A) = (e : A ≃+* B).symm :=
   rfl
 #align star_alg_equiv.symm_to_ring_equiv StarAlgEquiv.symm_to_ringEquiv
 
@@ -916,36 +916,36 @@ def trans (e₁ : A ≃⋆ₐ[R] B) (e₂ : B ≃⋆ₐ[R] C) : A ≃⋆ₐ[R] C
 #align star_alg_equiv.trans StarAlgEquiv.trans
 
 @[simp]
-theorem apply_symm_apply (e : A ≃⋆ₐ[R] B) : ∀ x, e (e.symm x) = x :=
+lemma apply_symm_apply (e : A ≃⋆ₐ[R] B) : ∀ x, e (e.symm x) = x :=
   e.toRingEquiv.apply_symm_apply
 #align star_alg_equiv.apply_symm_apply StarAlgEquiv.apply_symm_apply
 
 @[simp]
-theorem symm_apply_apply (e : A ≃⋆ₐ[R] B) : ∀ x, e.symm (e x) = x :=
+lemma symm_apply_apply (e : A ≃⋆ₐ[R] B) : ∀ x, e.symm (e x) = x :=
   e.toRingEquiv.symm_apply_apply
 #align star_alg_equiv.symm_apply_apply StarAlgEquiv.symm_apply_apply
 
 @[simp]
-theorem symm_trans_apply (e₁ : A ≃⋆ₐ[R] B) (e₂ : B ≃⋆ₐ[R] C) (x : C) :
+lemma symm_trans_apply (e₁ : A ≃⋆ₐ[R] B) (e₂ : B ≃⋆ₐ[R] C) (x : C) :
     (e₁.trans e₂).symm x = e₁.symm (e₂.symm x) :=
   rfl
 #align star_alg_equiv.symm_trans_apply StarAlgEquiv.symm_trans_apply
 
 @[simp]
-theorem coe_trans (e₁ : A ≃⋆ₐ[R] B) (e₂ : B ≃⋆ₐ[R] C) : ⇑(e₁.trans e₂) = e₂ ∘ e₁ :=
+lemma coe_trans (e₁ : A ≃⋆ₐ[R] B) (e₂ : B ≃⋆ₐ[R] C) : ⇑(e₁.trans e₂) = e₂ ∘ e₁ :=
   rfl
 #align star_alg_equiv.coe_trans StarAlgEquiv.coe_trans
 
 @[simp]
-theorem trans_apply (e₁ : A ≃⋆ₐ[R] B) (e₂ : B ≃⋆ₐ[R] C) (x : A) : (e₁.trans e₂) x = e₂ (e₁ x) :=
+lemma trans_apply (e₁ : A ≃⋆ₐ[R] B) (e₂ : B ≃⋆ₐ[R] C) (x : A) : (e₁.trans e₂) x = e₂ (e₁ x) :=
   rfl
 #align star_alg_equiv.trans_apply StarAlgEquiv.trans_apply
 
-theorem leftInverse_symm (e : A ≃⋆ₐ[R] B) : Function.LeftInverse e.symm e :=
+lemma leftInverse_symm (e : A ≃⋆ₐ[R] B) : Function.LeftInverse e.symm e :=
   e.left_inv
 #align star_alg_equiv.left_inverse_symm StarAlgEquiv.leftInverse_symm
 
-theorem rightInverse_symm (e : A ≃⋆ₐ[R] B) : Function.RightInverse e.symm e :=
+lemma rightInverse_symm (e : A ≃⋆ₐ[R] B) : Function.RightInverse e.symm e :=
   e.right_inv
 #align star_alg_equiv.right_inverse_symm StarAlgEquiv.rightInverse_symm
 
@@ -987,12 +987,12 @@ noncomputable def ofBijective (f : F) (hf : Function.Bijective f) : A ≃⋆ₐ[
 #align star_alg_equiv.of_bijective StarAlgEquiv.ofBijective
 
 @[simp]
-theorem coe_ofBijective {f : F} (hf : Function.Bijective f) :
+lemma coe_ofBijective {f : F} (hf : Function.Bijective f) :
     (StarAlgEquiv.ofBijective f hf : A → B) = f :=
   rfl
 #align star_alg_equiv.coe_of_bijective StarAlgEquiv.coe_ofBijective
 
-theorem ofBijective_apply {f : F} (hf : Function.Bijective f) (a : A) :
+lemma ofBijective_apply {f : F} (hf : Function.Bijective f) (a : A) :
     (StarAlgEquiv.ofBijective f hf) a = f a :=
   rfl
 #align star_alg_equiv.of_bijective_apply StarAlgEquiv.ofBijective_apply

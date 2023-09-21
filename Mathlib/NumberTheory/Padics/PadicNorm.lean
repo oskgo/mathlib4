@@ -51,12 +51,12 @@ variable {p : ℕ}
 
 /-- Unfolds the definition of the `p`-adic norm of `q` when `q ≠ 0`. -/
 @[simp]
-protected theorem eq_zpow_of_nonzero {q : ℚ} (hq : q ≠ 0) :
+protected lemma eq_zpow_of_nonzero {q : ℚ} (hq : q ≠ 0) :
     padicNorm p q = (p : ℚ) ^ (-padicValRat p q) := by simp [hq, padicNorm]
 #align padic_norm.eq_zpow_of_nonzero padicNorm.eq_zpow_of_nonzero
 
 /-- The `p`-adic norm is nonnegative. -/
-protected theorem nonneg (q : ℚ) : 0 ≤ padicNorm p q :=
+protected lemma nonneg (q : ℚ) : 0 ≤ padicNorm p q :=
   if hq : q = 0 then by simp [hq, padicNorm]
   else by
     unfold padicNorm
@@ -67,18 +67,18 @@ protected theorem nonneg (q : ℚ) : 0 ≤ padicNorm p q :=
 
 /-- The `p`-adic norm of `0` is `0`. -/
 @[simp]
-protected theorem zero : padicNorm p 0 = 0 := by simp [padicNorm]
+protected lemma zero : padicNorm p 0 = 0 := by simp [padicNorm]
 #align padic_norm.zero padicNorm.zero
 
 /-- The `p`-adic norm of `1` is `1`. -/
 -- @[simp] -- Porting note: simp can prove this
-protected theorem one : padicNorm p 1 = 1 := by simp [padicNorm]
+protected lemma one : padicNorm p 1 = 1 := by simp [padicNorm]
 #align padic_norm.one padicNorm.one
 
 /-- The `p`-adic norm of `p` is `p⁻¹` if `p > 1`.
 
 See also `padicNorm.padicNorm_p_of_prime` for a version assuming `p` is prime. -/
-theorem padicNorm_p (hp : 1 < p) : padicNorm p p = (p : ℚ)⁻¹ := by
+lemma padicNorm_p (hp : 1 < p) : padicNorm p p = (p : ℚ)⁻¹ := by
   simp [padicNorm, (pos_of_gt hp).ne', padicValNat.self hp]
 #align padic_norm.padic_norm_p padicNorm.padicNorm_p
 
@@ -86,12 +86,12 @@ theorem padicNorm_p (hp : 1 < p) : padicNorm p p = (p : ℚ)⁻¹ := by
 
 See also `padicNorm.padicNorm_p` for a version assuming `1 < p`. -/
 @[simp]
-theorem padicNorm_p_of_prime [Fact p.Prime] : padicNorm p p = (p : ℚ)⁻¹ :=
+lemma padicNorm_p_of_prime [Fact p.Prime] : padicNorm p p = (p : ℚ)⁻¹ :=
   padicNorm_p <| Nat.Prime.one_lt Fact.out
 #align padic_norm.padic_norm_p_of_prime padicNorm.padicNorm_p_of_prime
 
 /-- The `p`-adic norm of `q` is `1` if `q` is prime and not equal to `p`. -/
-theorem padicNorm_of_prime_of_ne {q : ℕ} [p_prime : Fact p.Prime] [q_prime : Fact q.Prime]
+lemma padicNorm_of_prime_of_ne {q : ℕ} [p_prime : Fact p.Prime] [q_prime : Fact q.Prime]
     (neq : p ≠ q) : padicNorm p q = 1 := by
   have p : padicValRat p q = 0 := by exact_mod_cast padicValNat_primes neq
   rw [padicNorm, p]
@@ -101,7 +101,7 @@ theorem padicNorm_of_prime_of_ne {q : ℕ} [p_prime : Fact p.Prime] [q_prime : F
 /-- The `p`-adic norm of `p` is less than `1` if `1 < p`.
 
 See also `padicNorm.padicNorm_p_lt_one_of_prime` for a version assuming `p` is prime. -/
-theorem padicNorm_p_lt_one (hp : 1 < p) : padicNorm p p < 1 := by
+lemma padicNorm_p_lt_one (hp : 1 < p) : padicNorm p p < 1 := by
   rw [padicNorm_p hp, inv_lt_one_iff]
   exact_mod_cast Or.inr hp
 #align padic_norm.padic_norm_p_lt_one padicNorm.padicNorm_p_lt_one
@@ -109,32 +109,32 @@ theorem padicNorm_p_lt_one (hp : 1 < p) : padicNorm p p < 1 := by
 /-- The `p`-adic norm of `p` is less than `1` if `p` is prime.
 
 See also `padicNorm.padicNorm_p_lt_one` for a version assuming `1 < p`. -/
-theorem padicNorm_p_lt_one_of_prime [Fact p.Prime] : padicNorm p p < 1 :=
+lemma padicNorm_p_lt_one_of_prime [Fact p.Prime] : padicNorm p p < 1 :=
   padicNorm_p_lt_one <| Nat.Prime.one_lt Fact.out
 #align padic_norm.padic_norm_p_lt_one_of_prime padicNorm.padicNorm_p_lt_one_of_prime
 
 /-- `padicNorm p q` takes discrete values `p ^ -z` for `z : ℤ`. -/
-protected theorem values_discrete {q : ℚ} (hq : q ≠ 0) : ∃ z : ℤ, padicNorm p q = (p : ℚ) ^ (-z) :=
+protected lemma values_discrete {q : ℚ} (hq : q ≠ 0) : ∃ z : ℤ, padicNorm p q = (p : ℚ) ^ (-z) :=
   ⟨padicValRat p q, by simp [padicNorm, hq]⟩
 #align padic_norm.values_discrete padicNorm.values_discrete
 
 /-- `padicNorm p` is symmetric. -/
 @[simp]
-protected theorem neg (q : ℚ) : padicNorm p (-q) = padicNorm p q :=
+protected lemma neg (q : ℚ) : padicNorm p (-q) = padicNorm p q :=
   if hq : q = 0 then by simp [hq] else by simp [padicNorm, hq]
 #align padic_norm.neg padicNorm.neg
 
 variable [hp : Fact p.Prime]
 
 /-- If `q ≠ 0`, then `padicNorm p q ≠ 0`. -/
-protected theorem nonzero {q : ℚ} (hq : q ≠ 0) : padicNorm p q ≠ 0 := by
+protected lemma nonzero {q : ℚ} (hq : q ≠ 0) : padicNorm p q ≠ 0 := by
   rw [padicNorm.eq_zpow_of_nonzero hq]
   apply zpow_ne_zero_of_ne_zero
   exact_mod_cast ne_of_gt hp.1.pos
 #align padic_norm.nonzero padicNorm.nonzero
 
 /-- If the `p`-adic norm of `q` is 0, then `q` is `0`. -/
-theorem zero_of_padicNorm_eq_zero {q : ℚ} (h : padicNorm p q = 0) : q = 0 := by
+lemma zero_of_padicNorm_eq_zero {q : ℚ} (h : padicNorm p q = 0) : q = 0 := by
   apply by_contradiction; intro hq
   unfold padicNorm at h; rw [if_neg hq] at h
   apply absurd h
@@ -144,7 +144,7 @@ theorem zero_of_padicNorm_eq_zero {q : ℚ} (h : padicNorm p q = 0) : q = 0 := b
 
 /-- The `p`-adic norm is multiplicative. -/
 @[simp]
-protected theorem mul (q r : ℚ) : padicNorm p (q * r) = padicNorm p q * padicNorm p r :=
+protected lemma mul (q r : ℚ) : padicNorm p (q * r) = padicNorm p q * padicNorm p r :=
   if hq : q = 0 then by simp [hq]
   else
     if hr : r = 0 then by simp [hr]
@@ -155,13 +155,13 @@ protected theorem mul (q r : ℚ) : padicNorm p (q * r) = padicNorm p q * padicN
 
 /-- The `p`-adic norm respects division. -/
 @[simp]
-protected theorem div (q r : ℚ) : padicNorm p (q / r) = padicNorm p q / padicNorm p r :=
+protected lemma div (q r : ℚ) : padicNorm p (q / r) = padicNorm p q / padicNorm p r :=
   if hr : r = 0 then by simp [hr]
   else eq_div_of_mul_eq (padicNorm.nonzero hr) (by rw [← padicNorm.mul, div_mul_cancel _ hr])
 #align padic_norm.div padicNorm.div
 
 /-- The `p`-adic norm of an integer is at most `1`. -/
-protected theorem of_int (z : ℤ) : padicNorm p z ≤ 1 :=
+protected lemma of_int (z : ℤ) : padicNorm p z ≤ 1 :=
   if hz : z = 0 then by simp [hz, zero_le_one]
   else by
     unfold padicNorm
@@ -174,7 +174,7 @@ protected theorem of_int (z : ℤ) : padicNorm p z ≤ 1 :=
     exact_mod_cast hz
 #align padic_norm.of_int padicNorm.of_int
 
-private theorem nonarchimedean_aux {q r : ℚ} (h : padicValRat p q ≤ padicValRat p r) :
+private lemma nonarchimedean_aux {q r : ℚ} (h : padicValRat p q ≤ padicValRat p r) :
     padicNorm p (q + r) ≤ max (padicNorm p q) (padicNorm p r) :=
   have hnqp : padicNorm p q ≥ 0 := padicNorm.nonneg _
   have hnrp : padicNorm p r ≥ 0 := padicNorm.nonneg _
@@ -196,7 +196,7 @@ private theorem nonarchimedean_aux {q r : ℚ} (h : padicValRat p q ≤ padicVal
 
 /-- The `p`-adic norm is nonarchimedean: the norm of `p + q` is at most the max of the norm of `p`
 and the norm of `q`. -/
-protected theorem nonarchimedean {q r : ℚ} :
+protected lemma nonarchimedean {q r : ℚ} :
     padicNorm p (q + r) ≤ max (padicNorm p q) (padicNorm p r) := by
   wlog hle : padicValRat p q ≤ padicValRat p r generalizing q r
   · rw [add_comm, max_comm]
@@ -206,7 +206,7 @@ protected theorem nonarchimedean {q r : ℚ} :
 
 /-- The `p`-adic norm respects the triangle inequality: the norm of `p + q` is at most the norm of
 `p` plus the norm of `q`. -/
-theorem triangle_ineq (q r : ℚ) : padicNorm p (q + r) ≤ padicNorm p q + padicNorm p r :=
+lemma triangle_ineq (q r : ℚ) : padicNorm p (q + r) ≤ padicNorm p q + padicNorm p r :=
   calc
     padicNorm p (q + r) ≤ max (padicNorm p q) (padicNorm p r) := padicNorm.nonarchimedean
     _ ≤ padicNorm p q + padicNorm p r :=
@@ -215,14 +215,14 @@ theorem triangle_ineq (q r : ℚ) : padicNorm p (q + r) ≤ padicNorm p q + padi
 
 /-- The `p`-adic norm of a difference is at most the max of each component. Restates the archimedean
 property of the `p`-adic norm. -/
-protected theorem sub {q r : ℚ} : padicNorm p (q - r) ≤ max (padicNorm p q) (padicNorm p r) := by
+protected lemma sub {q r : ℚ} : padicNorm p (q - r) ≤ max (padicNorm p q) (padicNorm p r) := by
   rw [sub_eq_add_neg, ← padicNorm.neg r]
   exact padicNorm.nonarchimedean
 #align padic_norm.sub padicNorm.sub
 
 /-- If the `p`-adic norms of `q` and `r` are different, then the norm of `q + r` is equal to the max
 of the norms of `q` and `r`. -/
-theorem add_eq_max_of_ne {q r : ℚ} (hne : padicNorm p q ≠ padicNorm p r) :
+lemma add_eq_max_of_ne {q r : ℚ} (hne : padicNorm p q ≠ padicNorm p r) :
     padicNorm p (q + r) = max (padicNorm p q) (padicNorm p r) := by
   wlog hlt : padicNorm p r < padicNorm p q
   · rw [add_comm, max_comm]
@@ -252,7 +252,7 @@ instance : IsAbsoluteValue (padicNorm p)
   abv_add' := padicNorm.triangle_ineq
   abv_mul' := padicNorm.mul
 
-theorem dvd_iff_norm_le {n : ℕ} {z : ℤ} : ↑(p ^ n) ∣ z ↔ padicNorm p z ≤ (p : ℚ) ^ (-n : ℤ) := by
+lemma dvd_iff_norm_le {n : ℕ} {z : ℤ} : ↑(p ^ n) ∣ z ↔ padicNorm p z ≤ (p : ℚ) ^ (-n : ℤ) := by
   unfold padicNorm; split_ifs with hz
   · norm_cast at hz
     simp [hz]
@@ -266,7 +266,7 @@ theorem dvd_iff_norm_le {n : ℕ} {z : ℤ} : ↑(p ^ n) ∣ z ↔ padicNorm p z
 #align padic_norm.dvd_iff_norm_le padicNorm.dvd_iff_norm_le
 
 /-- The `p`-adic norm of an integer `m` is one iff `p` doesn't divide `m`. -/
-theorem int_eq_one_iff (m : ℤ) : padicNorm p m = 1 ↔ ¬(p : ℤ) ∣ m := by
+lemma int_eq_one_iff (m : ℤ) : padicNorm p m = 1 ↔ ¬(p : ℤ) ∣ m := by
   nth_rw 2 [← pow_one p]
   simp only [dvd_iff_norm_le, Int.cast_ofNat, Nat.cast_one, zpow_neg, zpow_one, not_le]
   constructor
@@ -287,27 +287,27 @@ theorem int_eq_one_iff (m : ℤ) : padicNorm p m = 1 ↔ ¬(p : ℤ) ∣ m := by
       rw [← zpow_zero (p : ℚ), zpow_inj] <;> linarith
 #align padic_norm.int_eq_one_iff padicNorm.int_eq_one_iff
 
-theorem int_lt_one_iff (m : ℤ) : padicNorm p m < 1 ↔ (p : ℤ) ∣ m := by
+lemma int_lt_one_iff (m : ℤ) : padicNorm p m < 1 ↔ (p : ℤ) ∣ m := by
   rw [← not_iff_not, ← int_eq_one_iff, eq_iff_le_not_lt]
   simp only [padicNorm.of_int, true_and_iff]
 #align padic_norm.int_lt_one_iff padicNorm.int_lt_one_iff
 
-theorem of_nat (m : ℕ) : padicNorm p m ≤ 1 :=
+lemma of_nat (m : ℕ) : padicNorm p m ≤ 1 :=
   padicNorm.of_int (m : ℤ)
 #align padic_norm.of_nat padicNorm.of_nat
 
 /-- The `p`-adic norm of a natural `m` is one iff `p` doesn't divide `m`. -/
-theorem nat_eq_one_iff (m : ℕ) : padicNorm p m = 1 ↔ ¬p ∣ m := by
+lemma nat_eq_one_iff (m : ℕ) : padicNorm p m = 1 ↔ ¬p ∣ m := by
   rw [← Int.coe_nat_dvd, ← int_eq_one_iff, Int.cast_ofNat]
 #align padic_norm.nat_eq_one_iff padicNorm.nat_eq_one_iff
 
-theorem nat_lt_one_iff (m : ℕ) : padicNorm p m < 1 ↔ p ∣ m := by
+lemma nat_lt_one_iff (m : ℕ) : padicNorm p m < 1 ↔ p ∣ m := by
   rw [← Int.coe_nat_dvd, ← int_lt_one_iff, Int.cast_ofNat]
 #align padic_norm.nat_lt_one_iff padicNorm.nat_lt_one_iff
 
 open BigOperators
 
-theorem sum_lt {α : Type*} {F : α → ℚ} {t : ℚ} {s : Finset α} :
+lemma sum_lt {α : Type*} {F : α → ℚ} {t : ℚ} {s : Finset α} :
     s.Nonempty → (∀ i ∈ s, padicNorm p (F i) < t) → padicNorm p (∑ i in s, F i) < t := by
   classical
     refine' s.induction_on (by rintro ⟨-, ⟨⟩⟩) _
@@ -321,7 +321,7 @@ theorem sum_lt {α : Type*} {F : α → ℚ} {t : ℚ} {s : Finset α} :
     · simp_all
 #align padic_norm.sum_lt padicNorm.sum_lt
 
-theorem sum_le {α : Type*} {F : α → ℚ} {t : ℚ} {s : Finset α} :
+lemma sum_le {α : Type*} {F : α → ℚ} {t : ℚ} {s : Finset α} :
     s.Nonempty → (∀ i ∈ s, padicNorm p (F i) ≤ t) → padicNorm p (∑ i in s, F i) ≤ t := by
   classical
     refine' s.induction_on (by rintro ⟨-, ⟨⟩⟩) _
@@ -335,14 +335,14 @@ theorem sum_le {α : Type*} {F : α → ℚ} {t : ℚ} {s : Finset α} :
     · simp_all
 #align padic_norm.sum_le padicNorm.sum_le
 
-theorem sum_lt' {α : Type*} {F : α → ℚ} {t : ℚ} {s : Finset α}
+lemma sum_lt' {α : Type*} {F : α → ℚ} {t : ℚ} {s : Finset α}
     (hF : ∀ i ∈ s, padicNorm p (F i) < t) (ht : 0 < t) : padicNorm p (∑ i in s, F i) < t := by
   obtain rfl | hs := Finset.eq_empty_or_nonempty s
   · simp [ht]
   · exact sum_lt hs hF
 #align padic_norm.sum_lt' padicNorm.sum_lt'
 
-theorem sum_le' {α : Type*} {F : α → ℚ} {t : ℚ} {s : Finset α}
+lemma sum_le' {α : Type*} {F : α → ℚ} {t : ℚ} {s : Finset α}
     (hF : ∀ i ∈ s, padicNorm p (F i) ≤ t) (ht : 0 ≤ t) : padicNorm p (∑ i in s, F i) ≤ t := by
   obtain rfl | hs := Finset.eq_empty_or_nonempty s
   · simp [ht]

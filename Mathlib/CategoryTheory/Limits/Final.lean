@@ -105,14 +105,14 @@ instance initial_op_of_final (F : C ⥤ D) [Final F] : Initial F.op where
   out d := isConnected_of_equivalent (structuredArrowOpEquivalence F (unop d))
 #align category_theory.functor.initial_op_of_final CategoryTheory.Functor.initial_op_of_final
 
-theorem final_of_initial_op (F : C ⥤ D) [Initial F.op] : Final F :=
+lemma final_of_initial_op (F : C ⥤ D) [Initial F.op] : Final F :=
   {
     out := fun d =>
       @isConnected_of_isConnected_op _ _
         (isConnected_of_equivalent (structuredArrowOpEquivalence F d).symm) }
 #align category_theory.functor.final_of_initial_op CategoryTheory.Functor.final_of_initial_op
 
-theorem initial_of_final_op (F : C ⥤ D) [Final F.op] : Initial F :=
+lemma initial_of_final_op (F : C ⥤ D) [Final F.op] : Initial F :=
   {
     out := fun d =>
       @isConnected_of_isConnected_op _ _
@@ -120,7 +120,7 @@ theorem initial_of_final_op (F : C ⥤ D) [Final F.op] : Initial F :=
 #align category_theory.functor.initial_of_final_op CategoryTheory.Functor.initial_of_final_op
 
 /-- If a functor `R : D ⥤ C` is a right adjoint, it is final. -/
-theorem final_of_adjunction {L : C ⥤ D} {R : D ⥤ C} (adj : L ⊣ R) : Final R :=
+lemma final_of_adjunction {L : C ⥤ D} {R : D ⥤ C} (adj : L ⊣ R) : Final R :=
   {
     out := fun c =>
       let u : StructuredArrow c R := StructuredArrow.mk (adj.unit.app c)
@@ -135,7 +135,7 @@ theorem final_of_adjunction {L : C ⥤ D} {R : D ⥤ C} (adj : L ⊣ R) : Final 
 #align category_theory.functor.final_of_adjunction CategoryTheory.Functor.final_of_adjunction
 
 /-- If a functor `L : C ⥤ D` is a left adjoint, it is initial. -/
-theorem initial_of_adjunction {L : C ⥤ D} {R : D ⥤ C} (adj : L ⊣ R) : Initial L :=
+lemma initial_of_adjunction {L : C ⥤ D} {R : D ⥤ C} (adj : L ⊣ R) : Initial L :=
   {
     out := fun d =>
       let u : CostructuredArrow L d := CostructuredArrow.mk (adj.counit.app d)
@@ -157,16 +157,16 @@ instance (priority := 100) initial_of_isLeftAdjoint (F : C ⥤ D) [h : IsLeftAdj
   initial_of_adjunction h.adj
 #align category_theory.functor.initial_of_is_left_adjoint CategoryTheory.Functor.initial_of_isLeftAdjoint
 
-theorem final_of_natIso {F F' : C ⥤ D} [Final F] (i : F ≅ F') : Final F' where
+lemma final_of_natIso {F F' : C ⥤ D} [Final F] (i : F ≅ F') : Final F' where
   out _ := isConnected_of_equivalent (StructuredArrow.mapNatIso i)
 
-theorem final_natIso_iff {F F' : C ⥤ D} (i : F ≅ F') : Final F ↔ Final F' :=
+lemma final_natIso_iff {F F' : C ⥤ D} (i : F ≅ F') : Final F ↔ Final F' :=
   ⟨fun _ => final_of_natIso i, fun _ => final_of_natIso i.symm⟩
 
-theorem initial_of_natIso {F F' : C ⥤ D} [Initial F] (i : F ≅ F') : Initial F' where
+lemma initial_of_natIso {F F' : C ⥤ D} [Initial F] (i : F ≅ F') : Initial F' where
   out _ := isConnected_of_equivalent (CostructuredArrow.mapNatIso i)
 
-theorem initial_natIso_iff {F F' : C ⥤ D} (i : F ≅ F') : Initial F ↔ Initial F' :=
+lemma initial_natIso_iff {F F' : C ⥤ D} (i : F ≅ F') : Initial F ↔ Initial F' :=
   ⟨fun _ => initial_of_natIso i, fun _ => initial_of_natIso i.symm⟩
 
 namespace Final
@@ -253,7 +253,7 @@ def extendCocone : Cocone (F ⋙ G) ⥤ Cocone G
 #align category_theory.functor.final.extend_cocone CategoryTheory.Functor.Final.extendCocone
 
 @[simp]
-theorem colimit_cocone_comp_aux (s : Cocone (F ⋙ G)) (j : C) :
+lemma colimit_cocone_comp_aux (s : Cocone (F ⋙ G)) (j : C) :
     G.map (homToLift F (F.obj j)) ≫ s.ι.app (lift F (F.obj j)) = s.ι.app j := by
   -- This point is that this would be true if we took `lift (F.obj j)` to just be `j`
   -- and `homToLift (F.obj j)` to be `𝟙 (F.obj j)`.
@@ -313,7 +313,7 @@ instance (priority := 100) comp_hasColimit [HasColimit G] : HasColimit (F ⋙ G)
   HasColimit.mk (colimitCoconeComp F (getColimitCocone G))
 #align category_theory.functor.final.comp_has_colimit CategoryTheory.Functor.Final.comp_hasColimit
 
-theorem colimit_pre_is_iso_aux {t : Cocone G} (P : IsColimit t) :
+lemma colimit_pre_is_iso_aux {t : Cocone G} (P : IsColimit t) :
     ((isColimitWhiskerEquiv F _).symm P).desc (t.whisker F) = 𝟙 t.pt := by
   dsimp [isColimitWhiskerEquiv]
   apply P.hom_ext
@@ -356,11 +356,11 @@ def colimitCoconeOfComp (t : ColimitCocone (F ⋙ G)) : ColimitCocone G
 We can't make this an instance, because `F` is not determined by the goal.
 (Even if this weren't a problem, it would cause a loop with `comp_hasColimit`.)
 -/
-theorem hasColimit_of_comp [HasColimit (F ⋙ G)] : HasColimit G :=
+lemma hasColimit_of_comp [HasColimit (F ⋙ G)] : HasColimit G :=
   HasColimit.mk (colimitCoconeOfComp F (getColimitCocone (F ⋙ G)))
 #align category_theory.functor.final.has_colimit_of_comp CategoryTheory.Functor.Final.hasColimit_of_comp
 
-theorem hasColimitsOfShape_of_final [HasColimitsOfShape C E] : HasColimitsOfShape D E where
+lemma hasColimitsOfShape_of_final [HasColimitsOfShape C E] : HasColimitsOfShape D E where
   has_colimit := fun _ => hasColimit_of_comp F
 
 section
@@ -392,7 +392,7 @@ variable {C : Type v} [Category.{v} C] {D : Type u₁} [Category.{v} D] (F : C �
 
 namespace Final
 
-theorem zigzag_of_eqvGen_quot_rel {F : C ⥤ D} {d : D} {f₁ f₂ : ΣX, d ⟶ F.obj X}
+lemma zigzag_of_eqvGen_quot_rel {F : C ⥤ D} {d : D} {f₁ f₂ : ΣX, d ⟶ F.obj X}
     (t : EqvGen (Types.Quot.Rel.{v, v} (F ⋙ coyoneda.obj (op d))) f₁ f₂) :
     Zigzag (StructuredArrow.mk f₁.2) (StructuredArrow.mk f₂.2) := by
   induction t
@@ -415,7 +415,7 @@ end Final
 
 /-- If `colimit (F ⋙ coyoneda.obj (op d)) ≅ PUnit` for all `d : D`, then `F` is cofinal.
 -/
-theorem cofinal_of_colimit_comp_coyoneda_iso_pUnit
+lemma cofinal_of_colimit_comp_coyoneda_iso_pUnit
     (I : ∀ d, colimit (F ⋙ coyoneda.obj (op d)) ≅ PUnit) : Final F :=
   ⟨fun d => by
     have : Nonempty (StructuredArrow d F) := by
@@ -450,7 +450,7 @@ def Final.colimitCompCoyonedaIso (d : D) [IsIso (colimit.pre (coyoneda.obj (op d
   asIso (colimit.pre (coyoneda.obj (op d)) F) ≪≫ Coyoneda.colimitCoyonedaIso (op d)
 #align category_theory.functor.final.colimit_comp_coyoneda_iso CategoryTheory.Functor.Final.colimitCompCoyonedaIso
 
-theorem final_iff_isIso_colimit_pre : Final F ↔ ∀ G : D ⥤ Type v, IsIso (colimit.pre G F) :=
+lemma final_iff_isIso_colimit_pre : Final F ↔ ∀ G : D ⥤ Type v, IsIso (colimit.pre G F) :=
   ⟨fun _ => inferInstance,
    fun _ => cofinal_of_colimit_comp_coyoneda_iso_pUnit _ fun _ => Final.colimitCompCoyonedaIso _ _⟩
 
@@ -543,7 +543,7 @@ def extendCone : Cone (F ⋙ G) ⥤ Cone G
 #align category_theory.functor.initial.extend_cone CategoryTheory.Functor.Initial.extendCone
 
 @[simp]
-theorem limit_cone_comp_aux (s : Cone (F ⋙ G)) (j : C) :
+lemma limit_cone_comp_aux (s : Cone (F ⋙ G)) (j : C) :
     s.π.app (lift F (F.obj j)) ≫ G.map (homToLift F (F.obj j)) = s.π.app j := by
   -- This point is that this would be true if we took `lift (F.obj j)` to just be `j`
   -- and `homToLift (F.obj j)` to be `𝟙 (F.obj j)`.
@@ -602,7 +602,7 @@ instance (priority := 100) comp_hasLimit [HasLimit G] : HasLimit (F ⋙ G) :=
   HasLimit.mk (limitConeComp F (getLimitCone G))
 #align category_theory.functor.initial.comp_has_limit CategoryTheory.Functor.Initial.comp_hasLimit
 
-theorem limit_pre_is_iso_aux {t : Cone G} (P : IsLimit t) :
+lemma limit_pre_is_iso_aux {t : Cone G} (P : IsLimit t) :
     ((isLimitWhiskerEquiv F _).symm P).lift (t.whisker F) = 𝟙 t.pt := by
   change 𝟙 t.pt ≫ P.lift (extendCone.obj (Cone.whisker F t)) = 𝟙 t.pt
   apply P.hom_ext
@@ -645,11 +645,11 @@ def limitConeOfComp (t : LimitCone (F ⋙ G)) : LimitCone G
 We can't make this an instance, because `F` is not determined by the goal.
 (Even if this weren't a problem, it would cause a loop with `comp_hasLimit`.)
 -/
-theorem hasLimit_of_comp [HasLimit (F ⋙ G)] : HasLimit G :=
+lemma hasLimit_of_comp [HasLimit (F ⋙ G)] : HasLimit G :=
   HasLimit.mk (limitConeOfComp F (getLimitCone (F ⋙ G)))
 #align category_theory.functor.initial.has_limit_of_comp CategoryTheory.Functor.Initial.hasLimit_of_comp
 
-theorem hasLimitsOfShape_of_initial [HasLimitsOfShape C E] : HasLimitsOfShape D E where
+lemma hasLimitsOfShape_of_initial [HasLimitsOfShape C E] : HasLimitsOfShape D E where
   has_limit := fun _ => hasLimit_of_comp F
 
 section
@@ -679,70 +679,70 @@ variable {C : Type u₁} [Category.{v₁} C] {D : Type u₂} [Category.{v₂} D]
 variable {E : Type u₃} [Category.{v₃} E] (F : C ⥤ D) (G : D ⥤ E)
 
 /-- The hypotheses also imply that `G` is final, see `final_of_comp_full_faithful'`. -/
-theorem final_of_comp_full_faithful [Full G] [Faithful G] [Final (F ⋙ G)] : Final F where
+lemma final_of_comp_full_faithful [Full G] [Faithful G] [Final (F ⋙ G)] : Final F where
   out d :=
     have := StructuredArrow.isEquivalencePost d F G
     isConnected_of_equivalent (StructuredArrow.post d F G).asEquivalence.symm
 
 /-- The hypotheses also imply that `G` is initial, see `initial_of_comp_full_faithful'`. -/
-theorem initial_of_comp_full_faithful [Full G] [Faithful G] [Initial (F ⋙ G)] : Initial F where
+lemma initial_of_comp_full_faithful [Full G] [Faithful G] [Initial (F ⋙ G)] : Initial F where
   out d :=
     have := CostructuredArrow.isEquivalencePost d F G
     isConnected_of_equivalent (CostructuredArrow.post F G d).asEquivalence.symm
 
 /-- See also the strictly more general `final_comp` below. -/
-theorem final_comp_equivalence [Final F] [IsEquivalence G] : Final (F ⋙ G) :=
+lemma final_comp_equivalence [Final F] [IsEquivalence G] : Final (F ⋙ G) :=
   let i : F ≅ (F ⋙ G) ⋙ G.inv := isoWhiskerLeft F IsEquivalence.unitIso
   have : Final ((F ⋙ G) ⋙ G.inv) := final_of_natIso i
   final_of_comp_full_faithful (F ⋙ G) G.inv
 
 /-- See also the strictly more general `initial_comp` below. -/
-theorem initial_comp_equivalence [Initial F] [IsEquivalence G] : Initial (F ⋙ G) :=
+lemma initial_comp_equivalence [Initial F] [IsEquivalence G] : Initial (F ⋙ G) :=
   let i : F ≅ (F ⋙ G) ⋙ G.inv := isoWhiskerLeft F IsEquivalence.unitIso
   have : Initial ((F ⋙ G) ⋙ G.inv) := initial_of_natIso i
   initial_of_comp_full_faithful (F ⋙ G) G.inv
 
 /-- See also the strictly more general `final_comp` below. -/
-theorem final_equivalence_comp [IsEquivalence F] [Final G] : Final (F ⋙ G) where
+lemma final_equivalence_comp [IsEquivalence F] [Final G] : Final (F ⋙ G) where
   out d :=
     have := StructuredArrow.isEquivalencePre d F G
     isConnected_of_equivalent (StructuredArrow.pre d F G).asEquivalence.symm
 
 /-- See also the strictly more general `inital_comp` below. -/
-theorem initial_equivalence_comp [IsEquivalence F] [Initial G] : Initial (F ⋙ G) where
+lemma initial_equivalence_comp [IsEquivalence F] [Initial G] : Initial (F ⋙ G) where
   out d :=
     have := CostructuredArrow.isEquivalencePre F G d
     isConnected_of_equivalent (CostructuredArrow.pre F G d).asEquivalence.symm
 
 /-- See also the strictly more general `final_of_final_comp` below. -/
-theorem final_of_equivalence_comp [IsEquivalence F] [Final (F ⋙ G)] : Final G where
+lemma final_of_equivalence_comp [IsEquivalence F] [Final (F ⋙ G)] : Final G where
   out d :=
     have := StructuredArrow.isEquivalencePre d F G
     isConnected_of_equivalent (StructuredArrow.pre d F G).asEquivalence
 
 /-- See also the strictly more general `initial_of_initial_comp` below. -/
-theorem initial_of_equivalence_comp [IsEquivalence F] [Initial (F ⋙ G)] : Initial G where
+lemma initial_of_equivalence_comp [IsEquivalence F] [Initial (F ⋙ G)] : Initial G where
   out d :=
     have := CostructuredArrow.isEquivalencePre F G d
     isConnected_of_equivalent (CostructuredArrow.pre F G d).asEquivalence
 
 /-- See also the strictly more general `final_iff_comp_final_full_faithful` below. -/
-theorem final_iff_comp_equivalence [IsEquivalence G] : Final F ↔ Final (F ⋙ G) :=
+lemma final_iff_comp_equivalence [IsEquivalence G] : Final F ↔ Final (F ⋙ G) :=
   ⟨fun _ => final_comp_equivalence _ _, fun _ => final_of_comp_full_faithful _ G⟩
 
 /-- See also the strictly more general `final_iff_final_comp` below. -/
-theorem final_iff_equivalence_comp [IsEquivalence F] : Final G ↔ Final (F ⋙ G) :=
+lemma final_iff_equivalence_comp [IsEquivalence F] : Final G ↔ Final (F ⋙ G) :=
   ⟨fun _ => final_equivalence_comp _ _, fun _ => final_of_equivalence_comp F _⟩
 
 /-- See also the strictly more general `initial_iff_comp_initial_full_faithful` below. -/
-theorem initial_iff_comp_equivalence [IsEquivalence G] : Initial F ↔ Initial (F ⋙ G) :=
+lemma initial_iff_comp_equivalence [IsEquivalence G] : Initial F ↔ Initial (F ⋙ G) :=
   ⟨fun _ => initial_comp_equivalence _ _, fun _ => initial_of_comp_full_faithful _ G⟩
 
 /-- See also the strictly more general `initial_iff_initial_comp` below. -/
-theorem initial_iff_equivalence_comp [IsEquivalence F] : Initial G ↔ Initial (F ⋙ G) :=
+lemma initial_iff_equivalence_comp [IsEquivalence F] : Initial G ↔ Initial (F ⋙ G) :=
   ⟨fun _ => initial_equivalence_comp _ _, fun _ => initial_of_equivalence_comp F _⟩
 
-theorem final_comp [hF : Final F] [hG : Final G] : Final (F ⋙ G) := by
+lemma final_comp [hF : Final F] [hG : Final G] : Final (F ⋙ G) := by
   let s₁ : C ≌ AsSmall.{max u₁ v₁ u₂ v₂ u₃ v₃} C := AsSmall.equiv
   let s₂ : D ≌ AsSmall.{max u₁ v₁ u₂ v₂ u₃ v₃} D := AsSmall.equiv
   let s₃ : E ≌ AsSmall.{max u₁ v₁ u₂ v₂ u₃ v₃} E := AsSmall.equiv
@@ -758,11 +758,11 @@ theorem final_comp [hF : Final F] [hG : Final G] : Final (F ⋙ G) := by
   simp only [← colimit.pre_pre]
   infer_instance
 
-theorem initial_comp [Initial F] [Initial G] : Initial (F ⋙ G) := by
+lemma initial_comp [Initial F] [Initial G] : Initial (F ⋙ G) := by
   suffices Final (F ⋙ G).op from initial_of_final_op _
   exact final_comp F.op G.op
 
-theorem final_of_final_comp [hF : Final F] [hFG : Final (F ⋙ G)] : Final G := by
+lemma final_of_final_comp [hF : Final F] [hFG : Final (F ⋙ G)] : Final G := by
   let s₁ : C ≌ AsSmall.{max u₁ v₁ u₂ v₂ u₃ v₃} C := AsSmall.equiv
   let s₂ : D ≌ AsSmall.{max u₁ v₁ u₂ v₂ u₃ v₃} D := AsSmall.equiv
   let s₃ : E ≌ AsSmall.{max u₁ v₁ u₂ v₂ u₃ v₃} E := AsSmall.equiv
@@ -778,33 +778,33 @@ theorem final_of_final_comp [hF : Final F] [hFG : Final (F ⋙ G)] : Final G := 
   simp only [← colimit.pre_pre] at hFG
   exact fun H => IsIso.of_isIso_comp_left (colimit.pre _ (s₁.inverse ⋙ F ⋙ s₂.functor)) _
 
-theorem initial_of_initial_comp [Initial F] [Initial (F ⋙ G)] : Initial G := by
+lemma initial_of_initial_comp [Initial F] [Initial (F ⋙ G)] : Initial G := by
   suffices Final G.op from initial_of_final_op _
   have : Final (F.op ⋙ G.op) := show Final (F ⋙ G).op from inferInstance
   exact final_of_final_comp F.op G.op
 
 /-- The hypotheses also imply that `F` is final, see `final_of_comp_full_faithful`. -/
-theorem final_of_comp_full_faithful' [Full G] [Faithful G] [Final (F ⋙ G)] : Final G :=
+lemma final_of_comp_full_faithful' [Full G] [Faithful G] [Final (F ⋙ G)] : Final G :=
   have := final_of_comp_full_faithful F G
   final_of_final_comp F G
 
 /-- The hypotheses also imply that `F` is initial, see `initial_of_comp_full_faithful`. -/
-theorem initial_of_comp_full_faithful' [Full G] [Faithful G] [Initial (F ⋙ G)] : Initial G :=
+lemma initial_of_comp_full_faithful' [Full G] [Faithful G] [Initial (F ⋙ G)] : Initial G :=
   have := initial_of_comp_full_faithful F G
   initial_of_initial_comp F G
 
-theorem final_iff_comp_final_full_faithful [Final G] [Full G] [Faithful G] :
+lemma final_iff_comp_final_full_faithful [Final G] [Full G] [Faithful G] :
     Final F ↔ Final (F ⋙ G) :=
   ⟨fun _ => final_comp _ _, fun _ => final_of_comp_full_faithful F G⟩
 
-theorem initial_iff_comp_initial_full_faithful [Initial G] [Full G] [Faithful G] :
+lemma initial_iff_comp_initial_full_faithful [Initial G] [Full G] [Faithful G] :
     Initial F ↔ Initial (F ⋙ G) :=
   ⟨fun _ => initial_comp _ _, fun _ => initial_of_comp_full_faithful F G⟩
 
-theorem final_iff_final_comp [Final F] : Final G ↔ Final (F ⋙ G) :=
+lemma final_iff_final_comp [Final F] : Final G ↔ Final (F ⋙ G) :=
   ⟨fun _ => final_comp _ _, fun _ => final_of_final_comp F G⟩
 
-theorem initial_iff_initial_comp [Initial F] : Initial G ↔ Initial (F ⋙ G) :=
+lemma initial_iff_initial_comp [Initial F] : Initial G ↔ Initial (F ⋙ G) :=
   ⟨fun _ => initial_comp _ _, fun _ => initial_of_initial_comp F G⟩
 
 end
@@ -823,7 +823,7 @@ variable {D : Type u₂} [Category.{v₂} D]
 This can be seen as a generalization of `IsFiltered.of_right_adjoint` (which states that right
 adjoints preserve filteredness), as right adjoints are always final, see `final_of_adjunction`.
 -/
-theorem IsFilteredOrEmpty.of_final (F : C ⥤ D) [Final F] [IsFilteredOrEmpty C] :
+lemma IsFilteredOrEmpty.of_final (F : C ⥤ D) [Final F] [IsFilteredOrEmpty C] :
     IsFilteredOrEmpty D where
   cocone_objs X Y := ⟨F.obj (IsFiltered.max (Final.lift F X) (Final.lift F Y)),
     Final.homToLift F X ≫ F.map (IsFiltered.leftToMax _ _),
@@ -850,7 +850,7 @@ theorem IsFilteredOrEmpty.of_final (F : C ⥤ D) [Final F] [IsFilteredOrEmpty C]
 This can be seen as a generalization of `IsFiltered.of_right_adjoint` (which states that right
 adjoints preserve filteredness), as right adjoints are always final, see `final_of_adjunction`.
 -/
-theorem IsFiltered.of_final (F : C ⥤ D) [Final F] [IsFiltered C] : IsFiltered D :=
+lemma IsFiltered.of_final (F : C ⥤ D) [Final F] [IsFiltered C] : IsFiltered D :=
 { IsFilteredOrEmpty.of_final F with
   Nonempty := Nonempty.map F.obj IsFiltered.Nonempty }
 
@@ -859,7 +859,7 @@ theorem IsFiltered.of_final (F : C ⥤ D) [Final F] [IsFiltered C] : IsFiltered 
 This can be seen as a generalization of `IsCofiltered.of_left_adjoint` (which states that left
 adjoints preserve cofilteredness), as right adjoints are always initial, see `intial_of_adjunction`.
 -/
-theorem IsCofilteredOrEmpty.of_initial (F : C ⥤ D) [Initial F] [IsCofilteredOrEmpty C] :
+lemma IsCofilteredOrEmpty.of_initial (F : C ⥤ D) [Initial F] [IsCofilteredOrEmpty C] :
     IsCofilteredOrEmpty D :=
   have : IsFilteredOrEmpty Dᵒᵖ := IsFilteredOrEmpty.of_final F.op
   isCofilteredOrEmpty_of_isFilteredOrEmpty_op _
@@ -869,7 +869,7 @@ theorem IsCofilteredOrEmpty.of_initial (F : C ⥤ D) [Initial F] [IsCofilteredOr
 This can be seen as a generalization of `IsCofiltered.of_left_adjoint` (which states that left
 adjoints preserve cofilteredness), as right adjoints are always initial, see `intial_of_adjunction`.
 -/
-theorem IsCofiltered.of_initial (F : C ⥤ D) [Initial F] [IsCofiltered C] : IsCofiltered D :=
+lemma IsCofiltered.of_initial (F : C ⥤ D) [Initial F] [IsCofiltered C] : IsCofiltered D :=
   have : IsFiltered Dᵒᵖ := IsFiltered.of_final F.op
   isCofiltered_of_isFiltered_op _
 

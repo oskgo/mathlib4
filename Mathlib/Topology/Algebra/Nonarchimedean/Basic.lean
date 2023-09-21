@@ -68,7 +68,7 @@ variable {K : Type*} [Group K] [TopologicalSpace K] [NonarchimedeanGroup K]
 
 /-- If a topological group embeds into a nonarchimedean group, then it is nonarchimedean. -/
 @[to_additive]
-theorem nonarchimedean_of_emb (f : G →* H) (emb : OpenEmbedding f) : NonarchimedeanGroup H :=
+lemma nonarchimedean_of_emb (f : G →* H) (emb : OpenEmbedding f) : NonarchimedeanGroup H :=
   { is_nonarchimedean := fun U hU =>
       have h₁ : f ⁻¹' U ∈ nhds (1 : G) := by
         apply emb.continuous.tendsto
@@ -83,7 +83,7 @@ contains the cartesian product of an open neighborhood in each group. -/
 @[to_additive NonarchimedeanAddGroup.prod_subset "An open neighborhood of the identity in
 the cartesian product of two nonarchimedean groups contains the cartesian product of
 an open neighborhood in each group."]
-theorem prod_subset {U} (hU : U ∈ nhds (1 : G × K)) :
+lemma prod_subset {U} (hU : U ∈ nhds (1 : G × K)) :
     ∃ (V : OpenSubgroup G) (W : OpenSubgroup K), (V : Set G) ×ˢ (W : Set K) ⊆ U := by
   erw [nhds_prod_eq, Filter.mem_prod_iff] at hU
   rcases hU with ⟨U₁, hU₁, U₂, hU₂, h⟩
@@ -101,7 +101,7 @@ contains the cartesian square of an open neighborhood in the group. -/
 @[to_additive NonarchimedeanAddGroup.prod_self_subset "An open neighborhood of the identity in
 the cartesian square of a nonarchimedean group contains the cartesian square of
 an open neighborhood in the group."]
-theorem prod_self_subset {U} (hU : U ∈ nhds (1 : G × G)) :
+lemma prod_self_subset {U} (hU : U ∈ nhds (1 : G × G)) :
     ∃ V : OpenSubgroup G, (V : Set G) ×ˢ (V : Set G) ⊆ U :=
   let ⟨V, W, h⟩ := prod_subset hU
   ⟨V ⊓ W, by refine' Set.Subset.trans (Set.prod_mono _ _) ‹_› <;> simp⟩
@@ -135,13 +135,13 @@ instance : NonarchimedeanRing (R × S) where
 
 /-- Given an open subgroup `U` and an element `r` of a nonarchimedean ring, there is an open
   subgroup `V` such that `r • V` is contained in `U`. -/
-theorem left_mul_subset (U : OpenAddSubgroup R) (r : R) :
+lemma left_mul_subset (U : OpenAddSubgroup R) (r : R) :
     ∃ V : OpenAddSubgroup R, r • (V : Set R) ⊆ U :=
   ⟨U.comap (AddMonoidHom.mulLeft r) (continuous_mul_left r), (U : Set R).image_preimage_subset _⟩
 #align nonarchimedean_ring.left_mul_subset NonarchimedeanRing.left_mul_subset
 
 /-- An open subgroup of a nonarchimedean ring contains the square of another one. -/
-theorem mul_subset (U : OpenAddSubgroup R) : ∃ V : OpenAddSubgroup R, (V : Set R) * V ⊆ U := by
+lemma mul_subset (U : OpenAddSubgroup R) : ∃ V : OpenAddSubgroup R, (V : Set R) * V ⊆ U := by
   let ⟨V, H⟩ :=
     prod_self_subset
       (IsOpen.mem_nhds (IsOpen.preimage continuous_mul U.isOpen)

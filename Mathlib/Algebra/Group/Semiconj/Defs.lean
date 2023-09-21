@@ -42,7 +42,7 @@ namespace SemiconjBy
 
 /-- Equality behind `SemiconjBy a x y`; useful for rewriting. -/
 @[to_additive "Equality behind `AddSemiconjBy a x y`; useful for rewriting."]
-protected theorem eq [Mul S] {a x y : S} (h : SemiconjBy a x y) : a * x = y * a :=
+protected lemma eq [Mul S] {a x y : S} (h : SemiconjBy a x y) : a * x = y * a :=
   h
 #align semiconj_by.eq SemiconjBy.eq
 #align add_semiconj_by.eq AddSemiconjBy.eq
@@ -55,7 +55,7 @@ variable [Semigroup S] {a b x y z x' y' : S}
 then it semiconjugates `x * x'` to `y * y'`. -/
 @[to_additive (attr := simp) "If `a` semiconjugates `x` to `y` and `x'` to `y'`,
 then it semiconjugates `x + x'` to `y + y'`."]
-theorem mul_right (h : SemiconjBy a x y) (h' : SemiconjBy a x' y') :
+lemma mul_right (h : SemiconjBy a x y) (h' : SemiconjBy a x' y') :
     SemiconjBy a (x * x') (y * y') := by
   unfold SemiconjBy
   -- TODO this could be done using `assoc_rw` if/when this is ported to mathlib4
@@ -67,7 +67,7 @@ theorem mul_right (h : SemiconjBy a x y) (h' : SemiconjBy a x' y') :
 semiconjugates `x` to `z`. -/
 @[to_additive "If `b` semiconjugates `x` to `y` and `a` semiconjugates `y` to `z`, then `a + b`
 semiconjugates `x` to `z`."]
-theorem mul_left (ha : SemiconjBy a y z) (hb : SemiconjBy b x y) : SemiconjBy (a * b) x z := by
+lemma mul_left (ha : SemiconjBy a y z) (hb : SemiconjBy b x y) : SemiconjBy (a * b) x z := by
   unfold SemiconjBy
   rw [mul_assoc, hb.eq, ←mul_assoc, ha.eq, mul_assoc]
 #align semiconj_by.mul_left SemiconjBy.mul_left
@@ -77,7 +77,7 @@ theorem mul_left (ha : SemiconjBy a y z) (hb : SemiconjBy b x y) : SemiconjBy (a
 is transitive. -/
 @[to_additive "The relation “there exists an element that semiconjugates `a` to `b`” on an additive
 semigroup is transitive."]
-protected theorem transitive : Transitive fun a b : S ↦ ∃ c, SemiconjBy c a b
+protected lemma transitive : Transitive fun a b : S ↦ ∃ c, SemiconjBy c a b
   | _, _, _, ⟨x, hx⟩, ⟨y, hy⟩ => ⟨y * x, hy.mul_left hx⟩
 #align semiconj_by.transitive SemiconjBy.transitive
 #align add_semiconj_by.transitive SemiconjBy.transitive
@@ -90,13 +90,13 @@ variable [MulOneClass M]
 
 /-- Any element semiconjugates `1` to `1`. -/
 @[to_additive (attr := simp) "Any element semiconjugates `0` to `0`."]
-theorem one_right (a : M) : SemiconjBy a 1 1 := by rw [SemiconjBy, mul_one, one_mul]
+lemma one_right (a : M) : SemiconjBy a 1 1 := by rw [SemiconjBy, mul_one, one_mul]
 #align semiconj_by.one_right SemiconjBy.one_right
 #align add_semiconj_by.zero_right AddSemiconjBy.zero_right
 
 /-- One semiconjugates any element to itself. -/
 @[to_additive (attr := simp) "Zero semiconjugates any element to itself."]
-theorem one_left (x : M) : SemiconjBy 1 x x :=
+lemma one_left (x : M) : SemiconjBy 1 x x :=
   Eq.symm <| one_right x
 #align semiconj_by.one_left SemiconjBy.one_left
 #align add_semiconj_by.zero_left AddSemiconjBy.zero_left
@@ -105,7 +105,7 @@ theorem one_left (x : M) : SemiconjBy 1 x x :=
 generally, on `MulOneClass` type) is reflexive. -/
 @[to_additive "The relation “there exists an element that semiconjugates `a` to `b`” on an additive
 monoid (or, more generally, on an `AddZeroClass` type) is reflexive."]
-protected theorem reflexive : Reflexive fun a b : M ↦ ∃ c, SemiconjBy c a b
+protected lemma reflexive : Reflexive fun a b : M ↦ ∃ c, SemiconjBy c a b
   | a => ⟨1, one_left a⟩
 #align semiconj_by.reflexive SemiconjBy.reflexive
 #align add_semiconj_by.reflexive AddSemiconjBy.reflexive
@@ -117,7 +117,7 @@ section Monoid
 variable [Monoid M]
 
 @[to_additive (attr := simp)]
-theorem pow_right {a x y : M} (h : SemiconjBy a x y) (n : ℕ) : SemiconjBy a (x ^ n) (y ^ n) := by
+lemma pow_right {a x y : M} (h : SemiconjBy a x y) (n : ℕ) : SemiconjBy a (x ^ n) (y ^ n) := by
   induction' n with n ih
   · rw [pow_zero, pow_zero]
     exact SemiconjBy.one_right _
@@ -134,7 +134,7 @@ variable [Group G] {a x y : G}
 
 /-- `a` semiconjugates `x` to `a * x * a⁻¹`. -/
 @[to_additive "`a` semiconjugates `x` to `a + x + -a`."]
-theorem conj_mk (a x : G) : SemiconjBy a x (a * x * a⁻¹) := by
+lemma conj_mk (a x : G) : SemiconjBy a x (a * x * a⁻¹) := by
   unfold SemiconjBy; rw [mul_assoc, inv_mul_self, mul_one]
 #align semiconj_by.conj_mk SemiconjBy.conj_mk
 #align add_semiconj_by.conj_mk AddSemiconjBy.conj_mk
@@ -144,7 +144,7 @@ end Group
 end SemiconjBy
 
 @[to_additive (attr := simp) addSemiconjBy_iff_eq]
-theorem semiconjBy_iff_eq [CancelCommMonoid M] {a x y : M} : SemiconjBy a x y ↔ x = y :=
+lemma semiconjBy_iff_eq [CancelCommMonoid M] {a x y : M} : SemiconjBy a x y ↔ x = y :=
   ⟨fun h => mul_left_cancel (h.trans (mul_comm _ _)), fun h => by rw [h, SemiconjBy, mul_comm]⟩
 #align semiconj_by_iff_eq semiconjBy_iff_eq
 #align add_semiconj_by_iff_eq addSemiconjBy_iff_eq

@@ -41,12 +41,12 @@ instance [h : AddCommMonoidWithOne α] : AddCommMonoidWithOne αᵒᵈ :=
   h
 
 @[simp]
-theorem toDual_natCast [NatCast α] (n : ℕ) : toDual (n : α) = n :=
+lemma toDual_natCast [NatCast α] (n : ℕ) : toDual (n : α) = n :=
   rfl
 #align to_dual_nat_cast toDual_natCast
 
 @[simp]
-theorem ofDual_natCast [NatCast α] (n : ℕ) : (ofDual n : α) = n :=
+lemma ofDual_natCast [NatCast α] (n : ℕ) : (ofDual n : α) = n :=
   rfl
 #align of_dual_nat_cast ofDual_natCast
 
@@ -63,11 +63,11 @@ instance [h : AddCommMonoidWithOne α] : AddCommMonoidWithOne (Lex α) :=
   h
 
 @[simp]
-theorem toLex_natCast [NatCast α] (n : ℕ) : toLex (n : α) = n :=
+lemma toLex_natCast [NatCast α] (n : ℕ) : toLex (n : α) = n :=
   rfl
 #align to_lex_nat_cast toLex_natCast
 
 @[simp]
-theorem ofLex_natCast [NatCast α] (n : ℕ) : (ofLex n : α) = n :=
+lemma ofLex_natCast [NatCast α] (n : ℕ) : (ofLex n : α) = n :=
   rfl
 #align of_lex_nat_cast ofLex_natCast

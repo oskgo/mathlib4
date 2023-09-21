@@ -41,25 +41,25 @@ noncomputable def toMatrix {ι' : Type*} (q : ι' → P) : Matrix ι' ι k :=
 #align affine_basis.to_matrix AffineBasis.toMatrix
 
 @[simp]
-theorem toMatrix_apply {ι' : Type*} (q : ι' → P) (i : ι') (j : ι) :
+lemma toMatrix_apply {ι' : Type*} (q : ι' → P) (i : ι') (j : ι) :
     b.toMatrix q i j = b.coord j (q i) := rfl
 #align affine_basis.to_matrix_apply AffineBasis.toMatrix_apply
 
 @[simp]
-theorem toMatrix_self [DecidableEq ι] : b.toMatrix b = (1 : Matrix ι ι k) := by
+lemma toMatrix_self [DecidableEq ι] : b.toMatrix b = (1 : Matrix ι ι k) := by
   ext i j
   rw [toMatrix_apply, coord_apply, Matrix.one_eq_pi_single, Pi.single_apply]
 #align affine_basis.to_matrix_self AffineBasis.toMatrix_self
 
 variable {ι' : Type*} [Fintype ι'] [Fintype ι] (b₂ : AffineBasis ι k P)
 
-theorem toMatrix_row_sum_one {ι' : Type*} (q : ι' → P) (i : ι') : ∑ j, b.toMatrix q i j = 1 := by
+lemma toMatrix_row_sum_one {ι' : Type*} (q : ι' → P) (i : ι') : ∑ j, b.toMatrix q i j = 1 := by
   simp
 #align affine_basis.to_matrix_row_sum_one AffineBasis.toMatrix_row_sum_one
 
 /-- Given a family of points `p : ι' → P` and an affine basis `b`, if the matrix whose rows are the
 coordinates of `p` with respect `b` has a right inverse, then `p` is affine independent. -/
-theorem affineIndependent_of_toMatrix_right_inv [DecidableEq ι'] (p : ι' → P) {A : Matrix ι ι' k}
+lemma affineIndependent_of_toMatrix_right_inv [DecidableEq ι'] (p : ι' → P) {A : Matrix ι ι' k}
     (hA : b.toMatrix p * A = 1) : AffineIndependent k p := by
   rw [affineIndependent_iff_eq_of_fintype_affineCombination_eq]
   intro w₁ w₂ hw₁ hw₂ hweq
@@ -78,7 +78,7 @@ theorem affineIndependent_of_toMatrix_right_inv [DecidableEq ι'] (p : ι' → P
 
 /-- Given a family of points `p : ι' → P` and an affine basis `b`, if the matrix whose rows are the
 coordinates of `p` with respect `b` has a left inverse, then `p` spans the entire space. -/
-theorem affineSpan_eq_top_of_toMatrix_left_inv [DecidableEq ι] [Nontrivial k] (p : ι' → P)
+lemma affineSpan_eq_top_of_toMatrix_left_inv [DecidableEq ι] [Nontrivial k] (p : ι' → P)
     {A : Matrix ι ι' k} (hA : A * b.toMatrix p = 1) : affineSpan k (range p) = ⊤ := by
   suffices ∀ i, b i ∈ affineSpan k (range p) by
     rw [eq_top_iff, ← b.tot, affineSpan_le]
@@ -107,7 +107,7 @@ theorem affineSpan_eq_top_of_toMatrix_left_inv [DecidableEq ι] [Nontrivial k] (
 
 See also `AffineBasis.toMatrix_inv_vecMul_toMatrix`. -/
 @[simp]
-theorem toMatrix_vecMul_coords (x : P) : (b.toMatrix b₂).vecMul (b₂.coords x) = b.coords x := by
+lemma toMatrix_vecMul_coords (x : P) : (b.toMatrix b₂).vecMul (b₂.coords x) = b.coords x := by
   ext j
   change _ = b.coord j x
   conv_rhs => rw [← b₂.affineCombination_coord_eq_self x]
@@ -117,20 +117,20 @@ theorem toMatrix_vecMul_coords (x : P) : (b.toMatrix b₂).vecMul (b₂.coords x
 
 variable [DecidableEq ι]
 
-theorem toMatrix_mul_toMatrix : b.toMatrix b₂ * b₂.toMatrix b = 1 := by
+lemma toMatrix_mul_toMatrix : b.toMatrix b₂ * b₂.toMatrix b = 1 := by
   ext l m
   change (b₂.toMatrix b).vecMul (b.coords (b₂ l)) m = _
   rw [toMatrix_vecMul_coords, coords_apply, ← toMatrix_apply, toMatrix_self]
 #align affine_basis.to_matrix_mul_to_matrix AffineBasis.toMatrix_mul_toMatrix
 
-theorem isUnit_toMatrix : IsUnit (b.toMatrix b₂) :=
+lemma isUnit_toMatrix : IsUnit (b.toMatrix b₂) :=
   ⟨{  val := b.toMatrix b₂
       inv := b₂.toMatrix b
       val_inv := b.toMatrix_mul_toMatrix b₂
       inv_val := b₂.toMatrix_mul_toMatrix b }, rfl⟩
 #align affine_basis.is_unit_to_matrix AffineBasis.isUnit_toMatrix
 
-theorem isUnit_toMatrix_iff [Nontrivial k] (p : ι → P) :
+lemma isUnit_toMatrix_iff [Nontrivial k] (p : ι → P) :
     IsUnit (b.toMatrix p) ↔ AffineIndependent k p ∧ affineSpan k (range p) = ⊤ := by
   constructor
   · rintro ⟨⟨B, A, hA, hA'⟩, rfl : B = b.toMatrix p⟩
@@ -154,7 +154,7 @@ variable (b b₂ : AffineBasis ι k P)
 
 See also `AffineBasis.toMatrix_vecMul_coords`. -/
 @[simp]
-theorem toMatrix_inv_vecMul_toMatrix (x : P) :
+lemma toMatrix_inv_vecMul_toMatrix (x : P) :
     (b.toMatrix b₂)⁻¹.vecMul (b.coords x) = b₂.coords x := by
   have hu := b.isUnit_toMatrix b₂
   rw [Matrix.isUnit_iff_isUnit_det] at hu
@@ -164,7 +164,7 @@ theorem toMatrix_inv_vecMul_toMatrix (x : P) :
 
 /-- If we fix a background affine basis `b`, then for any other basis `b₂`, we can characterise
 the barycentric coordinates provided by `b₂` in terms of determinants relative to `b`. -/
-theorem det_smul_coords_eq_cramer_coords (x : P) :
+lemma det_smul_coords_eq_cramer_coords (x : P) :
     (b.toMatrix b₂).det • b₂.coords x = (b.toMatrix b₂)ᵀ.cramer (b.coords x) := by
   have hu := b.isUnit_toMatrix b₂
   rw [Matrix.isUnit_iff_isUnit_det] at hu

@@ -51,7 +51,7 @@ instance Closeds.emetricSpace : EMetricSpace (Closeds α) where
 #align emetric.closeds.emetric_space EMetric.Closeds.emetricSpace
 
 /-- The edistance to a closed set depends continuously on the point and the set -/
-theorem continuous_infEdist_hausdorffEdist :
+lemma continuous_infEdist_hausdorffEdist :
     Continuous fun p : α × Closeds α => infEdist p.1 p.2 := by
   refine' continuous_of_le_add_edist 2 (by simp) _
   rintro ⟨x, s⟩ ⟨y, t⟩
@@ -69,7 +69,7 @@ set_option linter.uppercaseLean3 false in
 #align emetric.continuous_infEdist_hausdorffEdist EMetric.continuous_infEdist_hausdorffEdist
 
 /-- Subsets of a given closed subset form a closed set -/
-theorem isClosed_subsets_of_isClosed (hs : IsClosed s) :
+lemma isClosed_subsets_of_isClosed (hs : IsClosed s) :
     IsClosed { t : Closeds α | (t : Set α) ⊆ s } := by
   refine' isClosed_of_closure_subset fun t ht x hx => _
   -- t : Closeds α, ht : t ∈ closure {t : Closeds α | t ⊆ s},
@@ -86,7 +86,7 @@ theorem isClosed_subsets_of_isClosed (hs : IsClosed s) :
 #align emetric.is_closed_subsets_of_is_closed EMetric.isClosed_subsets_of_isClosed
 
 /-- By definition, the edistance on `Closeds α` is given by the Hausdorff edistance -/
-theorem Closeds.edist_eq {s t : Closeds α} : edist s t = hausdorffEdist (s : Set α) t :=
+lemma Closeds.edist_eq {s t : Closeds α} : edist s t = hausdorffEdist (s : Set α) t :=
   rfl
 #align emetric.closeds.edist_eq EMetric.Closeds.edist_eq
 
@@ -253,13 +253,13 @@ instance NonemptyCompacts.emetricSpace : EMetricSpace (NonemptyCompacts α) wher
 #align emetric.nonempty_compacts.emetric_space EMetric.NonemptyCompacts.emetricSpace
 
 /-- `NonemptyCompacts.toCloseds` is a uniform embedding (as it is an isometry) -/
-theorem NonemptyCompacts.ToCloseds.uniformEmbedding :
+lemma NonemptyCompacts.ToCloseds.uniformEmbedding :
     UniformEmbedding (@NonemptyCompacts.toCloseds α _ _) :=
   Isometry.uniformEmbedding fun _ _ => rfl
 #align emetric.nonempty_compacts.to_closeds.uniform_embedding EMetric.NonemptyCompacts.ToCloseds.uniformEmbedding
 
 /-- The range of `NonemptyCompacts.toCloseds` is closed in a complete space -/
-theorem NonemptyCompacts.isClosed_in_closeds [CompleteSpace α] :
+lemma NonemptyCompacts.isClosed_in_closeds [CompleteSpace α] :
     IsClosed (range <| @NonemptyCompacts.toCloseds α _ _) := by
   have :
     range NonemptyCompacts.toCloseds =
@@ -412,18 +412,18 @@ instance NonemptyCompacts.metricSpace : MetricSpace (NonemptyCompacts α) :=
 #align metric.nonempty_compacts.metric_space Metric.NonemptyCompacts.metricSpace
 
 /-- The distance on `NonemptyCompacts α` is the Hausdorff distance, by construction -/
-theorem NonemptyCompacts.dist_eq {x y : NonemptyCompacts α} :
+lemma NonemptyCompacts.dist_eq {x y : NonemptyCompacts α} :
     dist x y = hausdorffDist (x : Set α) y :=
   rfl
 #align metric.nonempty_compacts.dist_eq Metric.NonemptyCompacts.dist_eq
 
-theorem lipschitz_infDist_set (x : α) : LipschitzWith 1 fun s : NonemptyCompacts α => infDist x s :=
+lemma lipschitz_infDist_set (x : α) : LipschitzWith 1 fun s : NonemptyCompacts α => infDist x s :=
   LipschitzWith.of_le_add fun s t => by
     rw [dist_comm]
     exact infDist_le_infDist_add_hausdorffDist (edist_ne_top t s)
 #align metric.lipschitz_inf_dist_set Metric.lipschitz_infDist_set
 
-theorem lipschitz_infDist : LipschitzWith 2 fun p : α × NonemptyCompacts α => infDist p.1 p.2 := by
+lemma lipschitz_infDist : LipschitzWith 2 fun p : α × NonemptyCompacts α => infDist p.1 p.2 := by
   -- Porting note: Changed tactic from `exact` to `convert`, because Lean had trouble with 2 = 1 + 1
   convert @LipschitzWith.uncurry α (NonemptyCompacts α) ℝ _ _ _
     (fun (x : α) (s : NonemptyCompacts α) => infDist x s) 1 1
@@ -431,7 +431,7 @@ theorem lipschitz_infDist : LipschitzWith 2 fun p : α × NonemptyCompacts α =>
   norm_num
 #align metric.lipschitz_inf_dist Metric.lipschitz_infDist
 
-theorem uniformContinuous_infDist_Hausdorff_dist :
+lemma uniformContinuous_infDist_Hausdorff_dist :
     UniformContinuous fun p : α × NonemptyCompacts α => infDist p.1 p.2 :=
   lipschitz_infDist.uniformContinuous
 #align metric.uniform_continuous_inf_dist_Hausdorff_dist Metric.uniformContinuous_infDist_Hausdorff_dist

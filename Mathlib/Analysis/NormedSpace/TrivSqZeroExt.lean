@@ -45,7 +45,7 @@ section Topology
 variable [TopologicalSpace R] [TopologicalSpace M]
 
 /-- If `exp R x.fst` converges to `e` then `(exp R x).fst` converges to `e`. -/
-theorem hasSum_fst_expSeries [Field 𝕜] [Ring R] [AddCommGroup M] [Algebra 𝕜 R] [Module R M]
+lemma hasSum_fst_expSeries [Field 𝕜] [Ring R] [AddCommGroup M] [Algebra 𝕜 R] [Module R M]
     [Module Rᵐᵒᵖ M] [SMulCommClass R Rᵐᵒᵖ M] [Module 𝕜 M] [IsScalarTower 𝕜 R M]
     [IsScalarTower 𝕜 Rᵐᵒᵖ M] [TopologicalRing R] [TopologicalAddGroup M] [ContinuousSMul R M]
     [ContinuousSMul Rᵐᵒᵖ M] (x : tsze R M) {e : R}
@@ -55,7 +55,7 @@ theorem hasSum_fst_expSeries [Field 𝕜] [Ring R] [AddCommGroup M] [Algebra �
 #align triv_sq_zero_ext.has_sum_fst_exp_series TrivSqZeroExt.hasSum_fst_expSeries
 
 /-- If `exp R x.fst` converges to `e` then `(exp R x).snd` converges to `e • x.snd`. -/
-theorem hasSum_snd_expSeries_of_smul_comm [Field 𝕜] [CharZero 𝕜] [Ring R] [AddCommGroup M]
+lemma hasSum_snd_expSeries_of_smul_comm [Field 𝕜] [CharZero 𝕜] [Ring R] [AddCommGroup M]
     [Algebra 𝕜 R] [Module R M] [Module Rᵐᵒᵖ M] [SMulCommClass R Rᵐᵒᵖ M] [Module 𝕜 M]
     [IsScalarTower 𝕜 R M] [IsScalarTower 𝕜 Rᵐᵒᵖ M] [TopologicalRing R] [TopologicalAddGroup M]
     [ContinuousSMul R M] [ContinuousSMul Rᵐᵒᵖ M] (x : tsze R M)
@@ -79,7 +79,7 @@ theorem hasSum_snd_expSeries_of_smul_comm [Field 𝕜] [CharZero 𝕜] [Ring R] 
 #align triv_sq_zero_ext.has_sum_snd_exp_series_of_smul_comm TrivSqZeroExt.hasSum_snd_expSeries_of_smul_comm
 
 /-- If `exp R x.fst` converges to `e` then `exp R x` converges to `inl e + inr (e • x.snd)`. -/
-theorem hasSum_expSeries_of_smul_comm [Field 𝕜] [CharZero 𝕜] [Ring R] [AddCommGroup M] [Algebra 𝕜 R]
+lemma hasSum_expSeries_of_smul_comm [Field 𝕜] [CharZero 𝕜] [Ring R] [AddCommGroup M] [Algebra 𝕜 R]
     [Module R M] [Module Rᵐᵒᵖ M] [SMulCommClass R Rᵐᵒᵖ M] [Module 𝕜 M] [IsScalarTower 𝕜 R M]
     [IsScalarTower 𝕜 Rᵐᵒᵖ M] [TopologicalRing R] [TopologicalAddGroup M] [ContinuousSMul R M]
     [ContinuousSMul Rᵐᵒᵖ M] (x : tsze R M) (hx : MulOpposite.op x.fst • x.snd = x.fst • x.snd)
@@ -106,7 +106,7 @@ variable [TopologicalAddGroup M] [ContinuousSMul R M] [ContinuousSMul Rᵐᵒᵖ
 
 variable [CompleteSpace R] [T2Space R] [T2Space M]
 
-theorem exp_def_of_smul_comm (x : tsze R M) (hx : MulOpposite.op x.fst • x.snd = x.fst • x.snd) :
+lemma exp_def_of_smul_comm (x : tsze R M) (hx : MulOpposite.op x.fst • x.snd = x.fst • x.snd) :
     exp 𝕜 x = inl (exp 𝕜 x.fst) + inr (exp 𝕜 x.fst • x.snd) := by
   simp_rw [exp, FormalMultilinearSeries.sum]
   refine' (hasSum_expSeries_of_smul_comm 𝕜 x hx _).tsum_eq
@@ -114,13 +114,13 @@ theorem exp_def_of_smul_comm (x : tsze R M) (hx : MulOpposite.op x.fst • x.snd
 #align triv_sq_zero_ext.exp_def_of_smul_comm TrivSqZeroExt.exp_def_of_smul_comm
 
 @[simp]
-theorem exp_inl (x : R) : exp 𝕜 (inl x : tsze R M) = inl (exp 𝕜 x) := by
+lemma exp_inl (x : R) : exp 𝕜 (inl x : tsze R M) = inl (exp 𝕜 x) := by
   rw [exp_def_of_smul_comm, snd_inl, fst_inl, smul_zero, inr_zero, add_zero]
   · rw [snd_inl, fst_inl, smul_zero, smul_zero]
 #align triv_sq_zero_ext.exp_inl TrivSqZeroExt.exp_inl
 
 @[simp]
-theorem exp_inr (m : M) : exp 𝕜 (inr m : tsze R M) = 1 + inr m := by
+lemma exp_inr (m : M) : exp 𝕜 (inr m : tsze R M) = 1 + inr m := by
   rw [exp_def_of_smul_comm, snd_inr, fst_inr, exp_zero, one_smul, inl_one]
   · rw [snd_inr, fst_inr, MulOpposite.op_zero, zero_smul, zero_smul]
 #align triv_sq_zero_ext.exp_inr TrivSqZeroExt.exp_inr
@@ -141,22 +141,22 @@ variable [TopologicalAddGroup M] [ContinuousSMul R M]
 
 variable [CompleteSpace R] [T2Space R] [T2Space M]
 
-theorem exp_def (x : tsze R M) : exp 𝕜 x = inl (exp 𝕜 x.fst) + inr (exp 𝕜 x.fst • x.snd) :=
+lemma exp_def (x : tsze R M) : exp 𝕜 x = inl (exp 𝕜 x.fst) + inr (exp 𝕜 x.fst • x.snd) :=
   exp_def_of_smul_comm 𝕜 x (op_smul_eq_smul _ _)
 #align triv_sq_zero_ext.exp_def TrivSqZeroExt.exp_def
 
 @[simp]
-theorem fst_exp (x : tsze R M) : fst (exp 𝕜 x) = exp 𝕜 x.fst := by
+lemma fst_exp (x : tsze R M) : fst (exp 𝕜 x) = exp 𝕜 x.fst := by
   rw [exp_def, fst_add, fst_inl, fst_inr, add_zero]
 #align triv_sq_zero_ext.fst_exp TrivSqZeroExt.fst_exp
 
 @[simp]
-theorem snd_exp (x : tsze R M) : snd (exp 𝕜 x) = exp 𝕜 x.fst • x.snd := by
+lemma snd_exp (x : tsze R M) : snd (exp 𝕜 x) = exp 𝕜 x.fst • x.snd := by
   rw [exp_def, snd_add, snd_inl, snd_inr, zero_add]
 #align triv_sq_zero_ext.snd_exp TrivSqZeroExt.snd_exp
 
 /-- Polar form of trivial-square-zero extension. -/
-theorem eq_smul_exp_of_invertible (x : tsze R M) [Invertible x.fst] :
+lemma eq_smul_exp_of_invertible (x : tsze R M) [Invertible x.fst] :
     x = x.fst • exp 𝕜 (⅟ x.fst • inr x.snd) := by
   rw [← inr_smul, exp_inr, smul_add, ← inl_one, ← inl_smul, ← inr_smul, smul_eq_mul, mul_one,
     smul_smul, mul_invOf_self, one_smul, inl_fst_add_inr_snd_eq]
@@ -180,7 +180,7 @@ variable [CompleteSpace R] [T2Space R] [T2Space M]
 
 /-- More convenient version of `TrivSqZeroExt.eq_smul_exp_of_invertible` for when `R` is a
 field. -/
-theorem eq_smul_exp_of_ne_zero (x : tsze R M) (hx : x.fst ≠ 0) :
+lemma eq_smul_exp_of_ne_zero (x : tsze R M) (hx : x.fst ≠ 0) :
     x = x.fst • exp 𝕜 (x.fst⁻¹ • inr x.snd) :=
   letI : Invertible x.fst := invertibleOfNonzero hx
   eq_smul_exp_of_invertible _ _

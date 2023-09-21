@@ -47,87 +47,87 @@ structure MeasurePreserving (f : α → β)
 #align measure_theory.measure_preserving.measurable MeasureTheory.MeasurePreserving.measurable
 #align measure_theory.measure_preserving.map_eq MeasureTheory.MeasurePreserving.map_eq
 
-protected theorem _root_.Measurable.measurePreserving
+protected lemma _root_.Measurable.measurePreserving
     {f : α → β} (h : Measurable f) (μa : Measure α) : MeasurePreserving f μa (map f μa) :=
   ⟨h, rfl⟩
 #align measurable.measure_preserving Measurable.measurePreserving
 
 namespace MeasurePreserving
 
-protected theorem id (μ : Measure α) : MeasurePreserving id μ μ :=
+protected lemma id (μ : Measure α) : MeasurePreserving id μ μ :=
   ⟨measurable_id, map_id⟩
 #align measure_theory.measure_preserving.id MeasureTheory.MeasurePreserving.id
 
-protected theorem aemeasurable {f : α → β} (hf : MeasurePreserving f μa μb) : AEMeasurable f μa :=
+protected lemma aemeasurable {f : α → β} (hf : MeasurePreserving f μa μb) : AEMeasurable f μa :=
   hf.1.aemeasurable
 #align measure_theory.measure_preserving.ae_measurable MeasureTheory.MeasurePreserving.aemeasurable
 
-theorem symm (e : α ≃ᵐ β) {μa : Measure α} {μb : Measure β} (h : MeasurePreserving e μa μb) :
+lemma symm (e : α ≃ᵐ β) {μa : Measure α} {μb : Measure β} (h : MeasurePreserving e μa μb) :
     MeasurePreserving e.symm μb μa :=
   ⟨e.symm.measurable, by
     rw [← h.map_eq, map_map e.symm.measurable e.measurable, e.symm_comp_self, map_id]⟩
 #align measure_theory.measure_preserving.symm MeasureTheory.MeasurePreserving.symm
 
-theorem restrict_preimage {f : α → β} (hf : MeasurePreserving f μa μb) {s : Set β}
+lemma restrict_preimage {f : α → β} (hf : MeasurePreserving f μa μb) {s : Set β}
     (hs : MeasurableSet s) : MeasurePreserving f (μa.restrict (f ⁻¹' s)) (μb.restrict s) :=
   ⟨hf.measurable, by rw [← hf.map_eq, restrict_map hf.measurable hs]⟩
 #align measure_theory.measure_preserving.restrict_preimage MeasureTheory.MeasurePreserving.restrict_preimage
 
-theorem restrict_preimage_emb {f : α → β} (hf : MeasurePreserving f μa μb)
+lemma restrict_preimage_emb {f : α → β} (hf : MeasurePreserving f μa μb)
     (h₂ : MeasurableEmbedding f) (s : Set β) :
     MeasurePreserving f (μa.restrict (f ⁻¹' s)) (μb.restrict s) :=
   ⟨hf.measurable, by rw [← hf.map_eq, h₂.restrict_map]⟩
 #align measure_theory.measure_preserving.restrict_preimage_emb MeasureTheory.MeasurePreserving.restrict_preimage_emb
 
-theorem restrict_image_emb {f : α → β} (hf : MeasurePreserving f μa μb) (h₂ : MeasurableEmbedding f)
+lemma restrict_image_emb {f : α → β} (hf : MeasurePreserving f μa μb) (h₂ : MeasurableEmbedding f)
     (s : Set α) : MeasurePreserving f (μa.restrict s) (μb.restrict (f '' s)) := by
   simpa only [Set.preimage_image_eq _ h₂.injective] using hf.restrict_preimage_emb h₂ (f '' s)
 #align measure_theory.measure_preserving.restrict_image_emb MeasureTheory.MeasurePreserving.restrict_image_emb
 
-theorem aemeasurable_comp_iff {f : α → β} (hf : MeasurePreserving f μa μb)
+lemma aemeasurable_comp_iff {f : α → β} (hf : MeasurePreserving f μa μb)
     (h₂ : MeasurableEmbedding f) {g : β → γ} : AEMeasurable (g ∘ f) μa ↔ AEMeasurable g μb := by
   rw [← hf.map_eq, h₂.aemeasurable_map_iff]
 #align measure_theory.measure_preserving.ae_measurable_comp_iff MeasureTheory.MeasurePreserving.aemeasurable_comp_iff
 
-protected theorem quasiMeasurePreserving {f : α → β} (hf : MeasurePreserving f μa μb) :
+protected lemma quasiMeasurePreserving {f : α → β} (hf : MeasurePreserving f μa μb) :
     QuasiMeasurePreserving f μa μb :=
   ⟨hf.1, hf.2.absolutelyContinuous⟩
 #align measure_theory.measure_preserving.quasi_measure_preserving MeasureTheory.MeasurePreserving.quasiMeasurePreserving
 
-protected theorem comp {g : β → γ} {f : α → β} (hg : MeasurePreserving g μb μc)
+protected lemma comp {g : β → γ} {f : α → β} (hg : MeasurePreserving g μb μc)
     (hf : MeasurePreserving f μa μb) : MeasurePreserving (g ∘ f) μa μc :=
   ⟨hg.1.comp hf.1, by rw [← map_map hg.1 hf.1, hf.2, hg.2]⟩
 #align measure_theory.measure_preserving.comp MeasureTheory.MeasurePreserving.comp
 
-protected theorem comp_left_iff {g : α → β} {e : β ≃ᵐ γ} (h : MeasurePreserving e μb μc) :
+protected lemma comp_left_iff {g : α → β} {e : β ≃ᵐ γ} (h : MeasurePreserving e μb μc) :
     MeasurePreserving (e ∘ g) μa μc ↔ MeasurePreserving g μa μb := by
   refine' ⟨fun hg => _, fun hg => h.comp hg⟩
   convert (MeasurePreserving.symm e h).comp hg
   simp [← Function.comp.assoc e.symm e g]
 #align measure_theory.measure_preserving.comp_left_iff MeasureTheory.MeasurePreserving.comp_left_iff
 
-protected theorem comp_right_iff {g : α → β} {e : γ ≃ᵐ α} (h : MeasurePreserving e μc μa) :
+protected lemma comp_right_iff {g : α → β} {e : γ ≃ᵐ α} (h : MeasurePreserving e μc μa) :
     MeasurePreserving (g ∘ e) μc μb ↔ MeasurePreserving g μa μb := by
   refine' ⟨fun hg => _, fun hg => hg.comp h⟩
   convert hg.comp (MeasurePreserving.symm e h)
   simp [Function.comp.assoc g e e.symm]
 #align measure_theory.measure_preserving.comp_right_iff MeasureTheory.MeasurePreserving.comp_right_iff
 
-protected theorem sigmaFinite {f : α → β} (hf : MeasurePreserving f μa μb) [SigmaFinite μb] :
+protected lemma sigmaFinite {f : α → β} (hf : MeasurePreserving f μa μb) [SigmaFinite μb] :
     SigmaFinite μa :=
   SigmaFinite.of_map μa hf.aemeasurable (by rwa [hf.map_eq])
 #align measure_theory.measure_preserving.sigma_finite MeasureTheory.MeasurePreserving.sigmaFinite
 
-theorem measure_preimage {f : α → β} (hf : MeasurePreserving f μa μb) {s : Set β}
+lemma measure_preimage {f : α → β} (hf : MeasurePreserving f μa μb) {s : Set β}
     (hs : MeasurableSet s) : μa (f ⁻¹' s) = μb s := by rw [← hf.map_eq, map_apply hf.1 hs]
 #align measure_theory.measure_preserving.measure_preimage MeasureTheory.MeasurePreserving.measure_preimage
 
-theorem measure_preimage_emb {f : α → β} (hf : MeasurePreserving f μa μb)
+lemma measure_preimage_emb {f : α → β} (hf : MeasurePreserving f μa μb)
     (hfe : MeasurableEmbedding f) (s : Set β) : μa (f ⁻¹' s) = μb s := by
   rw [← hf.map_eq, hfe.map_apply]
 #align measure_theory.measure_preserving.measure_preimage_emb MeasureTheory.MeasurePreserving.measure_preimage_emb
 
-protected theorem iterate {f : α → α} (hf : MeasurePreserving f μa μa) :
+protected lemma iterate {f : α → α} (hf : MeasurePreserving f μa μa) :
     ∀ n, MeasurePreserving f^[n] μa μa
   | 0 => MeasurePreserving.id μa
   | n + 1 => (MeasurePreserving.iterate hf n).comp hf
@@ -146,7 +146,7 @@ lemma measure_symmDiff_preimage_iterate_le
 
 /-- If `μ univ < n * μ s` and `f` is a map preserving measure `μ`,
 then for some `x ∈ s` and `0 < m < n`, `f^[m] x ∈ s`. -/
-theorem exists_mem_image_mem_of_volume_lt_mul_volume (hf : MeasurePreserving f μ μ)
+lemma exists_mem_image_mem_of_volume_lt_mul_volume (hf : MeasurePreserving f μ μ)
     (hs : MeasurableSet s) {n : ℕ} (hvol : μ (Set.univ : Set α) < n * μ s) :
     ∃ x ∈ s, ∃ m ∈ Set.Ioo 0 n, f^[m] x ∈ s := by
   have A : ∀ m, MeasurableSet (f^[m] ⁻¹' s) := fun m => (hf.iterate m).measurable hs
@@ -166,7 +166,7 @@ theorem exists_mem_image_mem_of_volume_lt_mul_volume (hf : MeasurePreserving f �
 `x ∈ s` comes back to `s` under iterations of `f`. Actually, a.e. point of `s` comes back to `s`
 infinitely many times, see `MeasureTheory.MeasurePreserving.conservative` and theorems about
 `MeasureTheory.Conservative`. -/
-theorem exists_mem_image_mem [IsFiniteMeasure μ] (hf : MeasurePreserving f μ μ)
+lemma exists_mem_image_mem [IsFiniteMeasure μ] (hf : MeasurePreserving f μ μ)
     (hs : MeasurableSet s) (hs' : μ s ≠ 0) : ∃ x ∈ s, ∃ (m : _) (_ : m ≠ 0), f^[m] x ∈ s := by
   rcases ENNReal.exists_nat_mul_gt hs' (measure_ne_top μ (Set.univ : Set α)) with ⟨N, hN⟩
   rcases hf.exists_mem_image_mem_of_volume_lt_mul_volume hs hN with ⟨x, hx, m, hm, hmx⟩
@@ -177,7 +177,7 @@ end MeasurePreserving
 
 namespace MeasurableEquiv
 
-theorem measurePreserving_symm (μ : Measure α) (e : α ≃ᵐ β) :
+lemma measurePreserving_symm (μ : Measure α) (e : α ≃ᵐ β) :
     MeasurePreserving e.symm (map e μ) μ :=
   (e.measurable.measurePreserving μ).symm _
 #align measure_theory.measurable_equiv.measure_preserving_symm MeasureTheory.MeasurableEquiv.measurePreserving_symm

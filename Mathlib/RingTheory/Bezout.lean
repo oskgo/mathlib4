@@ -41,7 +41,7 @@ instance span_pair_isPrincipal [IsBezout R] (x y : R) : (Ideal.span {x, y} : Ide
   by classical exact isPrincipal_of_FG (Ideal.span {x, y}) ⟨{x, y}, by simp⟩
 #align is_bezout.span_pair_is_principal IsBezout.span_pair_isPrincipal
 
-theorem iff_span_pair_isPrincipal :
+lemma iff_span_pair_isPrincipal :
     IsBezout R ↔ ∀ x y : R, (Ideal.span {x, y} : Ideal R).IsPrincipal := by
   classical
     constructor
@@ -61,25 +61,25 @@ variable [IsBezout R]
 noncomputable def gcd (x y : R) : R := Submodule.IsPrincipal.generator (Ideal.span {x, y})
 #align is_bezout.gcd IsBezout.gcd
 
-theorem span_gcd (x y : R) : (Ideal.span {gcd x y} : Ideal R) = Ideal.span {x, y} :=
+lemma span_gcd (x y : R) : (Ideal.span {gcd x y} : Ideal R) = Ideal.span {x, y} :=
   Ideal.span_singleton_generator _
 #align is_bezout.span_gcd IsBezout.span_gcd
 
-theorem gcd_dvd_left (x y : R) : gcd x y ∣ x :=
+lemma gcd_dvd_left (x y : R) : gcd x y ∣ x :=
   (Submodule.IsPrincipal.mem_iff_generator_dvd _).mp (Ideal.subset_span (by simp))
 #align is_bezout.gcd_dvd_left IsBezout.gcd_dvd_left
 
-theorem gcd_dvd_right (x y : R) : gcd x y ∣ y :=
+lemma gcd_dvd_right (x y : R) : gcd x y ∣ y :=
   (Submodule.IsPrincipal.mem_iff_generator_dvd _).mp (Ideal.subset_span (by simp))
 #align is_bezout.gcd_dvd_right IsBezout.gcd_dvd_right
 
-theorem dvd_gcd {x y z : R} (hx : z ∣ x) (hy : z ∣ y) : z ∣ gcd x y := by
+lemma dvd_gcd {x y z : R} (hx : z ∣ x) (hy : z ∣ y) : z ∣ gcd x y := by
   rw [← Ideal.span_singleton_le_span_singleton] at hx hy ⊢
   rw [span_gcd, Ideal.span_insert, sup_le_iff]
   exact ⟨hx, hy⟩
 #align is_bezout.dvd_gcd IsBezout.dvd_gcd
 
-theorem gcd_eq_sum (x y : R) : ∃ a b : R, a * x + b * y = gcd x y :=
+lemma gcd_eq_sum (x y : R) : ∃ a b : R, a * x + b * y = gcd x y :=
   Ideal.mem_span_pair.mp (by rw [← span_gcd]; apply Ideal.subset_span; simp)
 #align is_bezout.gcd_eq_sum IsBezout.gcd_eq_sum
 
@@ -100,7 +100,7 @@ attribute [local instance] toGCDDomain
 instance (priority := 100) [IsDomain R] [IsBezout R] : IsIntegrallyClosed R := by
   classical exact GCDMonoid.toIsIntegrallyClosed
 
-theorem _root_.Function.Surjective.isBezout {S : Type v} [CommRing S] (f : R →+* S)
+lemma _root_.Function.Surjective.isBezout {S : Type v} [CommRing S] (f : R →+* S)
     (hf : Function.Surjective f) [IsBezout R] : IsBezout S := by
   rw [iff_span_pair_isPrincipal]
   intro x y
@@ -115,7 +115,7 @@ instance (priority := 100) of_isPrincipalIdealRing [IsPrincipalIdealRing R] : Is
   ⟨fun I _ => IsPrincipalIdealRing.principal I⟩
 #align is_bezout.of_is_principal_ideal_ring IsBezout.of_isPrincipalIdealRing
 
-theorem TFAE [IsBezout R] [IsDomain R] :
+lemma TFAE [IsBezout R] [IsDomain R] :
     List.TFAE
     [IsNoetherianRing R, IsPrincipalIdealRing R, UniqueFactorizationMonoid R, WfDvdMonoid R] := by
   classical

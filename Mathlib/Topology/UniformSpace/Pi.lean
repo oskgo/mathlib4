@@ -35,14 +35,14 @@ lemma Pi.uniformSpace_eq :
     Pi.uniformSpace α = ⨅ i, UniformSpace.comap (fun a : (∀ i, α i) ↦ a i) (U i) := by
   ext : 1; rfl
 
-theorem Pi.uniformity :
+lemma Pi.uniformity :
     𝓤 (∀ i, α i) = ⨅ i : ι, (Filter.comap fun a => (a.1 i, a.2 i)) (𝓤 (α i)) :=
   iInf_uniformity
 #align Pi.uniformity Pi.uniformity
 
 variable {α}
 
-theorem uniformContinuous_pi {β : Type*} [UniformSpace β] {f : β → ∀ i, α i} :
+lemma uniformContinuous_pi {β : Type*} [UniformSpace β] {f : β → ∀ i, α i} :
     UniformContinuous f ↔ ∀ i, UniformContinuous fun x => f x i := by
   -- porting note: required `Function.comp` to close
   simp only [UniformContinuous, Pi.uniformity, tendsto_iInf, tendsto_comap_iff, Function.comp]
@@ -50,24 +50,24 @@ theorem uniformContinuous_pi {β : Type*} [UniformSpace β] {f : β → ∀ i, �
 
 variable (α)
 
-theorem Pi.uniformContinuous_proj (i : ι) : UniformContinuous fun a : ∀ i : ι, α i => a i :=
+lemma Pi.uniformContinuous_proj (i : ι) : UniformContinuous fun a : ∀ i : ι, α i => a i :=
   uniformContinuous_pi.1 uniformContinuous_id i
 #align Pi.uniform_continuous_proj Pi.uniformContinuous_proj
 
-theorem Pi.uniformContinuous_precomp' (φ : ι' → ι) :
+lemma Pi.uniformContinuous_precomp' (φ : ι' → ι) :
     UniformContinuous (fun (f : (∀ i, α i)) (j : ι') ↦ f (φ j)) :=
   uniformContinuous_pi.mpr fun j ↦ uniformContinuous_proj α (φ j)
 
-theorem Pi.uniformContinuous_precomp (φ : ι' → ι) :
+lemma Pi.uniformContinuous_precomp (φ : ι' → ι) :
     UniformContinuous (· ∘ φ : (ι → β) → (ι' → β)) :=
   Pi.uniformContinuous_precomp' _ φ
 
-theorem Pi.uniformContinuous_postcomp' {β : ι → Type*} [∀ i, UniformSpace (β i)]
+lemma Pi.uniformContinuous_postcomp' {β : ι → Type*} [∀ i, UniformSpace (β i)]
     {g : ∀ i, α i → β i} (hg : ∀ i, UniformContinuous (g i)) :
     UniformContinuous (fun (f : (∀ i, α i)) (i : ι) ↦ g i (f i)) :=
   uniformContinuous_pi.mpr fun i ↦ (hg i).comp <| uniformContinuous_proj α i
 
-theorem Pi.uniformContinuous_postcomp {α : Type*} [UniformSpace α] {g : α → β}
+lemma Pi.uniformContinuous_postcomp {α : Type*} [UniformSpace α] {g : α → β}
     (hg : UniformContinuous g) : UniformContinuous (g ∘ · : (ι → α) → (ι → β)) :=
   Pi.uniformContinuous_postcomp' _ fun _ ↦ hg
 

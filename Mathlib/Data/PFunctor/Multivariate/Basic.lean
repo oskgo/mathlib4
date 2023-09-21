@@ -57,16 +57,16 @@ instance Obj.inhabited {α : TypeVec n} [Inhabited P.A] [∀ i, Inhabited (α i)
 instance : MvFunctor P.Obj :=
   ⟨@MvPFunctor.map n P⟩
 
-theorem map_eq {α β : TypeVec n} (g : α ⟹ β) (a : P.A) (f : P.B a ⟹ α) :
+lemma map_eq {α β : TypeVec n} (g : α ⟹ β) (a : P.A) (f : P.B a ⟹ α) :
     @MvFunctor.map _ P.Obj _ _ _ g ⟨a, f⟩ = ⟨a, g ⊚ f⟩ :=
   rfl
 #align mvpfunctor.map_eq MvPFunctor.map_eq
 
-theorem id_map {α : TypeVec n} : ∀ x : P.Obj α, TypeVec.id <$$> x = x
+lemma id_map {α : TypeVec n} : ∀ x : P.Obj α, TypeVec.id <$$> x = x
   | ⟨_, _⟩ => rfl
 #align mvpfunctor.id_map MvPFunctor.id_map
 
-theorem comp_map {α β γ : TypeVec n} (f : α ⟹ β) (g : β ⟹ γ) :
+lemma comp_map {α β γ : TypeVec n} (f : α ⟹ β) (g : β ⟹ γ) :
     ∀ x : P.Obj α, (g ⊚ f) <$$> x = g <$$> f <$$> x
   | ⟨_, _⟩ => rfl
 #align mvpfunctor.comp_map MvPFunctor.comp_map
@@ -98,17 +98,17 @@ def const.get (x : (const n A).Obj α) : A :=
 #align mvpfunctor.const.get MvPFunctor.const.get
 
 @[simp]
-theorem const.get_map (f : α ⟹ β) (x : (const n A).Obj α) : const.get (f <$$> x) = const.get x := by
+lemma const.get_map (f : α ⟹ β) (x : (const n A).Obj α) : const.get (f <$$> x) = const.get x := by
   cases x
   rfl
 #align mvpfunctor.const.get_map MvPFunctor.const.get_map
 
 @[simp]
-theorem const.get_mk (x : A) : const.get (const.mk n x : (const n A).Obj α) = x := rfl
+lemma const.get_mk (x : A) : const.get (const.mk n x : (const n A).Obj α) = x := rfl
 #align mvpfunctor.const.get_mk MvPFunctor.const.get_mk
 
 @[simp]
-theorem const.mk_get (x : (const n A).Obj α) : const.mk n (const.get x) = x := by
+lemma const.mk_get (x : (const n A).Obj α) : const.mk n (const.get x) = x := by
   cases x
   dsimp [const.get, const.mk]
   congr with (_⟨⟩)
@@ -135,25 +135,25 @@ def comp.get (x : (comp P Q).Obj α) : P.Obj fun i => (Q i).Obj α :=
   ⟨x.1.1, fun i a => ⟨x.fst.snd i a, fun (j : Fin2 m) (b : (Q i).B _ j) => x.snd j ⟨i, ⟨a, b⟩⟩⟩⟩
 #align mvpfunctor.comp.get MvPFunctor.comp.get
 
-theorem comp.get_map (f : α ⟹ β) (x : (comp P Q).Obj α) :
+lemma comp.get_map (f : α ⟹ β) (x : (comp P Q).Obj α) :
     comp.get (f <$$> x) = (fun i (x : (Q i).Obj α) => f <$$> x) <$$> comp.get x := by
   rfl
 #align mvpfunctor.comp.get_map MvPFunctor.comp.get_map
 
 @[simp]
-theorem comp.get_mk (x : P.Obj fun i => (Q i).Obj α) : comp.get (comp.mk x) = x := by
+lemma comp.get_mk (x : P.Obj fun i => (Q i).Obj α) : comp.get (comp.mk x) = x := by
   rfl
 #align mvpfunctor.comp.get_mk MvPFunctor.comp.get_mk
 
 @[simp]
-theorem comp.mk_get (x : (comp P Q).Obj α) : comp.mk (comp.get x) = x := by
+lemma comp.mk_get (x : (comp P Q).Obj α) : comp.mk (comp.get x) = x := by
   rfl
 #align mvpfunctor.comp.mk_get MvPFunctor.comp.mk_get
 
 /-
 lifting predicates and relations
 -/
-theorem liftP_iff {α : TypeVec n} (p : ∀ ⦃i⦄, α i → Prop) (x : P.Obj α) :
+lemma liftP_iff {α : TypeVec n} (p : ∀ ⦃i⦄, α i → Prop) (x : P.Obj α) :
     LiftP p x ↔ ∃ a f, x = ⟨a, f⟩ ∧ ∀ i j, p (f i j) := by
   constructor
   · rintro ⟨y, hy⟩
@@ -166,7 +166,7 @@ theorem liftP_iff {α : TypeVec n} (p : ∀ ⦃i⦄, α i → Prop) (x : P.Obj �
   rw [xeq]; rfl
 #align mvpfunctor.liftp_iff MvPFunctor.liftP_iff
 
-theorem liftP_iff' {α : TypeVec n} (p : ∀ ⦃i⦄, α i → Prop) (a : P.A) (f : P.B a ⟹ α) :
+lemma liftP_iff' {α : TypeVec n} (p : ∀ ⦃i⦄, α i → Prop) (a : P.A) (f : P.B a ⟹ α) :
     @LiftP.{u} _ P.Obj _ α p ⟨a, f⟩ ↔ ∀ i x, p (f i x) := by
   simp only [liftP_iff, Sigma.mk.inj_iff]; constructor
   · rintro ⟨_, _, ⟨⟩, _⟩
@@ -175,7 +175,7 @@ theorem liftP_iff' {α : TypeVec n} (p : ∀ ⦃i⦄, α i → Prop) (a : P.A) (
     repeat' first |constructor|assumption
 #align mvpfunctor.liftp_iff' MvPFunctor.liftP_iff'
 
-theorem liftR_iff {α : TypeVec n} (r : ∀ ⦃i⦄, α i → α i → Prop) (x y : P.Obj α) :
+lemma liftR_iff {α : TypeVec n} (r : ∀ ⦃i⦄, α i → α i → Prop) (x y : P.Obj α) :
     LiftR @r x y ↔ ∃ a f₀ f₁, x = ⟨a, f₀⟩ ∧ y = ⟨a, f₁⟩ ∧ ∀ i j, r (f₀ i j) (f₁ i j) := by
   constructor
   · rintro ⟨u, xeq, yeq⟩
@@ -199,7 +199,7 @@ theorem liftR_iff {α : TypeVec n} (r : ∀ ⦃i⦄, α i → α i → Prop) (x 
 
 open Set MvFunctor
 
-theorem supp_eq {α : TypeVec n} (a : P.A) (f : P.B a ⟹ α) (i) :
+lemma supp_eq {α : TypeVec n} (a : P.A) (f : P.B a ⟹ α) (i) :
     @supp.{u} _ P.Obj _ α (⟨a, f⟩ : P.Obj α) i = f i '' univ := by
   ext x; simp only [supp, image_univ, mem_range, mem_setOf_eq]
   constructor <;> intro h

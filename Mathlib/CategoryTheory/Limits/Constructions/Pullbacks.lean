@@ -25,7 +25,7 @@ namespace CategoryTheory.Limits
 
 /-- If the product `X ⨯ Y` and the equalizer of `π₁ ≫ f` and `π₂ ≫ g` exist, then the
     pullback of `f` and `g` exists: It is given by composing the equalizer with the projections. -/
-theorem hasLimit_cospan_of_hasLimit_pair_of_hasLimit_parallelPair {C : Type u} [𝒞 : Category.{v} C]
+lemma hasLimit_cospan_of_hasLimit_pair_of_hasLimit_parallelPair {C : Type u} [𝒞 : Category.{v} C]
     {X Y Z : C} (f : X ⟶ Z) (g : Y ⟶ Z) [HasLimit (pair X Y)]
     [HasLimit (parallelPair (prod.fst ≫ f) (prod.snd ≫ g))] : HasLimit (cospan f g) :=
   let π₁ : X ⨯ Y ⟶ X := prod.fst
@@ -52,7 +52,7 @@ attribute [local instance] hasLimit_cospan_of_hasLimit_pair_of_hasLimit_parallel
 /-- If a category has all binary products and all equalizers, then it also has all pullbacks.
     As usual, this is not an instance, since there may be a more direct way to construct
     pullbacks. -/
-theorem hasPullbacks_of_hasBinaryProducts_of_hasEqualizers (C : Type u) [Category.{v} C]
+lemma hasPullbacks_of_hasBinaryProducts_of_hasEqualizers (C : Type u) [Category.{v} C]
     [HasBinaryProducts C] [HasEqualizers C] : HasPullbacks C :=
   { has_limit := fun F => hasLimitOfIso (diagramIsoCospan F).symm }
 #align category_theory.limits.has_pullbacks_of_has_binary_products_of_has_equalizers CategoryTheory.Limits.hasPullbacks_of_hasBinaryProducts_of_hasEqualizers
@@ -61,7 +61,7 @@ end
 
 /-- If the coproduct `Y ⨿ Z` and the coequalizer of `f ≫ ι₁` and `g ≫ ι₂` exist, then the
     pushout of `f` and `g` exists: It is given by composing the inclusions with the coequalizer. -/
-theorem hasColimit_span_of_hasColimit_pair_of_hasColimit_parallelPair {C : Type u}
+lemma hasColimit_span_of_hasColimit_pair_of_hasColimit_parallelPair {C : Type u}
     [𝒞 : Category.{v} C] {X Y Z : C} (f : X ⟶ Y) (g : X ⟶ Z) [HasColimit (pair Y Z)]
     [HasColimit (parallelPair (f ≫ coprod.inl) (g ≫ coprod.inr))] : HasColimit (span f g) :=
   let ι₁ : Y ⟶ Y ⨿ Z := coprod.inl
@@ -90,7 +90,7 @@ attribute [local instance] hasColimit_span_of_hasColimit_pair_of_hasColimit_para
 /-- If a category has all binary coproducts and all coequalizers, then it also has all pushouts.
     As usual, this is not an instance, since there may be a more direct way to construct
     pushouts. -/
-theorem hasPushouts_of_hasBinaryCoproducts_of_hasCoequalizers (C : Type u) [Category.{v} C]
+lemma hasPushouts_of_hasBinaryCoproducts_of_hasCoequalizers (C : Type u) [Category.{v} C]
     [HasBinaryCoproducts C] [HasCoequalizers C] : HasPushouts C :=
   hasPushouts_of_hasColimit_span C
 #align category_theory.limits.has_pushouts_of_has_binary_coproducts_of_has_coequalizers CategoryTheory.Limits.hasPushouts_of_hasBinaryCoproducts_of_hasCoequalizers

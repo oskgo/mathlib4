@@ -63,7 +63,7 @@ def of (α : Type*) [BooleanAlgebra α] [Fintype α] : FinBoolAlgCat :=
 #align FinBoolAlg.of FinBoolAlgCat.of
 
 @[simp]
-theorem coe_of (α : Type*) [BooleanAlgebra α] [Fintype α] : ↥(of α) = α :=
+lemma coe_of (α : Type*) [BooleanAlgebra α] [Fintype α] : ↥(of α) = α :=
   rfl
 #align FinBoolAlg.coe_of FinBoolAlgCat.coe_of
 
@@ -155,7 +155,7 @@ def dualEquiv : FinBoolAlgCat ≌ FinBoolAlgCat where
 
 end FinBoolAlgCat
 
-theorem finBoolAlgCat_dual_comp_forget_to_finBddDistLatCat :
+lemma finBoolAlgCat_dual_comp_forget_to_finBddDistLatCat :
     FinBoolAlgCat.dual ⋙ forget₂ FinBoolAlgCat FinBddDistLatCat =
       forget₂ FinBoolAlgCat FinBddDistLatCat ⋙ FinBddDistLatCat.dual :=
   rfl

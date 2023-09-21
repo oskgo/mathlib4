@@ -79,7 +79,7 @@ abbrev mk : M → M ⧸ N :=
   Submodule.Quotient.mk
 #align lie_submodule.quotient.mk LieSubmodule.Quotient.mk
 
-theorem is_quotient_mk (m : M) : Quotient.mk'' m = (mk m : M ⧸ N) :=
+lemma is_quotient_mk (m : M) : Quotient.mk'' m = (mk m : M ⧸ N) :=
   rfl
 #align lie_submodule.quotient.is_quotient_mk LieSubmodule.Quotient.is_quotient_mk
 
@@ -131,7 +131,7 @@ instance lieQuotientHasBracket : Bracket (L ⧸ I) (L ⧸ I) :=
 #align lie_submodule.quotient.lie_quotient_has_bracket LieSubmodule.Quotient.lieQuotientHasBracket
 
 @[simp]
-theorem mk_bracket (x y : L) : mk ⁅x, y⁆ = ⁅(mk x : L ⧸ I), (mk y : L ⧸ I)⁆ :=
+lemma mk_bracket (x y : L) : mk ⁅x, y⁆ = ⁅(mk x : L ⧸ I), (mk y : L ⧸ I)⁆ :=
   rfl
 #align lie_submodule.quotient.mk_bracket LieSubmodule.Quotient.mk_bracket
 
@@ -186,21 +186,21 @@ def mk' : M →ₗ⁅R,L⁆ M ⧸ N :=
 #align lie_submodule.quotient.mk' LieSubmodule.Quotient.mk'
 
 -- Porting note: LHS simplifies @[simp]
-theorem mk_eq_zero {m : M} : mk' N m = 0 ↔ m ∈ N :=
+lemma mk_eq_zero {m : M} : mk' N m = 0 ↔ m ∈ N :=
   Submodule.Quotient.mk_eq_zero N.toSubmodule
 #align lie_submodule.quotient.mk_eq_zero LieSubmodule.Quotient.mk_eq_zero
 
 -- Porting note: added to replace `mk_eq_zero` as simp lemma.
 @[simp]
-theorem mk_eq_zero' {m : M} : mk (N := N) m = 0 ↔ m ∈ N :=
+lemma mk_eq_zero' {m : M} : mk (N := N) m = 0 ↔ m ∈ N :=
   Submodule.Quotient.mk_eq_zero N.toSubmodule
 
 @[simp]
-theorem mk'_ker : (mk' N).ker = N := by ext; simp
+lemma mk'_ker : (mk' N).ker = N := by ext; simp
 #align lie_submodule.quotient.mk'_ker LieSubmodule.Quotient.mk'_ker
 
 @[simp]
-theorem map_mk'_eq_bot_le : map (mk' N) N' = ⊥ ↔ N' ≤ N := by
+lemma map_mk'_eq_bot_le : map (mk' N) N' = ⊥ ↔ N' ≤ N := by
   rw [← LieModuleHom.le_ker_iff_map, mk'_ker]
 #align lie_submodule.quotient.map_mk'_eq_bot_le LieSubmodule.Quotient.map_mk'_eq_bot_le
 
@@ -209,7 +209,7 @@ theorem map_mk'_eq_bot_le : map (mk' N) N' = ⊥ ↔ N' ≤ N := by
 
 See note [partially-applied ext lemmas]. -/
 @[ext]
-theorem lieModuleHom_ext ⦃f g : M ⧸ N →ₗ⁅R,L⁆ M⦄ (h : f.comp (mk' N) = g.comp (mk' N)) : f = g :=
+lemma lieModuleHom_ext ⦃f g : M ⧸ N →ₗ⁅R,L⁆ M⦄ (h : f.comp (mk' N) = g.comp (mk' N)) : f = g :=
   LieModuleHom.ext fun x => Quotient.inductionOn' x <| LieModuleHom.congr_fun h
 #align lie_submodule.quotient.lie_module_hom_ext LieSubmodule.Quotient.lieModuleHom_ext
 

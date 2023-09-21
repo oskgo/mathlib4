@@ -93,7 +93,7 @@ namespace FiniteIntegralAdeles
 
 noncomputable instance : Coe (R_hat R K) (K_hat R K) where coe x v := x v
 
-theorem coe_apply (x : R_hat R K) (v : HeightOneSpectrum R) : (x : K_hat R K) v = ↑(x v) :=
+lemma coe_apply (x : R_hat R K) (v : HeightOneSpectrum R) : (x : K_hat R K) v = ↑(x v) :=
   rfl
 #align dedekind_domain.finite_integral_adeles.coe_apply DedekindDomain.FiniteIntegralAdeles.coe_apply
 
@@ -162,7 +162,7 @@ def Coe.algHom : AlgHom R (R_hat R K) (K_hat R K) :=
     commutes' := fun _ => rfl }
 #align dedekind_domain.finite_integral_adeles.coe.alg_hom DedekindDomain.FiniteIntegralAdeles.Coe.algHom
 
-theorem Coe.algHom_apply (x : R_hat R K) (v : HeightOneSpectrum R) : (Coe.algHom R K) x v = x v :=
+lemma Coe.algHom_apply (x : R_hat R K) (v : HeightOneSpectrum R) : (Coe.algHom R K) x v = x v :=
   rfl
 #align dedekind_domain.finite_integral_adeles.coe.alg_hom_apply DedekindDomain.FiniteIntegralAdeles.Coe.algHom_apply
 
@@ -187,7 +187,7 @@ def IsFiniteAdele (x : K_hat R K) :=
 namespace IsFiniteAdele
 
 /-- The sum of two finite adèles is a finite adèle. -/
-theorem add {x y : K_hat R K} (hx : x.IsFiniteAdele) (hy : y.IsFiniteAdele) :
+lemma add {x y : K_hat R K} (hx : x.IsFiniteAdele) (hy : y.IsFiniteAdele) :
     (x + y).IsFiniteAdele := by
   rw [IsFiniteAdele, Filter.eventually_cofinite] at hx hy ⊢
   have h_subset :
@@ -205,7 +205,7 @@ theorem add {x y : K_hat R K} (hx : x.IsFiniteAdele) (hy : y.IsFiniteAdele) :
 #align dedekind_domain.prod_adic_completions.is_finite_adele.add DedekindDomain.ProdAdicCompletions.IsFiniteAdele.add
 
 /-- The tuple `(0)_v` is a finite adèle. -/
-theorem zero : (0 : K_hat R K).IsFiniteAdele := by
+lemma zero : (0 : K_hat R K).IsFiniteAdele := by
   rw [IsFiniteAdele, Filter.eventually_cofinite]
   have h_empty :
     {v : HeightOneSpectrum R | ¬(0 : v.adicCompletion K) ∈ v.adicCompletionIntegers K} = ∅ := by
@@ -219,7 +219,7 @@ theorem zero : (0 : K_hat R K).IsFiniteAdele := by
 #align dedekind_domain.prod_adic_completions.is_finite_adele.zero DedekindDomain.ProdAdicCompletions.IsFiniteAdele.zero
 
 /-- The negative of a finite adèle is a finite adèle. -/
-theorem neg {x : K_hat R K} (hx : x.IsFiniteAdele) : (-x).IsFiniteAdele := by
+lemma neg {x : K_hat R K} (hx : x.IsFiniteAdele) : (-x).IsFiniteAdele := by
   rw [IsFiniteAdele] at hx ⊢
   have h :
     ∀ v : HeightOneSpectrum R,
@@ -232,7 +232,7 @@ theorem neg {x : K_hat R K} (hx : x.IsFiniteAdele) : (-x).IsFiniteAdele := by
 #align dedekind_domain.prod_adic_completions.is_finite_adele.neg DedekindDomain.ProdAdicCompletions.IsFiniteAdele.neg
 
 /-- The product of two finite adèles is a finite adèle. -/
-theorem mul {x y : K_hat R K} (hx : x.IsFiniteAdele) (hy : y.IsFiniteAdele) :
+lemma mul {x y : K_hat R K} (hx : x.IsFiniteAdele) (hy : y.IsFiniteAdele) :
     (x * y).IsFiniteAdele := by
   rw [IsFiniteAdele, Filter.eventually_cofinite] at hx hy ⊢
   have h_subset :
@@ -254,7 +254,7 @@ theorem mul {x y : K_hat R K} (hx : x.IsFiniteAdele) (hy : y.IsFiniteAdele) :
 #align dedekind_domain.prod_adic_completions.is_finite_adele.mul DedekindDomain.ProdAdicCompletions.IsFiniteAdele.mul
 
 /-- The tuple `(1)_v` is a finite adèle. -/
-theorem one : (1 : K_hat R K).IsFiniteAdele := by
+lemma one : (1 : K_hat R K).IsFiniteAdele := by
   rw [IsFiniteAdele, Filter.eventually_cofinite]
   have h_empty :
     {v : HeightOneSpectrum R | ¬(1 : v.adicCompletion K) ∈ v.adicCompletionIntegers K} = ∅ := by
@@ -285,7 +285,7 @@ noncomputable def finiteAdeleRing : Subring (K_hat R K) where
 variable {R K}
 
 @[simp]
-theorem mem_finiteAdeleRing_iff (x : K_hat R K) : x ∈ finiteAdeleRing R K ↔ x.IsFiniteAdele :=
+lemma mem_finiteAdeleRing_iff (x : K_hat R K) : x ∈ finiteAdeleRing R K ↔ x.IsFiniteAdele :=
   Iff.rfl
 #align dedekind_domain.mem_finite_adele_ring_iff DedekindDomain.mem_finiteAdeleRing_iff
 

@@ -45,31 +45,31 @@ instance : Countable ℕ :=
 
 export Countable (exists_injective_nat)
 
-protected theorem Function.Injective.countable [Countable β] {f : α → β} (hf : Injective f) :
+protected lemma Function.Injective.countable [Countable β] {f : α → β} (hf : Injective f) :
   Countable α :=
   let ⟨g, hg⟩ := exists_injective_nat β
   ⟨⟨g ∘ f, hg.comp hf⟩⟩
 #align function.injective.countable Function.Injective.countable
 
-protected theorem Function.Surjective.countable [Countable α] {f : α → β} (hf : Surjective f) :
+protected lemma Function.Surjective.countable [Countable α] {f : α → β} (hf : Surjective f) :
   Countable β :=
   (injective_surjInv hf).countable
 #align function.surjective.countable Function.Surjective.countable
 
-theorem exists_surjective_nat (α : Sort u) [Nonempty α] [Countable α] : ∃ f : ℕ → α, Surjective f :=
+lemma exists_surjective_nat (α : Sort u) [Nonempty α] [Countable α] : ∃ f : ℕ → α, Surjective f :=
   let ⟨f, hf⟩ := exists_injective_nat α
   ⟨invFun f, invFun_surjective hf⟩
 #align exists_surjective_nat exists_surjective_nat
 
-theorem countable_iff_exists_surjective [Nonempty α] : Countable α ↔ ∃ f : ℕ → α, Surjective f :=
+lemma countable_iff_exists_surjective [Nonempty α] : Countable α ↔ ∃ f : ℕ → α, Surjective f :=
   ⟨@exists_surjective_nat _ _, fun ⟨_, hf⟩ ↦ hf.countable⟩
 #align countable_iff_exists_surjective countable_iff_exists_surjective
 
-theorem Countable.of_equiv (α : Sort*) [Countable α] (e : α ≃ β) : Countable β :=
+lemma Countable.of_equiv (α : Sort*) [Countable α] (e : α ≃ β) : Countable β :=
   e.symm.injective.countable
 #align countable.of_equiv Countable.of_equiv
 
-theorem Equiv.countable_iff (e : α ≃ β) : Countable α ↔ Countable β :=
+lemma Equiv.countable_iff (e : α ≃ β) : Countable α ↔ Countable β :=
   ⟨fun h => @Countable.of_equiv _ _ h e, fun h => @Countable.of_equiv _ _ h e.symm⟩
 #align equiv.countable_iff Equiv.countable_iff
 

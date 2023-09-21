@@ -53,21 +53,21 @@ variable [Mul M₀] [Zero M₀] [Mul M₀'] [Zero M₀']
   (f : M₀ → M₀') (hf : Injective f) (zero : f 0 = 0) (mul : ∀ x y, f (x * y) = f x * f y)
 
 /-- Pull back a `NoZeroDivisors` instance along an injective function. -/
-protected theorem Function.Injective.noZeroDivisors [NoZeroDivisors M₀'] : NoZeroDivisors M₀ :=
+protected lemma Function.Injective.noZeroDivisors [NoZeroDivisors M₀'] : NoZeroDivisors M₀ :=
   { eq_zero_or_eq_zero_of_mul_eq_zero := fun H =>
       have : f _ * f _ = 0 := by rw [← mul, H, zero]
       (eq_zero_or_eq_zero_of_mul_eq_zero this).imp
         (fun H => hf <| by rwa [zero]) fun H => hf <| by rwa [zero] }
 #align function.injective.no_zero_divisors Function.Injective.noZeroDivisors
 
-protected theorem Function.Injective.isLeftCancelMulZero
+protected lemma Function.Injective.isLeftCancelMulZero
     [IsLeftCancelMulZero M₀'] : IsLeftCancelMulZero M₀ :=
   { mul_left_cancel_of_ne_zero := fun Hne He => by
       have := congr_arg f He
       rw [mul, mul] at this
       exact hf (mul_left_cancel₀ (fun Hfa => Hne <| hf <| by rw [Hfa, zero]) this) }
 
-protected theorem Function.Injective.isRightCancelMulZero
+protected lemma Function.Injective.isRightCancelMulZero
     [IsRightCancelMulZero M₀'] : IsRightCancelMulZero M₀ :=
   { mul_right_cancel_of_ne_zero := fun Hne He => by
       have := congr_arg f He

@@ -58,13 +58,13 @@ def bernstein (n ν : ℕ) : C(I, ℝ) :=
 #align bernstein bernstein
 
 @[simp]
-theorem bernstein_apply (n ν : ℕ) (x : I) :
+lemma bernstein_apply (n ν : ℕ) (x : I) :
     bernstein n ν x = (n.choose ν : ℝ) * (x : ℝ) ^ ν * (1 - (x : ℝ)) ^ (n - ν) := by
   dsimp [bernstein, Polynomial.toContinuousMapOn, Polynomial.toContinuousMap, bernsteinPolynomial]
   simp
 #align bernstein_apply bernstein_apply
 
-theorem bernstein_nonneg {n ν : ℕ} {x : I} : 0 ≤ bernstein n ν x := by
+lemma bernstein_nonneg {n ν : ℕ} {x : I} : 0 ≤ bernstein n ν x := by
   simp only [bernstein_apply]
   have h₁ : (0:ℝ) ≤ x := by unit_interval
   have h₂ : (0:ℝ) ≤ 1 - x := by unit_interval
@@ -105,14 +105,14 @@ def z {n : ℕ} (k : Fin (n + 1)) : I :=
 
 local postfix:90 "/ₙ" => z
 
-theorem probability (n : ℕ) (x : I) : (∑ k : Fin (n + 1), bernstein n k x) = 1 := by
+lemma probability (n : ℕ) (x : I) : (∑ k : Fin (n + 1), bernstein n k x) = 1 := by
   have := bernsteinPolynomial.sum ℝ n
   apply_fun fun p => Polynomial.aeval (x : ℝ) p at this
   simp [AlgHom.map_sum, Finset.sum_range] at this
   exact this
 #align bernstein.probability bernstein.probability
 
-theorem variance {n : ℕ} (h : 0 < (n : ℝ)) (x : I) :
+lemma variance {n : ℕ} (h : 0 < (n : ℝ)) (x : I) :
     (∑ k : Fin (n + 1), (x - k/ₙ : ℝ) ^ 2 * bernstein n k x) = (x : ℝ) * (1 - x) / n := by
   have h' : (n : ℝ) ≠ 0 := ne_of_gt h
   apply_fun fun x : ℝ => x * n using GroupWithZero.mul_right_injective h'
@@ -163,7 +163,7 @@ We show that if `k ∉ S`, then `1 ≤ δ^-2 * (x - k/n)^2`.
 namespace bernsteinApproximation
 
 @[simp]
-theorem apply (n : ℕ) (f : C(I, ℝ)) (x : I) :
+lemma apply (n : ℕ) (f : C(I, ℝ)) (x : I) :
     bernsteinApproximation n f x = ∑ k : Fin (n + 1), f k/ₙ * bernstein n k x := by
   simp [bernsteinApproximation]
 #align bernstein_approximation.apply bernsteinApproximation.apply
@@ -174,7 +174,7 @@ def δ (f : C(I, ℝ)) (ε : ℝ) (h : 0 < ε) : ℝ :=
   f.modulus (ε / 2) (half_pos h)
 #align bernstein_approximation.δ bernsteinApproximation.δ
 
-theorem δ_pos {f : C(I, ℝ)} {ε : ℝ} {h : 0 < ε} : 0 < δ f ε h :=
+lemma δ_pos {f : C(I, ℝ)} {ε : ℝ} {h : 0 < ε} : 0 < δ f ε h :=
   f.modulus_pos
 #align bernstein_approximation.δ_pos bernsteinApproximation.δ_pos
 
@@ -186,7 +186,7 @@ def S (f : C(I, ℝ)) (ε : ℝ) (h : 0 < ε) (n : ℕ) (x : I) : Finset (Fin (n
 
 /-- If `k ∈ S`, then `f(k/n)` is close to `f x`.
 -/
-theorem lt_of_mem_S {f : C(I, ℝ)} {ε : ℝ} {h : 0 < ε} {n : ℕ} {x : I} {k : Fin (n + 1)}
+lemma lt_of_mem_S {f : C(I, ℝ)} {ε : ℝ} {h : 0 < ε} {n : ℕ} {x : I} {k : Fin (n + 1)}
     (m : k ∈ S f ε h n x) : |f k/ₙ - f x| < ε / 2 := by
   apply f.dist_lt_of_dist_lt_modulus (ε / 2) (half_pos h)
   -- Porting note: `simp` fails to apply `Set.mem_toFinset` on its own
@@ -196,7 +196,7 @@ theorem lt_of_mem_S {f : C(I, ℝ)} {ε : ℝ} {h : 0 < ε} {n : ℕ} {x : I} {k
 /-- If `k ∉ S`, then as `δ ≤ |x - k/n|`, we have the inequality `1 ≤ δ^-2 * (x - k/n)^2`.
 This particular formulation will be helpful later.
 -/
-theorem le_of_mem_S_compl {f : C(I, ℝ)} {ε : ℝ} {h : 0 < ε} {n : ℕ} {x : I} {k : Fin (n + 1)}
+lemma le_of_mem_S_compl {f : C(I, ℝ)} {ε : ℝ} {h : 0 < ε} {n : ℕ} {x : I} {k : Fin (n + 1)}
     (m : k ∈ (S f ε h n x)ᶜ) : (1 : ℝ) ≤ δ f ε h ^ (-2 : ℤ) * ((x : ℝ) - k/ₙ) ^ 2 := by
   -- Porting note: added parentheses to help `simp`
   simp only [Finset.mem_compl, not_lt, (Set.mem_toFinset), Set.mem_setOf_eq, S] at m
@@ -224,7 +224,7 @@ for a continuous function `f : C([0,1], ℝ)` converge uniformly to `f` as `n` t
 This is the proof given in [Richard Beals' *Analysis, an introduction*][beals-analysis], §7D,
 and reproduced on wikipedia.
 -/
-theorem bernsteinApproximation_uniform (f : C(I, ℝ)) :
+lemma bernsteinApproximation_uniform (f : C(I, ℝ)) :
     Tendsto (fun n : ℕ => bernsteinApproximation n f) atTop (𝓝 f) := by
   simp only [Metric.nhds_basis_ball.tendsto_right_iff, Metric.mem_ball, dist_eq_norm]
   intro ε h

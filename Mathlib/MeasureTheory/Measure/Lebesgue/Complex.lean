@@ -36,7 +36,7 @@ def measurableEquivRealProd : ℂ ≃ᵐ ℝ × ℝ :=
   equivRealProdClm.toHomeomorph.toMeasurableEquiv
 #align complex.measurable_equiv_real_prod Complex.measurableEquivRealProd
 
-theorem volume_preserving_equiv_pi : MeasurePreserving measurableEquivPi := by
+lemma volume_preserving_equiv_pi : MeasurePreserving measurableEquivPi := by
   convert (measurableEquivPi.symm.measurable.measurePreserving volume).symm
   rw [← addHaarMeasure_eq_volume_pi, ← Basis.parallelepiped_basisFun, ← Basis.addHaar,
     measurableEquivPi, Homeomorph.toMeasurableEquiv_symm_coe,
@@ -45,7 +45,7 @@ theorem volume_preserving_equiv_pi : MeasurePreserving measurableEquivPi := by
   exact (Basis.addHaar_eq_iff _ _).mpr Complex.orthonormalBasisOneI.volume_parallelepiped
 #align complex.volume_preserving_equiv_pi Complex.volume_preserving_equiv_pi
 
-theorem volume_preserving_equiv_real_prod : MeasurePreserving measurableEquivRealProd :=
+lemma volume_preserving_equiv_real_prod : MeasurePreserving measurableEquivRealProd :=
   (volume_preserving_finTwoArrow ℝ).comp volume_preserving_equiv_pi
 #align complex.volume_preserving_equiv_real_prod Complex.volume_preserving_equiv_real_prod
 

@@ -97,12 +97,12 @@ instance : CoeFun (RingSeminorm R) fun _ => R → ℝ :=
   FunLike.hasCoeToFun
 
 @[simp]
-theorem toFun_eq_coe (p : RingSeminorm R) : (p.toAddGroupSeminorm : R → ℝ) = p :=
+lemma toFun_eq_coe (p : RingSeminorm R) : (p.toAddGroupSeminorm : R → ℝ) = p :=
   rfl
 #align ring_seminorm.to_fun_eq_coe RingSeminorm.toFun_eq_coe
 
 @[ext]
-theorem ext {p q : RingSeminorm R} : (∀ x, p x = q x) → p = q :=
+lemma ext {p q : RingSeminorm R} : (∀ x, p x = q x) → p = q :=
   FunLike.ext p q
 #align ring_seminorm.ext RingSeminorm.ext
 
@@ -110,11 +110,11 @@ instance : Zero (RingSeminorm R) :=
   ⟨{ AddGroupSeminorm.instZeroAddGroupSeminorm.zero with mul_le' :=
     fun _ _ => (zero_mul _).ge }⟩
 
-theorem eq_zero_iff {p : RingSeminorm R} : p = 0 ↔ ∀ x, p x = 0 :=
+lemma eq_zero_iff {p : RingSeminorm R} : p = 0 ↔ ∀ x, p x = 0 :=
   FunLike.ext_iff
 #align ring_seminorm.eq_zero_iff RingSeminorm.eq_zero_iff
 
-theorem ne_zero_iff {p : RingSeminorm R} : p ≠ 0 ↔ ∃ x, p x ≠ 0 := by simp [eq_zero_iff]
+lemma ne_zero_iff {p : RingSeminorm R} : p ≠ 0 ↔ ∃ x, p x ≠ 0 := by simp [eq_zero_iff]
 #align ring_seminorm.ne_zero_iff RingSeminorm.ne_zero_iff
 
 instance : Inhabited (RingSeminorm R) :=
@@ -135,7 +135,7 @@ instance [DecidableEq R] : One (RingSeminorm R) :=
             le_refl] }⟩
 
 @[simp]
-theorem apply_one [DecidableEq R] (x : R) : (1 : RingSeminorm R) x = if x = 0 then 0 else 1 :=
+lemma apply_one [DecidableEq R] (x : R) : (1 : RingSeminorm R) x = if x = 0 then 0 else 1 :=
   rfl
 #align ring_seminorm.apply_one RingSeminorm.apply_one
 
@@ -145,7 +145,7 @@ section Ring
 
 variable [Ring R] (p : RingSeminorm R)
 
-theorem seminorm_one_eq_one_iff_ne_zero (hp : p 1 ≤ 1) : p 1 = 1 ↔ p ≠ 0 := by
+lemma seminorm_one_eq_one_iff_ne_zero (hp : p 1 ≤ 1) : p 1 = 1 ↔ p ≠ 0 := by
   refine'
     ⟨fun h =>
       ne_zero_iff.mpr
@@ -201,7 +201,7 @@ instance : CoeFun (RingNorm R) fun _ => R → ℝ :=
 #noalign ring_norm.to_fun_eq_coe
 
 @[ext]
-theorem ext {p q : RingNorm R} : (∀ x, p x = q x) → p = q :=
+lemma ext {p q : RingNorm R} : (∀ x, p x = q x) → p = q :=
   FunLike.ext p q
 #align ring_norm.ext RingNorm.ext
 
@@ -213,7 +213,7 @@ instance [DecidableEq R] : One (RingNorm R) :=
   ⟨{ (1 : RingSeminorm R), (1 : AddGroupNorm R) with }⟩
 
 @[simp]
-theorem apply_one [DecidableEq R] (x : R) : (1 : RingNorm R) x = if x = 0 then 0 else 1 :=
+lemma apply_one [DecidableEq R] (x : R) : (1 : RingNorm R) x = if x = 0 then 0 else 1 :=
   rfl
 #align ring_norm.apply_one RingNorm.apply_one
 
@@ -246,12 +246,12 @@ instance : CoeFun (MulRingSeminorm R) fun _ => R → ℝ :=
   FunLike.hasCoeToFun
 
 @[simp]
-theorem toFun_eq_coe (p : MulRingSeminorm R) : (p.toAddGroupSeminorm : R → ℝ) = p :=
+lemma toFun_eq_coe (p : MulRingSeminorm R) : (p.toAddGroupSeminorm : R → ℝ) = p :=
   rfl
 #align mul_ring_seminorm.to_fun_eq_coe MulRingSeminorm.toFun_eq_coe
 
 @[ext]
-theorem ext {p q : MulRingSeminorm R} : (∀ x, p x = q x) → p = q :=
+lemma ext {p q : MulRingSeminorm R} : (∀ x, p x = q x) → p = q :=
   FunLike.ext p q
 #align mul_ring_seminorm.ext MulRingSeminorm.ext
 
@@ -270,7 +270,7 @@ instance : One (MulRingSeminorm R) :=
         · simp [hx, hy] }⟩
 
 @[simp]
-theorem apply_one (x : R) : (1 : MulRingSeminorm R) x = if x = 0 then 0 else 1 :=
+lemma apply_one (x : R) : (1 : MulRingSeminorm R) x = if x = 0 then 0 else 1 :=
   rfl
 #align mul_ring_seminorm.apply_one MulRingSeminorm.apply_one
 
@@ -309,7 +309,7 @@ instance : CoeFun (MulRingNorm R) fun _ => R → ℝ :=
 #noalign mul_ring_norm.to_fun_eq_coe
 
 @[ext]
-theorem ext {p q : MulRingNorm R} : (∀ x, p x = q x) → p = q :=
+lemma ext {p q : MulRingNorm R} : (∀ x, p x = q x) → p = q :=
   FunLike.ext p q
 #align mul_ring_norm.ext MulRingNorm.ext
 
@@ -323,7 +323,7 @@ instance : One (MulRingNorm R) :=
   ⟨{ (1 : MulRingSeminorm R), (1 : AddGroupNorm R) with }⟩
 
 @[simp]
-theorem apply_one (x : R) : (1 : MulRingNorm R) x = if x = 0 then 0 else 1 :=
+lemma apply_one (x : R) : (1 : MulRingNorm R) x = if x = 0 then 0 else 1 :=
   rfl
 #align mul_ring_norm.apply_one MulRingNorm.apply_one
 

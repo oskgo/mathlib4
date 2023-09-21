@@ -64,7 +64,7 @@ instance instCommRingInt : CommRing ℤ where
 @[simp, norm_cast] lemma cast_id : Int.cast n = n := rfl
 
 @[simp, norm_cast]
-theorem cast_mul [NonAssocRing α] : ∀ m n, ((m * n : ℤ) : α) = m * n := fun m => by
+lemma cast_mul [NonAssocRing α] : ∀ m n, ((m * n : ℤ) : α) = m * n := fun m => by
   obtain ⟨m, rfl | rfl⟩ := Int.eq_nat_or_neg m
   · induction m with
     | zero => simp
@@ -89,7 +89,7 @@ lemma natAbs_cast (n : ℕ) : natAbs ↑n = n := rfl
 protected lemma coe_nat_sub {n m : ℕ} : n ≤ m → (↑(m - n) : ℤ) = ↑m - ↑n := ofNat_sub
 
 @[to_additive (attr := simp, norm_cast) coe_nat_zsmul]
-theorem _root_.zpow_coe_nat [DivInvMonoid G] (a : G) (n : ℕ) : a ^ (Nat.cast n : ℤ) = a ^ n :=
+lemma _root_.zpow_coe_nat [DivInvMonoid G] (a : G) (n : ℕ) : a ^ (Nat.cast n : ℤ) = a ^ n :=
   zpow_ofNat ..
 #align coe_nat_zsmul coe_nat_zsmul
 
@@ -123,25 +123,25 @@ instance : Distrib ℤ          := by infer_instance
 #align int.coe_nat_le Int.ofNat_le
 #align int.coe_nat_lt Int.ofNat_lt
 
-theorem coe_nat_inj' {m n : ℕ} : (↑m : ℤ) = ↑n ↔ m = n := Int.ofNat_inj
+lemma coe_nat_inj' {m n : ℕ} : (↑m : ℤ) = ↑n ↔ m = n := Int.ofNat_inj
 #align int.coe_nat_inj' Int.coe_nat_inj'
 
-theorem coe_nat_strictMono : StrictMono (· : ℕ → ℤ) := fun _ _ ↦ Int.ofNat_lt.2
+lemma coe_nat_strictMono : StrictMono (· : ℕ → ℤ) := fun _ _ ↦ Int.ofNat_lt.2
 #align int.coe_nat_strict_mono Int.coe_nat_strictMono
 
-theorem coe_nat_nonneg (n : ℕ) : 0 ≤ (n : ℤ) := ofNat_le.2 (Nat.zero_le _)
+lemma coe_nat_nonneg (n : ℕ) : 0 ≤ (n : ℤ) := ofNat_le.2 (Nat.zero_le _)
 #align int.coe_nat_nonneg Int.coe_nat_nonneg
 
 #align int.neg_of_nat_ne_zero Int.negSucc_ne_zero
 #align int.zero_ne_neg_of_nat Int.zero_ne_negSucc
 
 @[simp]
-theorem sign_coe_add_one (n : ℕ) : Int.sign (n + 1) = 1 :=
+lemma sign_coe_add_one (n : ℕ) : Int.sign (n + 1) = 1 :=
   rfl
 #align int.sign_coe_add_one Int.sign_coe_add_one
 
 @[simp]
-theorem sign_negSucc (n : ℕ) : Int.sign -[n+1] = -1 :=
+lemma sign_negSucc (n : ℕ) : Int.sign -[n+1] = -1 :=
   rfl
 #align int.sign_neg_succ_of_nat Int.sign_negSucc
 
@@ -155,42 +155,42 @@ def succ (a : ℤ) := a + 1
 def pred (a : ℤ) := a - 1
 #align int.pred Int.pred
 
-theorem nat_succ_eq_int_succ (n : ℕ) : (Nat.succ n : ℤ) = Int.succ n := rfl
+lemma nat_succ_eq_int_succ (n : ℕ) : (Nat.succ n : ℤ) = Int.succ n := rfl
 #align int.nat_succ_eq_int_succ Int.nat_succ_eq_int_succ
 
-theorem pred_succ (a : ℤ) : pred (succ a) = a := add_sub_cancel _ _
+lemma pred_succ (a : ℤ) : pred (succ a) = a := add_sub_cancel _ _
 #align int.pred_succ Int.pred_succ
 
-theorem succ_pred (a : ℤ) : succ (pred a) = a := sub_add_cancel _ _
+lemma succ_pred (a : ℤ) : succ (pred a) = a := sub_add_cancel _ _
 #align int.succ_pred Int.succ_pred
 
-theorem neg_succ (a : ℤ) : -succ a = pred (-a) := neg_add _ _
+lemma neg_succ (a : ℤ) : -succ a = pred (-a) := neg_add _ _
 #align int.neg_succ Int.neg_succ
 
-theorem succ_neg_succ (a : ℤ) : succ (-succ a) = -a := by rw [neg_succ, succ_pred]
+lemma succ_neg_succ (a : ℤ) : succ (-succ a) = -a := by rw [neg_succ, succ_pred]
 #align int.succ_neg_succ Int.succ_neg_succ
 
-theorem neg_pred (a : ℤ) : -pred a = succ (-a) := by
+lemma neg_pred (a : ℤ) : -pred a = succ (-a) := by
   rw [neg_eq_iff_eq_neg.mp (neg_succ (-a)), neg_neg]
 #align int.neg_pred Int.neg_pred
 
-theorem pred_neg_pred (a : ℤ) : pred (-pred a) = -a := by rw [neg_pred, pred_succ]
+lemma pred_neg_pred (a : ℤ) : pred (-pred a) = -a := by rw [neg_pred, pred_succ]
 #align int.pred_neg_pred Int.pred_neg_pred
 
-theorem pred_nat_succ (n : ℕ) : pred (Nat.succ n) = n := pred_succ n
+lemma pred_nat_succ (n : ℕ) : pred (Nat.succ n) = n := pred_succ n
 #align int.pred_nat_succ Int.pred_nat_succ
 
-theorem neg_nat_succ (n : ℕ) : -(Nat.succ n : ℤ) = pred (-n) := neg_succ n
+lemma neg_nat_succ (n : ℕ) : -(Nat.succ n : ℤ) = pred (-n) := neg_succ n
 #align int.neg_nat_succ Int.neg_nat_succ
 
-theorem succ_neg_nat_succ (n : ℕ) : succ (-Nat.succ n) = -n := succ_neg_succ n
+lemma succ_neg_nat_succ (n : ℕ) : succ (-Nat.succ n) = -n := succ_neg_succ n
 #align int.succ_neg_nat_succ Int.succ_neg_nat_succ
 
-@[norm_cast] theorem coe_pred_of_pos {n : ℕ} (h : 0 < n) : ((n - 1 : ℕ) : ℤ) = (n : ℤ) - 1 := by
+@[norm_cast] lemma coe_pred_of_pos {n : ℕ} (h : 0 < n) : ((n - 1 : ℕ) : ℤ) = (n : ℤ) - 1 := by
   cases n; cases h; simp
 #align int.coe_pred_of_pos Int.coe_pred_of_pos
 
-@[elab_as_elim] protected theorem induction_on {p : ℤ → Prop} (i : ℤ)
+@[elab_as_elim] protected lemma induction_on {p : ℤ → Prop} (i : ℤ)
     (hz : p 0) (hp : ∀ i : ℕ, p i → p (i + 1)) (hn : ∀ i : ℕ, p (-i) → p (-i - 1)) : p i := by
   induction i with
   | ofNat i =>
@@ -206,7 +206,7 @@ theorem succ_neg_nat_succ (n : ℕ) : succ (-Nat.succ n) = -n := succ_neg_succ n
 
 /-! ### nat abs -/
 
-theorem natAbs_surjective : natAbs.Surjective := fun n => ⟨n, natAbs_ofNat n⟩
+lemma natAbs_surjective : natAbs.Surjective := fun n => ⟨n, natAbs_ofNat n⟩
 #align int.nat_abs_surjective Int.natAbs_surjective
 
 #align int.nat_abs_add_le Int.natAbs_add_le
@@ -218,7 +218,7 @@ theorem natAbs_surjective : natAbs.Surjective := fun n => ⟨n, natAbs_ofNat n�
 #align int.neg_succ_of_nat_eq' Int.negSucc_eq'
 
 @[deprecated natAbs_ne_zero]
-theorem natAbs_ne_zero_of_ne_zero : ∀ {a : ℤ}, a ≠ 0 → natAbs a ≠ 0 := natAbs_ne_zero.2
+lemma natAbs_ne_zero_of_ne_zero : ∀ {a : ℤ}, a ≠ 0 → natAbs a ≠ 0 := natAbs_ne_zero.2
 #align int.nat_abs_ne_zero_of_ne_zero Int.natAbs_ne_zero_of_ne_zero
 
 #align int.nat_abs_eq_zero Int.natAbs_eq_zero
@@ -237,16 +237,16 @@ theorem natAbs_ne_zero_of_ne_zero : ∀ {a : ℤ}, a ≠ 0 → natAbs a ≠ 0 :=
 
 #align int.of_nat_div Int.ofNat_div
 
-@[simp, norm_cast] theorem coe_nat_div (m n : ℕ) : ((m / n : ℕ) : ℤ) = m / n := rfl
+@[simp, norm_cast] lemma coe_nat_div (m n : ℕ) : ((m / n : ℕ) : ℤ) = m / n := rfl
 #align int.coe_nat_div Int.coe_nat_div
 
-theorem coe_nat_ediv (m n : ℕ) : ((m / n : ℕ) : ℤ) = ediv m n := rfl
+lemma coe_nat_ediv (m n : ℕ) : ((m / n : ℕ) : ℤ) = ediv m n := rfl
 
 #align int.neg_succ_of_nat_div Int.negSucc_ediv
 
 #align int.div_neg Int.div_negₓ -- int div alignment
 
-theorem ediv_of_neg_of_pos {a b : ℤ} (Ha : a < 0) (Hb : 0 < b) : ediv a b = -((-a - 1) / b + 1) :=
+lemma ediv_of_neg_of_pos {a b : ℤ} (Ha : a < 0) (Hb : 0 < b) : ediv a b = -((-a - 1) / b + 1) :=
   match a, b, eq_negSucc_of_lt_zero Ha, eq_succ_of_zero_lt Hb with
   | _, _, ⟨m, rfl⟩, ⟨n, rfl⟩ => by
     rw [show (- -[m+1] : ℤ) = (m + 1 : ℤ) by rfl]; rw [add_sub_cancel]; rfl
@@ -261,7 +261,7 @@ theorem ediv_of_neg_of_pos {a b : ℤ} (Ha : a < 0) (Hb : 0 < b) : ediv a b = -(
 
 #align int.of_nat_mod Int.ofNat_mod_ofNat
 
-@[simp, norm_cast] theorem coe_nat_mod (m n : ℕ) : (↑(m % n) : ℤ) = ↑m % ↑n := rfl
+@[simp, norm_cast] lemma coe_nat_mod (m n : ℕ) : (↑(m % n) : ℤ) = ↑m % ↑n := rfl
 #align int.coe_nat_mod Int.coe_nat_mod
 
 #align int.neg_succ_of_nat_mod Int.negSucc_emod
@@ -287,7 +287,7 @@ theorem ediv_of_neg_of_pos {a b : ℤ} (Ha : a < 0) (Hb : 0 < b) : ediv a b = -(
 #align int.nat_abs_sign Int.natAbs_sign
 #align int.nat_abs_sign_of_nonzero Int.natAbs_sign_of_nonzero
 
-theorem sign_coe_nat_of_nonzero {n : ℕ} (hn : n ≠ 0) : Int.sign n = 1 := sign_ofNat_of_nonzero hn
+lemma sign_coe_nat_of_nonzero {n : ℕ} (hn : n ≠ 0) : Int.sign n = 1 := sign_ofNat_of_nonzero hn
 #align int.sign_coe_nat_of_nonzero Int.sign_coe_nat_of_nonzero
 
 #align int.div_sign Int.div_sign -- int div alignment
@@ -301,10 +301,10 @@ theorem sign_coe_nat_of_nonzero {n : ℕ} (hn : n ≠ 0) : Int.sign n = 1 := sig
 #align int.to_nat_one Int.toNat_one
 #align int.to_nat_of_nonneg Int.toNat_of_nonneg
 
-@[simp] theorem toNat_coe_nat (n : ℕ) : toNat ↑n = n := rfl
+@[simp] lemma toNat_coe_nat (n : ℕ) : toNat ↑n = n := rfl
 #align int.to_nat_coe_nat Int.toNat_coe_nat
 
-@[simp] theorem toNat_coe_nat_add_one {n : ℕ} : ((n : ℤ) + 1).toNat = n + 1 := rfl
+@[simp] lemma toNat_coe_nat_add_one {n : ℕ} : ((n : ℤ) + 1).toNat = n + 1 := rfl
 #align int.to_nat_coe_nat_add_one Int.toNat_coe_nat_add_one
 
 #align int.le_to_nat Int.self_le_toNat
