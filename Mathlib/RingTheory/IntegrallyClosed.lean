@@ -29,15 +29,27 @@ open scoped nonZeroDivisors Polynomial
 
 open Polynomial
 
+/-- `R` is integrally closed in an extension `A` if all integral elements of `A` are also elements
+of `R`.
+
+See `IsIntegrallyClosed` if you want to talk about integral .
+-/
+abbrev IsIntegrallyClosedIn (R A : Type*) [CommRing R] [CommRing A] [Algebra R A] : Prop :=
+  IsIntegralClosure R R A
+
 /-- `R` is integrally closed if all integral elements of `Frac(R)` are also elements of `R`.
 
 This definition uses `FractionRing R` to denote `Frac(R)`. See `isIntegrallyClosed_iff`
 if you want to choose another field of fractions for `R`.
 -/
+abbrev IsIntegrallyClosed (R : Type*) [CommRing R] : Prop :=
+  IsIntegrallyClosedIn R (FractionRing R)
+/-
 class IsIntegrallyClosed (R : Type*) [CommRing R] : Prop where
   /-- All integral elements of `Frac(R)` are also elements of `R`. -/
   algebraMap_eq_of_integral :
     ∀ {x : FractionRing R}, IsIntegral R x → ∃ y, algebraMap R (FractionRing R) y = x
+-/
 #align is_integrally_closed IsIntegrallyClosed
 
 section Iff
@@ -52,14 +64,17 @@ theorem isIntegrallyClosed_iff :
     IsIntegrallyClosed R ↔ ∀ {x : K}, IsIntegral R x → ∃ y, algebraMap R K y = x := by
   let e : K ≃ₐ[R] FractionRing R := IsLocalization.algEquiv R⁰ _ _
   constructor
-  · rintro ⟨cl⟩
+  · rintro ⟨-, cl⟩
     refine' fun hx => _
-    obtain ⟨y, hy⟩ := cl ((isIntegral_algEquiv e).mpr hx)
+    obtain ⟨y, hy⟩ := cl.mp ((isIntegral_algEquiv e).mpr hx)
     exact ⟨y, e.algebraMap_eq_apply.mp hy⟩
   · rintro cl
-    refine' ⟨fun hx => _⟩
-    obtain ⟨y, hy⟩ := cl ((isIntegral_algEquiv e.symm).mpr hx)
-    exact ⟨y, e.symm.algebraMap_eq_apply.mp hy⟩
+    refine' ⟨IsFractionRing.injective R (FractionRing R), _, _⟩
+    · intro hx
+      obtain ⟨y, hy⟩ := cl ((isIntegral_algEquiv e.symm).mpr hx)
+      exact ⟨y, e.symm.algebraMap_eq_apply.mp hy⟩
+    · rintro ⟨y, rfl⟩
+      exact isIntegral_algebraMap
 #align is_integrally_closed_iff isIntegrallyClosed_iff
 
 /-- `R` is integrally closed iff it is the integral closure of itself in its field of fractions. -/
