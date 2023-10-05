@@ -254,9 +254,9 @@ theorem logEmbedding_component_le {r : ℝ} {x : (𝓞 K)ˣ} (hr : 0 ≤ r) (h :
 theorem log_le_of_logEmbedding_le {r : ℝ} {x : (𝓞 K)ˣ} (hr : 0 ≤ r) (h : ‖logEmbedding K x‖ ≤ r)
     (w : InfinitePlace K) : |Real.log (w x)| ≤ (Fintype.card (InfinitePlace K)) * r := by
   have tool : ∀ x : ℝ, 0 ≤ x → x ≤ mult w * x := fun x hx => by
-      nth_rw 1 [← one_mul x]
-      refine mul_le_mul ?_ le_rfl hx ?_
-      all_goals { rw [mult]; split_ifs <;> norm_num }
+    nth_rw 1 [← one_mul x]
+    refine mul_le_mul ?_ le_rfl hx ?_
+    all_goals { rw [mult]; split_ifs <;> norm_num }
   by_cases hw : w = w₀
   · have hyp := congr_arg (‖·‖) (sum_logEmbedding_component x).symm
     replace hyp := (le_of_eq hyp).trans (norm_sum_le _ _)
@@ -567,11 +567,12 @@ theorem fun_eq_repr {x ζ : (𝓞 K)ˣ} {f : Fin (rank K) → ℤ} (hζ : ζ ∈
   suffices Additive.ofMul ↑x = ∑ i, (f i) • (basisModTorsion K i) by
     rw [← (basisModTorsion K).repr_sum_self f, ← this]
   calc
-    Additive.ofMul ↑x = ∑ i, (f i) • Additive.ofMul ↑(fundSystem K i) := by
-                      rw [h, QuotientGroup.mk_mul, (QuotientGroup.eq_one_iff _).mpr hζ, one_mul,
-                        QuotientGroup.mk_prod, ofMul_prod]; rfl
-                    _ = ∑ i, (f i) • (basisModTorsion K i) := by
-                      simp_rw [fundSystem, QuotientGroup.out_eq', ofMul_toMul]
+    Additive.ofMul ↑x
+    _ = ∑ i, (f i) • Additive.ofMul ↑(fundSystem K i) := by
+          rw [h, QuotientGroup.mk_mul, (QuotientGroup.eq_one_iff _).mpr hζ, one_mul,
+            QuotientGroup.mk_prod, ofMul_prod]; rfl
+    _ = ∑ i, (f i) • (basisModTorsion K i) := by
+          simp_rw [fundSystem, QuotientGroup.out_eq', ofMul_toMul]
 
 /-- **Dirichlet Unit Theorem**. Any unit `x` of `𝓞 K` can be written uniquely as the product of
 a root of unity and powers of the units of the fundamental system `fundSystem`. -/
