@@ -383,8 +383,8 @@ end ConditionallyCompleteLinearOrder
 
 section InfSup
 
-variable {α β γ : Type*} [ConditionallyCompleteLinearOrder α] [TopologicalSpace α]
-  [TopologicalSpace β] [TopologicalSpace γ]
+variable {α β : Type*} [ConditionallyCompleteLinearOrder α] [TopologicalSpace α]
+  [TopologicalSpace β]
 
 theorem IsCompact.sInf_mem [ClosedIicTopology α] {s : Set α} (hs : IsCompact s)
     (ne_s : s.Nonempty) : sInf s ∈ s :=
