@@ -3,7 +3,10 @@ Copyright (c) 2022 Apurva Nakade All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Apurva Nakade
 -/
-import Mathlib.Analysis.Convex.Cone.Pointed
+import Mathlib.Analysis.Convex.Cone.Dual
+import Mathlib.Analysis.InnerProductSpace.Adjoint
+
+#align_import analysis.convex.cone.proper from "leanprover-community/mathlib"@"147b294346843885f952c5171e9606616a8fd869"
 
 /-!
 # Proper cones
@@ -35,9 +38,6 @@ open ContinuousLinearMap Filter Set
 namespace ConvexCone
 
 variable {𝕜 : Type*} [OrderedSemiring 𝕜]
-
--- TODO: remove `prettyPrint := false` once #6833 is merged
-local notation3 (prettyPrint := false) "𝕜≥0" => {c : 𝕜 // 0 ≤ c}
 
 variable {E : Type*} [AddCommMonoid E] [TopologicalSpace E] [ContinuousAdd E] [SMul 𝕜 E]
   [ContinuousConstSMul 𝕜 E]
@@ -72,11 +72,11 @@ end ConvexCone
 /-- A proper cone is a convex cone `K` that is nonempty and closed. Proper cones have the nice
 property that the dual of the dual of a proper cone is itself. This makes them useful for defining
 cone programs and proving duality theorems. -/
-
--- abbrev PointedCone (𝕜 E) [OrderedSemiring 𝕜] [AddCommMonoid E] [Module 𝕜 E] :=
 structure ProperCone (𝕜 : Type*) (E : Type*) [OrderedSemiring 𝕜] [AddCommMonoid E]
-    [TopologicalSpace E] [Module 𝕜 E] extends Submodule {c : 𝕜 // 0 ≤ c} E where
+    [TopologicalSpace E] [SMul 𝕜 E] extends ConvexCone 𝕜 E where
+  nonempty' : (carrier : Set E).Nonempty
   is_closed' : IsClosed (carrier : Set E)
+#align proper_cone ProperCone
 
 namespace ProperCone
 
@@ -84,7 +84,7 @@ section SMul
 
 variable {𝕜 : Type*} [OrderedSemiring 𝕜]
 
-variable {E : Type*} [AddCommMonoid E] [TopologicalSpace E] [Module 𝕜 E]
+variable {E : Type*} [AddCommMonoid E] [TopologicalSpace E] [SMul 𝕜 E]
 
 instance : Coe (ProperCone 𝕜 E) (ConvexCone 𝕜 E) :=
   ⟨fun K => K.1⟩
