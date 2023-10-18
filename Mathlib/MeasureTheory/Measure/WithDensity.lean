@@ -41,12 +41,25 @@ theorem withDensity_apply (f : α → ℝ≥0∞) {s : Set α} (hs : MeasurableS
   Measure.ofMeasurable_apply s hs
 #align measure_theory.with_density_apply MeasureTheory.withDensity_apply
 
+@[simp]
+lemma withDensity_zero_left (f : α → ℝ≥0∞) : (0 : Measure α).withDensity f = 0 := by
+  ext s hs
+  rw [withDensity_apply _ hs]
+  simp
+
 theorem withDensity_congr_ae {f g : α → ℝ≥0∞} (h : f =ᵐ[μ] g) :
     μ.withDensity f = μ.withDensity g := by
   refine Measure.ext fun s hs => ?_
   rw [withDensity_apply _ hs, withDensity_apply _ hs]
   exact lintegral_congr_ae (ae_restrict_of_ae h)
 #align measure_theory.with_density_congr_ae MeasureTheory.withDensity_congr_ae
+
+lemma withDensity_mono {f g : α → ℝ≥0∞} (hfg : f ≤ᵐ[μ] g) :
+    μ.withDensity f ≤ μ.withDensity g := by
+  intro s hs
+  rw [withDensity_apply _ hs, withDensity_apply _ hs]
+  refine set_lintegral_mono_ae' hs ?_
+  filter_upwards [hfg] with x h_le using fun _ ↦ h_le
 
 theorem withDensity_add_left {f : α → ℝ≥0∞} (hf : Measurable f) (g : α → ℝ≥0∞) :
     μ.withDensity (f + g) = μ.withDensity f + μ.withDensity g := by
@@ -89,6 +102,12 @@ theorem withDensity_smul' (r : ℝ≥0∞) (f : α → ℝ≥0∞) (hr : r ≠ �
   simp only [Pi.smul_apply, smul_eq_mul]
 #align measure_theory.with_density_smul' MeasureTheory.withDensity_smul'
 
+theorem withDensity_smul_measure (r : ℝ≥0∞) (f : α → ℝ≥0∞) :
+    (r • μ).withDensity f = r • μ.withDensity f := by
+  ext s hs
+  rw [withDensity_apply _ hs, Measure.coe_smul, Pi.smul_apply, withDensity_apply _ hs,
+    smul_eq_mul, set_lintegral_smul_measure]
+
 theorem isFiniteMeasure_withDensity {f : α → ℝ≥0∞} (hf : ∫⁻ a, f a ∂μ ≠ ∞) :
     IsFiniteMeasure (μ.withDensity f) :=
   { measure_univ_lt_top := by
@@ -113,6 +132,11 @@ theorem withDensity_one : μ.withDensity 1 = μ := by
   ext1 s hs
   simp [withDensity_apply _ hs]
 #align measure_theory.with_density_one MeasureTheory.withDensity_one
+
+@[simp]
+theorem withDensity_const (c : ℝ≥0∞) : μ.withDensity (fun _ ↦ c) = c • μ := by
+  ext1 s hs
+  simp [withDensity_apply _ hs]
 
 theorem withDensity_tsum {f : ℕ → α → ℝ≥0∞} (h : ∀ i, Measurable (f i)) :
     μ.withDensity (∑' n, f n) = sum fun n => μ.withDensity (f n) := by
@@ -377,12 +401,56 @@ theorem set_lintegral_withDensity_eq_set_lintegral_mul_non_measurable₀ (μ : M
   rw [restrict_withDensity hs, lintegral_withDensity_eq_lintegral_mul_non_measurable₀ _ hf h'f]
 #align measure_theory.set_lintegral_with_density_eq_set_lintegral_mul_non_measurable₀ MeasureTheory.set_lintegral_withDensity_eq_set_lintegral_mul_non_measurable₀
 
-theorem withDensity_mul (μ : Measure α) {f g : α → ℝ≥0∞} (hf : Measurable f) (hg : Measurable g) :
+theorem withDensity_mul₀ {μ : Measure α} {f g : α → ℝ≥0∞}
+    (hf : AEMeasurable f μ) (hg : AEMeasurable g μ) :
     μ.withDensity (f * g) = (μ.withDensity f).withDensity g := by
   ext1 s hs
-  simp [withDensity_apply _ hs, restrict_withDensity hs,
-    lintegral_withDensity_eq_lintegral_mul _ hf hg]
+  rw [withDensity_apply _ hs, withDensity_apply _ hs, restrict_withDensity hs,
+    lintegral_withDensity_eq_lintegral_mul₀ hf.restrict hg.restrict]
+
+theorem withDensity_mul (μ : Measure α) {f g : α → ℝ≥0∞} (hf : Measurable f) (hg : Measurable g) :
+    μ.withDensity (f * g) = (μ.withDensity f).withDensity g :=
+  withDensity_mul₀ hf.aemeasurable hg.aemeasurable
 #align measure_theory.with_density_mul MeasureTheory.withDensity_mul
+
+lemma withDensity_inv_same_le {μ : Measure α} {f : α → ℝ≥0∞} (hf : AEMeasurable f μ) :
+    (μ.withDensity f).withDensity f⁻¹ ≤ μ := by
+  change (μ.withDensity f).withDensity (fun x ↦ (f x)⁻¹) ≤ μ
+  rw [← withDensity_mul₀ hf hf.inv]
+  suffices (f * fun x ↦ (f x)⁻¹) ≤ᵐ[μ] 1 by
+    refine (withDensity_mono this).trans ?_
+    rw [withDensity_one]
+  refine ae_of_all _ (fun x ↦ ?_)
+  simp only [Pi.mul_apply, Pi.one_apply]
+  by_cases hx_top : f x = ∞
+  · simp only [hx_top, ENNReal.inv_top, mul_zero, zero_le]
+  by_cases hx_zero : f x = 0
+  · simp only [hx_zero, ENNReal.inv_zero, zero_mul, zero_le]
+  rw [ENNReal.mul_inv_cancel hx_zero hx_top]
+
+lemma withDensity_inv_same₀ {μ : Measure α} {f : α → ℝ≥0∞}
+    (hf : AEMeasurable f μ) (hf_ne_zero : ∀ᵐ x ∂μ, f x ≠ 0) (hf_ne_top : ∀ᵐ x ∂μ, f x ≠ ∞) :
+    (μ.withDensity f).withDensity (fun x ↦ (f x)⁻¹) = μ := by
+  rw [← withDensity_mul₀ hf hf.inv]
+  suffices (f * fun x ↦ (f x)⁻¹) =ᵐ[μ] 1 by
+    rw [withDensity_congr_ae this, withDensity_one]
+  filter_upwards [hf_ne_zero, hf_ne_top] with x hf_ne_zero hf_ne_top
+  simp only [Pi.mul_apply]
+  rw [ENNReal.mul_inv_cancel hf_ne_zero hf_ne_top, Pi.one_apply]
+
+lemma withDensity_inv_same {μ : Measure α} {f : α → ℝ≥0∞}
+    (hf : Measurable f) (hf_ne_zero : ∀ᵐ x ∂μ, f x ≠ 0) (hf_ne_top : ∀ᵐ x ∂μ, f x ≠ ∞) :
+    (μ.withDensity f).withDensity (fun x ↦ (f x)⁻¹) = μ :=
+  withDensity_inv_same₀ hf.aemeasurable hf_ne_zero hf_ne_top
+
+/-- If `f` is almost everywhere positive and finite, then `μ ≪ μ.withDensity f`. See also
+`withDensity_absolutelyContinuous` for the reverse direction, which always holds. -/
+lemma withDensity_absolutelyContinuous' {μ : Measure α} {f : α → ℝ≥0∞}
+    (hf : AEMeasurable f μ) (hf_ne_zero : ∀ᵐ x ∂μ, f x ≠ 0) (hf_ne_top : ∀ᵐ x ∂μ, f x ≠ ∞) :
+    μ ≪ μ.withDensity f := by
+  suffices (μ.withDensity f).withDensity (fun x ↦ (f x)⁻¹) ≪ μ.withDensity f by
+    rwa [withDensity_inv_same₀ hf hf_ne_zero hf_ne_top] at this
+  exact withDensity_absolutelyContinuous _ _
 
 /-- A sigma-finite measure is absolutely continuous with respect to some finite measure. -/
 theorem exists_absolutelyContinuous_isFiniteMeasure {m : MeasurableSpace α} (μ : Measure α)
