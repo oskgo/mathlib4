@@ -1,10 +1,38 @@
 import Mathlib.Analysis.SpecialFunctions.Gamma.Basic
+import Mathlib.Analysis.SpecialFunctions.Gaussian
 import Mathlib.Analysis.SpecialFunctions.PolarCoord
 import Mathlib.MeasureTheory.Constructions.HaarToSphere
 import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
 
 
-open MeasureTheory MeasureTheory.Measure
+-- See: https://github.com/leanprover/lean4/issues/2220
+local macro_rules | `($x ^ $y) => `(HPow.hPow $x $y)
+
+open MeasureTheory MeasureTheory.Measure BigOperators
+
+theorem Measurable.finset_sum' {M α ι : Type*} [MeasurableSpace M] [AddCommMonoid M]
+    [MeasurableSpace α] [MeasurableAdd₂ M] (s : Finset ι) {f : ι → α → M}
+    (hf : ∀ i ∈ s, Measurable (f i)) :
+    Measurable (∑ i in s, f i) :=
+  Finset.sum_induction f (fun g => Measurable g) (fun _ _ => Measurable.add') measurable_zero hf
+
+theorem Measurable.finset_sum {M α ι : Type*} [MeasurableSpace M] [AddCommMonoid M]
+    [MeasurableSpace α] [MeasurableAdd₂ M] (s : Finset ι) {f : ι → α → M}
+    (hf : ∀ i ∈ s, Measurable (f i)) :
+    Measurable (fun x => ∑ i in s, f i x) := by
+  simpa only [← Finset.sum_apply] using Measurable.finset_sum' s hf
+
+theorem Measurable.finset_prod' {M α ι : Type*} [MeasurableSpace M] [CommMonoid M]
+    [MeasurableSpace α] [MeasurableMul₂ M] (s : Finset ι) {f : ι → α → M}
+    (hf : ∀ i ∈ s, Measurable (f i)) :
+    Measurable (∏ i in s, f i) :=
+  Finset.prod_induction f (fun g => Measurable g) (fun _ _ => Measurable.mul') measurable_one hf
+
+theorem Measurable.finset_prod {M α ι : Type*} [MeasurableSpace M] [CommMonoid M]
+    [MeasurableSpace α] [MeasurableMul₂ M] (s : Finset ι) {f : ι → α → M}
+    (hf : ∀ i ∈ s, Measurable (f i)) :
+    Measurable (fun x => ∏ i in s, f i x) := by
+  simpa only [← Finset.prod_apply] using Measurable.finset_prod' s hf
 
 /-- Docstring. -/
 protected noncomputable def Complex.polarCoord : LocalHomeomorph ℂ (ℝ × ℝ) :=
@@ -47,15 +75,12 @@ protected theorem Complex.integral_comp_polarCoord_symm {E : Type*} [NormedAddCo
     measurableEquivRealProd.symm.measurableEmbedding, ← integral_comp_polarCoord_symm]
   rfl
 
--- MeasureTheory.integral_fun_norm_addHaar.{u_2, u_1} {E : Type u_1} [inst✝ : NormedAddCommGroup E]
---   [inst✝¹ : NormedSpace ℝ E] [inst✝² : FiniteDimensional ℝ E] [inst✝³ : MeasurableSpace E]
---   [inst✝⁴ : BorelSpace E]
---   {F : Type u_2} [inst✝⁵ : NormedAddCommGroup F] [inst✝⁶ : NormedSpace ℝ F]
---   [inst✝⁷ : Nontrivial E] (μ : Measure E) [inst✝⁸ : Measure.IsAddHaarMeasure μ] (f : ℝ → F) :
---   ∫ (x : E), f ‖x‖ ∂μ =
---   dim E • ENNReal.toReal (↑↑μ (ball 0 1)) • ∫ (y : ℝ) in Ioi 0, y ^ (dim E - 1) • f y
+theorem MeasureTheory.MeasurePreserving.integral_comp' {α β G : Type*} [NormedAddCommGroup G]
+    [NormedSpace ℝ G] [MeasurableSpace α] [MeasurableSpace β] {μ : Measure α} {ν : Measure β}
+    {f : α ≃ᵐ β} (h : MeasurePreserving f μ ν) (g : β → G) :
+    ∫ x, g (f x) ∂μ = ∫ y, g y ∂ν := MeasurePreserving.integral_comp h f.measurableEmbedding _
 
-open Set
+open Set BigOperators Fintype
 
 variable {p : ℝ} (hp : 0 < p)
 
@@ -73,7 +98,64 @@ theorem integral_exp_neg_rpow :
         ring
     _ = _ := by rw [← Real.Gamma_eq_integral (one_div_pos.mpr hp)]
 
-variable (ι : Type*) [Fintype ι] [Nontrivial ι]
+theorem MeasureTheory.lintegral.fin_prod_eq_pow {n : ℕ} (hn : 1 ≤ n) {f : ℝ → ENNReal}
+    (hf : Measurable f) : ∫⁻ x : Fin n → ℝ, ∏ i, f (x i) = (∫⁻ x, f x) ^ n := by
+  induction n, hn using Nat.le_induction with
+  | base =>
+      rw [← (volume_preserving_funUnique (Fin 1) ℝ).lintegral_comp hf]
+      simp [Nat.zero_eq, Finset.univ_unique, Fin.default_eq_zero, Finset.prod_singleton,
+        MeasurableEquiv.funUnique_apply, pow_one]
+  | succ n _ n_ih =>
+      have h_mes : ∀ n, Measurable (fun (y : Fin n → ℝ) => ∏ i : Fin n, f (y i)) :=
+        fun _ => Measurable.finset_prod Finset.univ (fun i _ => hf.comp (measurable_pi_apply i))
+      calc
+        _ = ∫⁻ x : ℝ × (Fin n → ℝ), (f x.1) * ∏ i : Fin n, f (x.2 i) := by
+          rw [← ((volume_preserving_piFinSuccAboveEquiv _ 0).symm).lintegral_comp (h_mes _)]
+          simp_rw [MeasurableEquiv.piFinSuccAboveEquiv_symm_apply, Fin.insertNth_zero',
+            Fin.prod_univ_succ, Fin.cons_zero, Fin.cons_succ]
+        _ = (∫⁻ x, f x) * (∫⁻ x, f x) ^ n := by
+          rw [volume_eq_prod, lintegral_prod, ← lintegral_mul_const _ hf]
+          simp_rw [lintegral_const_mul _ (h_mes _), n_ih]
+          refine (hf.aemeasurable.comp_measurable measurable_fst).mul ?_
+          exact Measurable.aemeasurable ((h_mes _).comp (f := fun x : _ × _ => x.2) measurable_snd)
+        _ = (∫⁻ x, f x) ^ n.succ := by rw [← pow_succ]
+
+theorem MeasureTheory.lintegral.prod_eq_pow {ι : Type*} [Fintype ι] [Nonempty ι] {f : ℝ → ENNReal}
+    (hf : Measurable f) :
+    ∫⁻ x : ι → ℝ, ∏ i, f (x i) = (∫⁻ x, f x) ^ (card ι) := by
+  let s := MeasurableEquiv.piCongrLeft (fun _ => ℝ) (equivFin ι)
+  have : MeasurePreserving s.symm := by exact?
+  have := MeasurePreserving.lintegral_comp this (f := fun x => ∏ i, f (x i)) ?_
+  rw [← this]
+  have t1 := fun x : Fin (card ι) → ℝ => Fintype.prod_equiv (equivFin ι)
+    (fun i => f ((s.symm x) i)) (fun i => f (x i)) ?_
+  simp_rw [t1]
+  have : card ι ≠0  := by exact card_ne_zero
+  have : 1 ≤ card ι := by exact Nat.one_le_iff_ne_zero.mpr this
+  have := MeasureTheory.lintegral.fin_prod_eq_pow this hf
+  rw [this]
+  intro x
+  exact rfl
+  refine Measurable.finset_prod _ ?_
+  intro _ _
+  refine Measurable.comp hf ?_
+  exact measurable_pi_apply _
+
+
+
+
+  sorry
+
+#exit
+
+variable (ι : Type*) [Fintype ι]
+
+theorem Pi.integral_iterated_same {E : Type*} [NormedAddCommGroup E] [CommMonoid E]
+    [NormedSpace ℝ E] [MeasureSpace E] (f : E → E) :
+    ∫ x : ι → E, ∏ i : ι, f (x i) = (∫ x, f x) ^ (card ι) := by
+  sorry
+
+variable [Nontrivial ι]
 
 example : volume (Metric.ball (0 : EuclideanSpace ℝ ι) 1) = 0 := by
   have t1 := MeasureTheory.integral_fun_norm_addHaar (volume : Measure (EuclideanSpace ℝ ι))
@@ -85,7 +167,11 @@ example : volume (Metric.ball (0 : EuclideanSpace ℝ ι) 1) = 0 := by
     (MeasurableEquiv.measurableEmbedding _ )] at t1
   simp_rw [Real.rpow_two, smul_eq_mul, nsmul_eq_mul] at t1
   simp_rw [EuclideanSpace.coe_measurableEquiv_symm, WithLp.equiv_symm_pi_apply] at t1
-  
+  have := Pi.integral_iterated_same ι fun x : ℝ => Real.exp (- x ^ 2)
+  rw [this] at t1
+  have := integral_gaussian 1
+  rw? at t1
+
 
 
   sorry
