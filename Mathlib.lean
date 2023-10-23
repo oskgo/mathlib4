@@ -391,6 +391,7 @@ import Mathlib.Algebra.Order.Ring.Cone
 import Mathlib.Algebra.Order.Ring.Defs
 import Mathlib.Algebra.Order.Ring.InjSurj
 import Mathlib.Algebra.Order.Ring.Lemmas
+import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Algebra.Order.Ring.WithTop
 import Mathlib.Algebra.Order.SMul
 import Mathlib.Algebra.Order.Sub.Basic
@@ -678,6 +679,7 @@ import Mathlib.Analysis.Convex.StoneSeparation
 import Mathlib.Analysis.Convex.Strict
 import Mathlib.Analysis.Convex.StrictConvexBetween
 import Mathlib.Analysis.Convex.StrictConvexSpace
+import Mathlib.Analysis.Convex.Strong
 import Mathlib.Analysis.Convex.Topology
 import Mathlib.Analysis.Convex.Uniform
 import Mathlib.Analysis.Convolution
@@ -1333,6 +1335,7 @@ import Mathlib.Computability.TMToPartrec
 import Mathlib.Computability.TuringMachine
 import Mathlib.Condensed.Abelian
 import Mathlib.Condensed.Basic
+import Mathlib.Condensed.Equivalence
 import Mathlib.Control.Applicative
 import Mathlib.Control.Basic
 import Mathlib.Control.Bifunctor
@@ -1409,6 +1412,7 @@ import Mathlib.Data.Fin.Interval
 import Mathlib.Data.Fin.SuccPred
 import Mathlib.Data.Fin.Tuple.Basic
 import Mathlib.Data.Fin.Tuple.BubbleSortInduction
+import Mathlib.Data.Fin.Tuple.Curry
 import Mathlib.Data.Fin.Tuple.Monotone
 import Mathlib.Data.Fin.Tuple.NatAntidiagonal
 import Mathlib.Data.Fin.Tuple.Reflection
@@ -1920,6 +1924,7 @@ import Mathlib.Data.ZMod.Algebra
 import Mathlib.Data.ZMod.Basic
 import Mathlib.Data.ZMod.Coprime
 import Mathlib.Data.ZMod.Defs
+import Mathlib.Data.ZMod.IntUnitsPower
 import Mathlib.Data.ZMod.Parity
 import Mathlib.Data.ZMod.Quotient
 import Mathlib.Data.ZMod.Units
@@ -2024,6 +2029,7 @@ import Mathlib.Geometry.Manifold.MFDeriv
 import Mathlib.Geometry.Manifold.Metrizable
 import Mathlib.Geometry.Manifold.PartitionOfUnity
 import Mathlib.Geometry.Manifold.Sheaf.Basic
+import Mathlib.Geometry.Manifold.Sheaf.LocallyRingedSpace
 import Mathlib.Geometry.Manifold.Sheaf.Smooth
 import Mathlib.Geometry.Manifold.SmoothManifoldWithCorners
 import Mathlib.Geometry.Manifold.VectorBundle.Basic
@@ -2396,6 +2402,7 @@ import Mathlib.Logic.Equiv.TransferInstance
 import Mathlib.Logic.Function.Basic
 import Mathlib.Logic.Function.Conjugate
 import Mathlib.Logic.Function.Iterate
+import Mathlib.Logic.Function.OfArity
 import Mathlib.Logic.Hydra
 import Mathlib.Logic.IsEmpty
 import Mathlib.Logic.Lemmas
@@ -3223,6 +3230,7 @@ import Mathlib.Tactic.Sat.FromLRAT
 import Mathlib.Tactic.Says
 import Mathlib.Tactic.ScopedNS
 import Mathlib.Tactic.Set
+import Mathlib.Tactic.SetLike
 import Mathlib.Tactic.SimpIntro
 import Mathlib.Tactic.SimpRw
 import Mathlib.Tactic.Simps.Basic
@@ -3487,6 +3495,7 @@ import Mathlib.Topology.OmegaCompletePartialOrder
 import Mathlib.Topology.Order
 import Mathlib.Topology.Order.Basic
 import Mathlib.Topology.Order.Category.AlexDisc
+import Mathlib.Topology.Order.Category.FrameAdjunction
 import Mathlib.Topology.Order.Hom.Basic
 import Mathlib.Topology.Order.Hom.Esakia
 import Mathlib.Topology.Order.Lattice
