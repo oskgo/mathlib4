@@ -370,7 +370,7 @@ variable {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G] [FiniteDimension
 
 open FiniteDimensional
 
-theorem MeasureTheory.generic_unitBall_eq_integral_exp_neg_rpow_div_gamma {E : Type*}
+theorem MeasureTheory.measure_lt_one_eq_integral_div_gamma {E : Type*}
     [AddCommGroup E] [Module ℝ E] [FiniteDimensional ℝ E] [mE : MeasurableSpace E]
     [tE : TopologicalSpace E] [TopologicalAddGroup E] [BorelSpace E] [T2Space E]
     [Nontrivial E] [ContinuousSMul ℝ E] (μ : Measure E) [IsAddHaarMeasure μ]
@@ -417,19 +417,19 @@ theorem MeasureTheory.generic_unitBall_eq_integral_exp_neg_rpow_div_gamma {E : T
     · refine @Continuous.measurable E F tE mE _ _ _ _ φ ?_
       exact @ContinuousLinearEquiv.continuous ℝ ℝ _ _ _ _ _ _ E tE _ F _ _ _ _ φ
   · simp_rw [Real.rpow_one]
-    let ζ := @ContinuousLinearEquiv.toHomeomorph ℝ ℝ _ _ _ _ _ _ E tE _ F _ _ _ _ φ
-    let ψ := @Homeomorph.toMeasurableEquiv E F tE mE _ _ _ _ ζ
-    have : @MeasurePreserving E F mE _ ψ μ ν := by
-      refine @Measurable.measurePreserving E F mE _ ?_ ?_ _
-      · exact @MeasurableEquiv.measurable E F mE _ ψ
-    erw [← this.integral_comp]
+    -- The map between `E` and `F` as a measurable equivalence
+    let ψ := @Homeomorph.toMeasurableEquiv E F tE mE _ _ _ _
+      (@ContinuousLinearEquiv.toHomeomorph ℝ ℝ _ _ _ _ _ _ E tE _ F _ _ _ _ φ)
+    -- The map `ψ is measure preserving by construction
+    have : @MeasurePreserving E F mE _ ψ μ ν :=
+      @Measurable.measurePreserving E F mE _ ψ (@MeasurableEquiv.measurable E F mE _ ψ) _
+    erw [← this.integral_comp (@MeasurableEquiv.measurableEmbedding E F mE _ ψ)]
     rfl
-    exact @MeasurableEquiv.measurableEmbedding E F mE _ ψ
   · rw [div_one]
 
 example : (volume {x : ℂ | ‖x‖ < 1}).toReal = Real.pi := by
-  rw [generic_unitBall_eq_integral_exp_neg_rpow_div_gamma (volume : Measure ℂ)
-    norm_zero norm_neg norm_add_le norm_eq_zero.mp]
+  rw [measure_lt_one_eq_integral_div_gamma (volume : Measure ℂ) norm_zero norm_neg norm_add_le
+    norm_eq_zero.mp]
   · have := Complex.integral_exp_neg_rpow zero_lt_one
     simp_rw [Real.rpow_one] at this
     rw [this, Complex.finrank_real_complex, div_one, Nat.cast_ofNat, mul_div_cancel]
