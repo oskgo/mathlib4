@@ -3,6 +3,7 @@ import Mathlib.Analysis.SpecialFunctions.Gaussian
 import Mathlib.Analysis.SpecialFunctions.PolarCoord
 import Mathlib.MeasureTheory.Constructions.HaarToSphere
 import Mathlib.MeasureTheory.Measure.Lebesgue.Complex
+import Mathlib.Analysis.NormedSpace.PiLp
 
 -- See: https://github.com/leanprover/lean4/issues/2220
 local macro_rules | `($x ^ $y) => `(HPow.hPow $x $y)
@@ -79,6 +80,8 @@ theorem MeasureTheory.MeasurePreserving.integral_comp' {α β G : Type*} [Normed
     {f : α ≃ᵐ β} (h : MeasurePreserving f μ ν) (g : β → G) :
     ∫ x, g (f x) ∂μ = ∫ y, g y ∂ν := MeasurePreserving.integral_comp h f.measurableEmbedding _
 
+section tools
+
 open Set BigOperators Fintype Asymptotics Filter
 
 variable {p : ℝ}
@@ -135,29 +138,6 @@ theorem integrable_rpow_mul_exp_neg_rpow {q : ℝ} (hq : -1 < q) (hp : 1 ≤ p) 
     convert Real.GammaIntegral_convergent (by linarith : 0 < q + 1) using 2
     rw [add_sub_cancel, mul_comm]
 
-#exit
-
-    have B : (0 : ℝ) < 1 / 2 := by norm_num
-    have hb : (0:ℝ) < 1 := sorry
-    apply integrable_of_isBigO_exp_neg
-      B _ (IsLittleO.isBigO (rpow_mul_exp_neg_mul_sq_isLittleO_exp_neg hb _))
-    intro x hx
-    have N : x ≠ 0 := by refine' (zero_lt_one.trans_le _).ne'; exact hx
-    apply ((continuousAt_rpow_const _ _ (Or.inl N)).mul _).continuousWithinAt
-    exact (continuous_exp.comp (continuous_const.mul (continuous_pow 2))).continuousAt
-
-  #exit
-
-  -- have t1 := integrableOn_Ioi_comp_rpow_iff' (fun x : ℝ => Real.exp (- x)) (p := q + 1) ?_
-  -- have t2 : IntegrableOn (fun x ↦ Real.exp (-x)) (Ioi 0) := by
-  --   have := exp_neg_integrableOn_Ioi 0 (b := 1) (by norm_num : (0:ℝ) < 1)
-  --   simp_rw [← neg_eq_neg_one_mul] at this
-  --   exact this
-  -- convert t1.mpr t2
-  -- sorry -- TOO BAD
-  -- sorry
-  -- sorry
-
 theorem MeasureTheory.integral_comp_abs {f : ℝ → ℝ} (hf : IntegrableOn (fun x => f x) (Ioi 0)) :
     ∫ x, f |x| = 2 • ∫ x in Ioi (0:ℝ), f x := by
   calc
@@ -183,6 +163,8 @@ theorem MeasureTheory.integral_comp_abs {f : ℝ → ℝ} (hf : IntegrableOn (fu
       rw [abs_eq_neg_self.mpr (by exact hx)]
     · refine set_integral_congr measurableSet_Ioi (fun _ hx => ?_)
       rw [abs_eq_self.mpr (le_of_lt (by exact hx))]
+
+section p_pos
 
 variable (hp : 0 < p)
 
@@ -249,6 +231,10 @@ theorem Complex.integral_exp_neg_rpow :
   · rw [zero_add, Real.Gamma_add_one (div_ne_zero two_ne_zero (ne_of_gt hp))]
     ring
 
+end p_pos
+
+-- TODO: generalize to other measures?
+
 theorem MeasureTheory.lintegral_fin_prod_eq_pow {E : Type*} {n : ℕ} (hn : 1 ≤ n) {f : E → ENNReal}
     [MeasureSpace E] [SigmaFinite (volume : Measure E)] (hf : Measurable f) :
     ∫⁻ x : Fin n → E, ∏ i, f (x i) = (∫⁻ x, f x) ^ n := by
@@ -293,8 +279,36 @@ theorem MeasureTheory.lintegral_prod_eq_pow {E : Type*} (ι : Type*) [Fintype ι
   rfl
   exact Measurable.finset_prod _ fun _ _ =>  hf.comp (measurable_pi_apply _)
 
+theorem MeasureTheory.integral_prod_eq_pow' {E : Type*} {n : ℕ} (hn : 1 ≤ n)
+    {f : E → ℝ} [MeasureSpace E] [SigmaFinite (volume : Measure E)] (hf : Measurable f) :
+    ∫ x : (Fin n) → E, ∏ i, f (x i) = (∫ x, f x) ^ n := by
+  induction n, hn using Nat.le_induction with
+  | base =>
+      rw [← (volume_preserving_funUnique (Fin 1) E).integral_comp']
+      simp [Nat.zero_eq, Finset.univ_unique, Fin.default_eq_zero, Finset.prod_singleton,
+        MeasurableEquiv.funUnique_apply, pow_one]
+  | succ n _ n_ih =>
+      have h_mes : ∀ n, Measurable (fun (y : Fin n → E) => ∏ i : Fin n, f (y i)) :=
+        fun _ => Measurable.finset_prod Finset.univ (fun i _ => hf.comp (measurable_pi_apply i))
+      calc
+        _ = ∫ x : E × (Fin n → E), (f x.1) * ∏ i : Fin n, f (x.2 i) := by
+          rw [volume_pi, ← ((measurePreserving_piFinSuccAboveEquiv
+            (fun _ => (volume : Measure E)) 0).symm).integral_comp ?_]
+          simp_rw [MeasurableEquiv.piFinSuccAboveEquiv_symm_apply, Fin.insertNth_zero',
+            Fin.prod_univ_succ, Fin.cons_zero, Fin.cons_succ]
+          rfl
+          exact
+            MeasurableEquiv.measurableEmbedding
+              (MeasurableEquiv.symm (MeasurableEquiv.piFinSuccAboveEquiv (fun x ↦ E) 0))
+        _ = (∫ x, f x) * (∫ x, f x) ^ n := by
+          rw [volume_eq_prod, integral_prod, ← lintegral_mul_const _ hf]
+          simp_rw [lintegral_const_mul _ (h_mes _), n_ih]
+          refine (hf.aemeasurable.comp_measurable measurable_fst).mul ?_
+          exact Measurable.aemeasurable ((h_mes _).comp (f := fun x : _ × _ => x.2) measurable_snd)
+        _ = (∫ x, f x) ^ n.succ := by rw [← pow_succ]
+
 theorem MeasureTheory.integral_prod_eq_pow {E : Type*} (ι : Type*) [Fintype ι] [Nonempty ι]
-    {f : E → ℝ} [MeasureSpace E] [SigmaFinite (volume : Measure E)] (hf : Integrable f) :
+    {f : E → ℝ} [MeasureSpace E] [SigmaFinite (volume : Measure E)] :
     ∫ x : ι → E, ∏ i, f (x i) = (∫ x, f x) ^ (card ι) := by
   sorry
 
@@ -304,7 +318,7 @@ open FiniteDimensional
 
 theorem MeasureTheory.measure_unitBall_eq_integral_exp_neg_rpow_div_gamma {E : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E] [FiniteDimensional ℝ E] [MeasurableSpace E]
-    [BorelSpace E] [Nontrivial E] (μ : Measure E) [IsAddHaarMeasure μ] :
+    [BorelSpace E] [Nontrivial E] (μ : Measure E) [IsAddHaarMeasure μ] (hp : 0 < p) :
     (μ (Metric.ball 0 1)).toReal =
     (∫ (x : E), Real.exp (- ‖x‖ ^ p) ∂μ) / Real.Gamma (finrank ℝ E / p + 1) := by
   have h_pos : 0 < (finrank ℝ E) / p := div_pos (by simp only [Nat.cast_pos, finrank_pos]) hp
@@ -316,10 +330,162 @@ theorem MeasureTheory.measure_unitBall_eq_integral_exp_neg_rpow_div_gamma {E : T
     · simp only [neg_lt_sub_iff_lt_add, lt_add_iff_pos_right, Nat.cast_pos, finrank_pos]
   · exact ne_of_gt (Real.Gamma_pos_of_pos (lt_add_of_pos_of_lt h_pos  Real.zero_lt_one))
 
+end tools
+
+section PiLp
+
+-- TODO. Do the WithLp version instead, generalize to mixed E
+
+open ENNReal Fintype
+
+variable (E ι : Type*) [Fintype ι] (p : ENNReal)
+
+instance [MeasurableSpace E] : MeasurableSpace (PiLp p fun _ : ι => E) :=
+  MeasurableSpace.map (WithLp.equiv p _) MeasurableSpace.pi
+
+noncomputable instance [MeasureSpace E] :
+  MeasureSpace (PiLp p fun _ : ι => E) := MeasureSpace.pi
+
+noncomputable instance [Fact (1 ≤ p)] : PseudoEMetricSpace (PiLp p fun _ : ι => ℝ) :=
+  PiLp.pseudoEmetricAux _ _
+
+local instance [TopologicalSpace E] : TopologicalSpace (PiLp p fun _ : ι => E) :=
+  Pi.topologicalSpace
+
+instance [MeasurableSpace E] [TopologicalSpace E]
+    [TopologicalSpace.SecondCountableTopology E] [BorelSpace E] :
+    BorelSpace (PiLp p fun _ : ι => E) :=
+  Pi.borelSpace
+
+local instance [AddGroup E] : AddGroup (PiLp p fun _ : ι => E) := Pi.addGroup
+
+instance [MeasureSpace E] [TopologicalSpace E] [AddGroup E]
+    [IsAddHaarMeasure (volume : Measure E)] [SigmaFinite (volume : Measure E)] [MeasurableAdd E] :
+    IsAddHaarMeasure (volume : Measure (PiLp p fun _ : ι => E)) :=
+  MeasureTheory.Measure.instIsAddHaarMeasureForAllAddGroupTopologicalSpaceToMeasurableSpacePiVolume
+
+theorem WithLp.finrank [Ring E] [StrongRankCondition E] :
+    FiniteDimensional.finrank E (PiLp p fun _ : ι ↦ E) = card ι := FiniteDimensional.finrank_pi _
+
+end PiLp
+
+open Fintype ENNReal
+
+variable (ι : Type*) [Fintype ι] {p : ℝ} (hp : 1 ≤ p) [Fact (1 ≤ ENNReal.ofReal p)]
+
+example [Nonempty ι] :
+    (volume (Metric.ball (0 : (PiLp (ENNReal.ofReal p) fun _ : ι => ℝ)) 1)).toReal =
+      (2 * Real.Gamma (1 / p + 1)) ^ card ι /
+        Real.Gamma (card ι / p + 1) := by
+  convert measure_unitBall_eq_integral_exp_neg_rpow_div_gamma
+    (volume : Measure (PiLp (ENNReal.ofReal p) fun _ : ι => ℝ))
+    (by sorry : (0:ℝ) < p) using 3
+  · simp_rw [PiLp.norm_eq_sum sorry, Real.norm_eq_abs, ← Real.rpow_mul sorry,
+      toReal_ofReal sorry, div_mul_cancel _ sorry, Real.rpow_one, ← Finset.sum_neg_distrib, Real.exp_sum]
+    erw [integral_prod_eq_pow ι (f := fun x => Real.exp (- |x| ^ p))]
+    rw [integral_comp_abs (f := fun x => Real.exp (- x ^ p))]
+    · rw [integral_exp_neg_rpow (by sorry : (0:ℝ) < p)]
+      rw [Real.Gamma_add_one, nsmul_eq_mul, Nat.cast_ofNat]
+      sorry
+    · convert integrable_rpow_mul_exp_neg_rpow neg_one_lt_zero hp using 1
+      simp_rw [Real.rpow_zero, one_mul]
+  · rw [WithLp.finrank]
+
+section generic
+
+variable {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G] [FiniteDimensional ℝ G]
+
+open FiniteDimensional
+
+theorem MeasureTheory.generic_unitBall_eq_integral_exp_neg_rpow_div_gamma {E : Type*}
+    [AddCommGroup E] [Module ℝ E] [FiniteDimensional ℝ E] [mE : MeasurableSpace E]
+    [tE : TopologicalSpace E] [taE : TopologicalAddGroup E] [bE : BorelSpace E] [T2Space E]
+    [Nontrivial E] [ContinuousSMul ℝ E]
+    (μ : Measure E) [IsAddHaarMeasure μ]
+    {g : E → ℝ} (hg0 : g 0 = 0) (hgn : ∀ x, g (- x) = g x) (hgt : ∀ x y, g (x + y) ≤ g x + g y)
+    (hgs : ∀ {x}, g x = 0 → x = 0) (hns :  ∀ r x, g (r • x) ≤ |r| * (g x)) :
+    (μ {x : E | g x < 1}).toReal =
+      (∫ (x : E), Real.exp (- (g x)) ∂μ) / Real.Gamma (finrank ℝ E + 1) := by
+  letI F : Type _ := E
+  letI : NormedAddCommGroup F :=
+  { norm := g
+    dist := fun x y => g (x - y)
+    dist_self := by simp only [_root_.sub_self, hg0, forall_const]
+    dist_comm := by
+      intro _ _
+      dsimp only
+      rw [← hgn, neg_sub]
+    dist_triangle := by
+      intro x y z
+      dsimp only
+      convert hgt (x - y) (y - z) using 2
+      abel
+    edist := fun x y => ENNReal.ofReal (g (x - y))
+    edist_dist := by
+      intro _ _
+      rfl
+    eq_of_dist_eq_zero := by
+      intro _ _ h
+      have := hgs h
+      exact eq_of_sub_eq_zero this }
+  letI : NormedSpace ℝ F :=
+  { norm_smul_le := by
+      intro _ _
+      exact hns _ _ }
+  letI tF : TopologicalSpace F := UniformSpace.toTopologicalSpace
+  letI : MeasurableSpace F := borel F
+  haveI : BorelSpace F := by exact { measurable_eq := rfl }
+  haveI taF : TopologicalAddGroup F := by
+    exact TopologicalAddGroup.mk
+  let φ := @LinearEquiv.toContinuousLinearEquiv ℝ _ E _ _ tE taE _ F _ _ tF taF _ _ _ _ _
+    (LinearEquiv.refl ℝ E : E ≃ₗ[ℝ] F)
+  let ν : Measure F := @Measure.map E F _ mE φ (μ : @Measure E mE)
+  have : IsAddHaarMeasure ν := by
+    have := @ContinuousLinearEquiv.isAddHaarMeasure_map E F ℝ ℝ _ _ _ _ _ _ tE taE tF _ _
+      (RingHom.id ℝ) (RingHom.id ℝ) _ _ mE bE _ _ φ μ
+    exact this
+  have := MeasureTheory.measure_unitBall_eq_integral_exp_neg_rpow_div_gamma ν zero_lt_one
+  convert this using 2
+  · dsimp only
+    have := @Measure.map_apply E F mE _ μ φ (?_ : @Measurable E F mE _ φ) (Metric.ball 0 1) ?_
+    · rw [this]
+      congr
+      ext
+      simp
+      rfl
+    · refine @Continuous.measurable E F tE mE _ tF _ _ φ ?_
+      exact @ContinuousLinearEquiv.continuous ℝ ℝ _ _ (RingHom.id ℝ) (RingHom.id ℝ) _ _ E tE _
+        F tF _ _ _ φ
+    · exact measurableSet_ball
+  · simp
+    let ζ := @ContinuousLinearEquiv.toHomeomorph ℝ ℝ _ _ (RingHom.id ℝ) (RingHom.id ℝ) _ _ E tE _
+      F tF _ _ _ φ
+    let ψ := @Homeomorph.toMeasurableEquiv E F tE mE bE tF _ _ ζ
+    have : @MeasurePreserving E F mE _ ψ μ ν := by
+      refine @Measurable.measurePreserving E F mE _ ?_ ?_ _
+      · exact @MeasurableEquiv.measurable E F mE _ ψ
+    erw [← this.integral_comp]
+    rfl
+    exact @MeasurableEquiv.measurableEmbedding E F mE _ ψ
+  · rw [div_one]
+
+example {r c : Type*} [Fintype r] [Fintype c] : sorry := by
+  let E := (r → ℝ) × (c → ℂ)
+  letI : Nontrivial E := sorry
+  letI : IsAddHaarMeasure (volume : Measure E) := sorry
+  let g : E → ℝ := fun x => ∑ i, ‖x.1 i‖ + 2 * ∑ j, ‖x.2 j‖
+  have := MeasureTheory.generic_unitBall_eq_integral_exp_neg_rpow_div_gamma
+    (volume : Measure E) (g := g) ?_ ?_ ?_ ?_ ?_
+  
+
+end generic
+
+#exit
+
 example : (volume (Metric.ball (0 : EuclideanSpace ℝ ι) 1)).toReal =
     Real.pi ^ ((card ι : ℝ) / 2) / Real.Gamma ((card ι) / 2 + 1) := by
-  convert measure_unitBall_eq_integral_exp_neg_rpow_div_gamma (by sorry : (0:ℝ) < 2)
-    (volume : Measure (EuclideanSpace ℝ ι))
+  convert measure_unitBall_eq_integral_exp_neg_rpow_div_gamma
+    (volume : Measure (EuclideanSpace ℝ ι)) (by sorry : (0:ℝ) < 2)
   · simp_rw [EuclideanSpace.norm_eq, Real.norm_eq_abs, sq_abs, Real.sqrt_eq_rpow,
       ← Real.rpow_mul sorry, div_mul_cancel_of_invertible, Real.rpow_one,
       ← Finset.sum_neg_distrib, Real.exp_sum]
@@ -341,11 +507,9 @@ example : (volume (Metric.ball (0 : EuclideanSpace ℝ ι) 1)).toReal =
     refine div_ne_zero ?_ ?_
     exact one_ne_zero
     exact two_ne_zero
-
-    sorry
+    convert integrable_rpow_mul_exp_neg_rpow neg_one_lt_zero one_le_two using 2
+    simp only [Real.rpow_two, Real.rpow_zero, one_mul]
   · exact finrank_euclideanSpace.symm
-
-#exit
 
 example : (volume (Metric.ball (0 : EuclideanSpace ℝ ι) 1)).toReal =
     2 * Real.pi ^ ((card ι) / 2) / Real.Gamma ((card ι) / 2 + 1) := by
