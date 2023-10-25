@@ -8,6 +8,10 @@ import Mathlib.Analysis.NormedSpace.PiLp
 -- See: https://github.com/leanprover/lean4/issues/2220
 local macro_rules | `($x ^ $y) => `(HPow.hPow $x $y)
 
+theorem Real.rpow_lt_one_iff' {x y : ℝ} (hx : 0 ≤ x) (hy : 0 < y) :
+    x ^ y < 1 ↔ x < 1 := by
+  rw [← Real.rpow_lt_rpow_iff hx zero_le_one hy, Real.one_rpow]
+
 open MeasureTheory MeasureTheory.Measure BigOperators
 
 theorem Measurable.finset_sum' {M α ι : Type*} [MeasurableSpace M] [AddCommMonoid M]
@@ -33,6 +37,140 @@ theorem Measurable.finset_prod {M α ι : Type*} [MeasurableSpace M] [CommMonoid
     (hf : ∀ i ∈ s, Measurable (f i)) :
     Measurable (fun x => ∏ i in s, f i x) := by
   simpa only [← Finset.prod_apply] using Measurable.finset_prod' s hf
+
+theorem MeasureTheory.integrable_fin_prod_mul {𝕜 : Type*} (n : ℕ) [IsROrC 𝕜]
+    {α : (Fin n) → Type*} {m : ∀ i, MeasurableSpace (α i)} (μ : ∀ i, Measure (α i))
+    [∀ i, SigmaFinite (μ i)] {f : ∀ i, (α i) → 𝕜} (hf : ∀ i, Integrable (f i) (μ i)) :
+    Integrable (fun x => ∏ i, (f i) (x i)) (Measure.pi μ) := by
+  induction n with
+  | zero =>
+      simp_rw [Nat.zero_eq, Finset.univ_eq_empty, Finset.prod_empty]
+      rw [Measure.pi_of_empty]
+      exact integrable_of_fintype _ _
+  | succ n n_ih =>
+      rw [← ((measurePreserving_piFinSuccAboveEquiv μ 0).symm).integrable_comp_emb]
+      · simp_rw [Fin.zero_succAbove, Function.comp, Fin.prod_univ_succ]
+        exact Integrable.prod_mul (hf 0) (n_ih (fun i => μ (Fin.succ i)) (fun i => hf (Fin.succ i)))
+      · exact ((MeasurableEquiv.piFinSuccAboveEquiv (fun i ↦ α i) 0).symm).measurableEmbedding
+
+open Fintype
+
+theorem MeasureTheory.integrable_pi_prod_mul_same {ι α 𝕜 : Type*} [Fintype ι] [IsROrC 𝕜]
+    [MeasurableSpace α] (μ : Measure α) [SigmaFinite μ] {f : ι → α → 𝕜}
+    (hf : ∀ i, Integrable (f i) μ) :
+    Integrable (fun x => ∏ i, (f i) (x i)) (Measure.pi (fun _ => μ)) := by
+  let e := (equivFin ι)
+  let t := Equiv.piCongrLeft (fun _ => α) e.symm
+  rw [← (measurePreserving_piCongrLeft (fun _ => μ) e.symm).integrable_comp_emb]
+  · simp_rw [Function.comp, MeasurableEquiv.piCongrLeft, Equiv.toFun_as_coe, Equiv.invFun_as_coe,
+      MeasurableEquiv.coe_mk, Equiv.coe_fn_mk, Equiv.piCongrLeft_apply, Equiv.symm_symm_apply,
+      eq_rec_constant]
+    have := fun x : Fin (card ι) → α => Fintype.prod_equiv (equivFin ι)
+      (fun i : ι => f i (x (e i))) (fun j => f (e.symm j) (t x (e.symm j))) (fun _ => ?_)
+    simp_rw [this]
+    simp only [Equiv.piCongrLeft_apply, Equiv.symm_symm_apply, Equiv.symm_symm,
+      Equiv.apply_symm_apply, eq_rec_constant]
+    exact integrable_fin_prod_mul (card ι) (fun _ => μ) (fun i => hf (e.symm i))
+    · simp
+  · exact MeasurableEquiv.measurableEmbedding _
+
+theorem MeasureTheory.integrable_pi_prod_mul {ι 𝕜 : Type*} [Fintype ι] [IsROrC 𝕜]
+    {α : ι → Type*} {m : ∀ i, MeasurableSpace (α i)} (μ : ∀ i, Measure (α i))
+    [∀ i, SigmaFinite (μ i)] {f : ∀ i, (α i) → 𝕜} (hf : ∀ i, Integrable (f i) (μ i)) :
+    Integrable (fun x => ∏ i, (f i) (x i)) (Measure.pi μ) := by
+  let e := (equivFin ι)
+  let t := Equiv.piCongrLeft α e.symm
+  rw [← (measurePreserving_piCongrLeft μ e.symm).integrable_comp_emb]
+  · simp_rw [Function.comp, MeasurableEquiv.piCongrLeft, Equiv.toFun_as_coe, Equiv.invFun_as_coe,
+      MeasurableEquiv.coe_mk, Equiv.coe_fn_mk, Equiv.piCongrLeft_apply, Equiv.symm_symm_apply]
+    have := fun x : (i : Fin (card ι)) → (α (e.symm i)) => Fintype.prod_equiv (equivFin ι)
+      (fun i : ι => f i ((@Equiv.apply_symm_apply (Fin (card ι)) ι (equivFin ι).symm i) ▸ x (e i))) (fun j => f (e.symm j) (t x (e.symm j))) (fun _ => sorry)
+    simp_rw [this]
+    simp only [Equiv.piCongrLeft_apply, Equiv.symm_symm_apply, Equiv.symm_symm,
+      Equiv.apply_symm_apply, eq_rec_constant]
+    convert integrable_fin_prod_mul (card ι) (fun i' => μ ((equivFin ι).symm i'))
+      (fun i => hf (e.symm i))
+    
+    sorry
+
+  sorry
+
+#exit
+
+-- theorem MeasureTheory.lintegral_finset_prod_eq_pow {E : Type*} (ι : Type*) [Fintype ι] [Nonempty ι]
+--     {f : E → ENNReal} [MeasureSpace E] [SigmaFinite (volume : Measure E)] (hf : Measurable f) :
+--     ∫⁻ x : ι → E, ∏ i, f (x i) = (∫⁻ x, f x) ^ (card ι) := by
+--   let s := MeasurableEquiv.piCongrLeft (fun _ => E) (equivFin ι)
+--   rw [← ((volume_measurePreserving_piCongrLeft (fun _ => E) (equivFin ι)).symm).lintegral_comp]
+--   · simp_rw [fun x : Fin (card ι) → E => Fintype.prod_equiv (equivFin ι)
+--     (fun i => f ((s.symm x) i)) (fun i => f (x i)) (fun _ => rfl)]
+--     refine lintegral_fin_prod_eq_pow ?_ hf
+--     exact Nat.one_le_iff_ne_zero.mpr card_ne_zero
+--   · exact Measurable.finset_prod _ fun _ _ =>  hf.comp (measurable_pi_apply _)
+
+
+
+-- theorem MeasureTheory.integrable_pi_prod_mul {ι 𝕜 : Type*} [Fintype ι] [IsROrC 𝕜]
+--     {α : ι → Type*} {m : ∀ i, MeasurableSpace (α i)} (μ : ∀ i, Measure (α i))
+--     [∀ i, SigmaFinite (μ i)] {f : ∀ i, (α i) → 𝕜} (hf : ∀ i, Integrable (f i) (μ i)) :
+--     Integrable (fun x => ∏ i, (f i) (x i)) (Measure.pi μ) := by
+--   let e := (Fintype.equivFin ι).symm
+--   -- let s := measurePreserving_piCongrLeft μ e
+--   -- rw [← s.integrable_comp_emb]
+--   -- simp_rw [Function.comp]
+--   -- let t := Equiv.piCongrLeft α e
+
+--   let ν := fun i : Fin (Fintype.card ι) => μ (e i)
+--   have := integrable_fin_prod_mul (Fintype.card ι) ν (fun i => hf (e i))
+
+--   let e := (Fintype.equivFin ι)
+--   let s := measurePreserving_piCongrLeft ν e
+--   rw [← s.integrable_comp_emb] at this
+
+--   have := @Fintype.prod_equiv ι (Fin (Fintype.card ι))
+--     ((i : Fin (Fintype.card ι)) → (α (e i)) → 𝕜) _ _ _ e.symm ?_ ?_ ?_
+--   ·
+
+--     sorry
+--   ·
+
+--     sorry
+--   ·
+--     sorry
+--   ·
+--     sorry
+--   · sorry
+
+  -- have : ∀ (i : ι) x, (f i) (Equiv.piCongrLeft α e x i) = (f (e (e.symm i))) (x i) := by sorry
+
+  -- have : ∀ i (x : (i : ι) → (α i)), (f (e i)) (x (e i)) = (f i) (x i) := by sorry
+  -- simp only [Function.comp, MeasurableEquiv.piCongrLeft, Equiv.toFun_as_coe, Equiv.invFun_as_coe,
+  --   MeasurableEquiv.coe_mk, Equiv.coe_fn_mk, Equiv.piCongrLeft_apply, Equiv.symm_symm_apply]
+  -- -- simp_rw [Function.comp]
+
+
+  -- let ν := fun i : Fin (Fintype.card ι) => μ (e i)
+  -- have := integrable_fin_prod_mul (Fintype.card ι) ν (fun i => hf (e i))
+  -- convert this
+  -- refine Fintype.prod_equiv e.symm _ _ ?_
+  -- intro i
+
+
+  -- have : ∀ (x : ((i : Fin (Fintype.card ι)) → α (e i))) (i : Fin (Fintype.card ι)),
+  --   f (e i) (x i) = 0 := sorry
+
+--   let e := (Fintype.equivFin ι).symm
+--   let s := measurePreserving_piCongrLeft μ e
+--   let ν := fun i : Fin (Fintype.card ι) => μ (e i)
+--   have := integrable_fin_prod_mul (𝕜 := 𝕜) (Fintype.card ι) ν (fun i => hf (e i))
+
+--   rw [← (s.symm).integrable_comp_emb] at this
+--   simp [Function.comp] at this
+--   convert this
+--   refine Fintype.prod_equiv e.symm _ _ ?_
+--   intro i
+--   congr
+--   exact (Equiv.eq_symm_apply (Fintype.equivFin ι)).mpr rfl
 
 /-- Docstring. -/
 protected noncomputable def Complex.polarCoord : LocalHomeomorph ℂ (ℝ × ℝ) :=
@@ -261,25 +399,41 @@ theorem MeasureTheory.lintegral_fin_prod_eq_pow {E : Type*} {n : ℕ} (hn : 1 �
           exact Measurable.aemeasurable ((h_mes _).comp (f := fun x : _ × _ => x.2) measurable_snd)
         _ = (∫⁻ x, f x) ^ n.succ := by rw [← pow_succ]
 
-theorem MeasureTheory.lintegral_prod_eq_pow {E : Type*} (ι : Type*) [Fintype ι] [Nonempty ι]
+theorem MeasureTheory.lintegral_finset_prod_eq_pow {E : Type*} (ι : Type*) [Fintype ι] [Nonempty ι]
     {f : E → ENNReal} [MeasureSpace E] [SigmaFinite (volume : Measure E)] (hf : Measurable f) :
     ∫⁻ x : ι → E, ∏ i, f (x i) = (∫⁻ x, f x) ^ (card ι) := by
   let s := MeasurableEquiv.piCongrLeft (fun _ => E) (equivFin ι)
-  have : MeasurePreserving s := by exact
-    volume_measurePreserving_piCongrLeft (fun _ ↦ E) (equivFin ι)
-  have := MeasurePreserving.lintegral_comp this.symm (f := fun x => ∏ i, f (x i)) ?_
-  rw [← this]
-  have t1 := fun x : Fin (card ι) → E => Fintype.prod_equiv (equivFin ι)
-    (fun i => f ((s.symm x) i)) (fun i => f (x i)) ?_
-  simp_rw [t1]
-  have : card ι ≠0  := by exact card_ne_zero
-  have : 1 ≤ card ι := by exact Nat.one_le_iff_ne_zero.mpr this
-  have := MeasureTheory.lintegral_fin_prod_eq_pow this hf
-  rw [this]
-  intro x
-  rfl
-  exact Measurable.finset_prod _ fun _ _ =>  hf.comp (measurable_pi_apply _)
+  rw [← ((volume_measurePreserving_piCongrLeft (fun _ => E) (equivFin ι)).symm).lintegral_comp]
+  · simp_rw [fun x : Fin (card ι) → E => Fintype.prod_equiv (equivFin ι)
+    (fun i => f ((s.symm x) i)) (fun i => f (x i)) (fun _ => rfl)]
+    refine lintegral_fin_prod_eq_pow ?_ hf
+    exact Nat.one_le_iff_ne_zero.mpr card_ne_zero
+  · exact Measurable.finset_prod _ fun _ _ =>  hf.comp (measurable_pi_apply _)
 
+theorem MeasureTheory.integral_fin_prod_eq_pow {E : Type*} {n : ℕ} (hn : 1 ≤ n) {f : E → ℝ}
+    [MeasureSpace E] [SigmaFinite (volume : Measure E)] (hf : Measurable f) :
+    ∫ x : Fin n → E, ∏ i, f (x i) = (∫ x, f x) ^ n := by
+  induction n, hn using Nat.le_induction with
+  | base =>
+      rw [← (volume_preserving_funUnique (Fin 1) E).integral_comp']
+      simp [Nat.zero_eq, Finset.univ_unique, Fin.default_eq_zero, Finset.prod_singleton,
+        MeasurableEquiv.funUnique_apply, pow_one]
+  | succ n _ n_ih =>
+      calc
+        _ = ∫ x : E × (Fin n → E), (f x.1) * ∏ i : Fin n, f (x.2 i) := by
+          rw [volume_pi, ← ((measurePreserving_piFinSuccAboveEquiv
+            (fun _ => (volume : Measure E)) 0).symm).integral_comp']
+          simp_rw [MeasurableEquiv.piFinSuccAboveEquiv_symm_apply, Fin.insertNth_zero',
+            Fin.prod_univ_succ, Fin.cons_zero, Fin.cons_succ]
+          rfl
+        _ = (∫ x, f x) * (∫ x, f x) ^ n := by
+          rw [volume_eq_prod, integral_prod] --, ← integral_mul_const _ hf]
+          simp_rw [lintegral_const_mul _ (h_mes _), n_ih]
+          refine (hf.aemeasurable.comp_measurable measurable_fst).mul ?_
+          exact Measurable.aemeasurable ((h_mes _).comp (f := fun x : _ × _ => x.2) measurable_snd)
+        _ = (∫ x, f x) ^ n.succ := by rw [← pow_succ]
+
+-- use integrable since otherwise we get 0 = 0?
 theorem MeasureTheory.integral_prod_eq_pow {E : Type*} (ι : Type*) [Fintype ι] [Nonempty ι]
     {f : E → ℝ} [MeasureSpace E] [SigmaFinite (volume : Measure E)] :
     ∫ x : ι → E, ∏ i, f (x i) = (∫ x, f x) ^ (card ι) := by
@@ -370,14 +524,16 @@ variable {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G] [FiniteDimension
 
 open FiniteDimensional
 
+-- need to add rpow p
+
 theorem MeasureTheory.measure_lt_one_eq_integral_div_gamma {E : Type*}
     [AddCommGroup E] [Module ℝ E] [FiniteDimensional ℝ E] [mE : MeasurableSpace E]
     [tE : TopologicalSpace E] [TopologicalAddGroup E] [BorelSpace E] [T2Space E]
     [Nontrivial E] [ContinuousSMul ℝ E] (μ : Measure E) [IsAddHaarMeasure μ]
     {g : E → ℝ} (hg0 : g 0 = 0) (hgn : ∀ x, g (- x) = g x) (hgt : ∀ x y, g (x + y) ≤ g x + g y)
-    (hgs : ∀ {x}, g x = 0 → x = 0) (hns :  ∀ r x, g (r • x) ≤ |r| * (g x)) :
+    (hgs : ∀ {x}, g x = 0 → x = 0) (hns :  ∀ r x, g (r • x) ≤ |r| * (g x)) {p : ℝ} (hp : 0 < p) :
     (μ {x : E | g x < 1}).toReal =
-      (∫ (x : E), Real.exp (- (g x)) ∂μ) / Real.Gamma (finrank ℝ E + 1) := by
+      (∫ (x : E), Real.exp (- (g x) ^ p) ∂μ) / Real.Gamma (finrank ℝ E / p + 1) := by
   -- We copy `E` to a new type `F` on which we will put the norm defined by `g`
   letI F : Type _ := E
   letI : NormedAddCommGroup F :=
@@ -408,7 +564,7 @@ theorem MeasureTheory.measure_lt_one_eq_integral_div_gamma {E : Type*}
   have : IsAddHaarMeasure ν :=
     @ContinuousLinearEquiv.isAddHaarMeasure_map E F ℝ ℝ _ _ _ _ _ _ tE _ _ _ _ _ _ _ _ mE _ _ _
       φ μ _
-  convert (measure_unitBall_eq_integral_div_gamma ν zero_lt_one) using 2
+  convert (measure_unitBall_eq_integral_div_gamma ν hp) using 2
   · rw [@Measure.map_apply E F mE _ μ φ _ _ measurableSet_ball]
     · congr
       ext
@@ -416,23 +572,41 @@ theorem MeasureTheory.measure_lt_one_eq_integral_div_gamma {E : Type*}
       rfl
     · refine @Continuous.measurable E F tE mE _ _ _ _ φ ?_
       exact @ContinuousLinearEquiv.continuous ℝ ℝ _ _ _ _ _ _ E tE _ F _ _ _ _ φ
-  · simp_rw [Real.rpow_one]
-    -- The map between `E` and `F` as a measurable equivalence
+  · -- The map between `E` and `F` as a measurable equivalence
     let ψ := @Homeomorph.toMeasurableEquiv E F tE mE _ _ _ _
       (@ContinuousLinearEquiv.toHomeomorph ℝ ℝ _ _ _ _ _ _ E tE _ F _ _ _ _ φ)
-    -- The map `ψ is measure preserving by construction
+    -- The map `ψ` is measure preserving by construction
     have : @MeasurePreserving E F mE _ ψ μ ν :=
       @Measurable.measurePreserving E F mE _ ψ (@MeasurableEquiv.measurable E F mE _ ψ) _
     erw [← this.integral_comp (@MeasurableEquiv.measurableEmbedding E F mE _ ψ)]
     rfl
-  · rw [div_one]
 
 example : (volume {x : ℂ | ‖x‖ < 1}).toReal = Real.pi := by
   rw [measure_lt_one_eq_integral_div_gamma (volume : Measure ℂ) norm_zero norm_neg norm_add_le
-    norm_eq_zero.mp]
+    norm_eq_zero.mp ?_ zero_lt_one]
   · have := Complex.integral_exp_neg_rpow zero_lt_one
-    simp_rw [Real.rpow_one] at this
-    rw [this, Complex.finrank_real_complex, div_one, Nat.cast_ofNat, mul_div_cancel]
+    rw [this, Complex.finrank_real_complex, div_one, Nat.cast_ofNat, div_one, mul_div_cancel]
     exact (ne_of_gt (Real.Gamma_pos_of_pos (by linarith)))
   · intro _ _
     simp only [Complex.real_smul, norm_mul, Complex.norm_eq_abs, Complex.abs_ofReal, le_refl]
+
+example {p : ℝ} (hp : 1 ≤ p) [Nonempty ι] :
+    (volume { x : ι → ℝ | ∑ i, |x i| ^ p < 1}).toReal =
+      (2 * Real.Gamma (1 / p + 1)) ^ card ι /
+        Real.Gamma (card ι / p + 1) := by
+  have := measure_lt_one_eq_integral_div_gamma (volume : Measure (ι → ℝ))
+    (g := fun x =>  (∑ i, |x i| ^ p) ^ (1 / p)) ?_ ?_ ?_ ?_ ?_ (by linarith : 0 < p)
+  · convert this using 3
+    · ext x
+      simp only [Set.mem_setOf_eq]
+      rw [Real.rpow_lt_one_iff']
+      · sorry
+      · sorry
+    ·
+      sorry
+    · rw [finrank_fintype_fun_eq_card]
+  · sorry
+  · sorry
+  · exact fun x y ↦ Real.Lp_add_le Finset.univ (fun i ↦ x i) (fun i ↦ y i) hp
+  · sorry
+  · sorry
