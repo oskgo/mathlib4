@@ -74,7 +74,7 @@ theorem MeasureTheory.integrable_pi_prod_mul_same {ι α 𝕜 : Type*} [Fintype 
     · simp
   · exact MeasurableEquiv.measurableEmbedding _
 
-theorem MeasureTheory.integrable_pi_mul {ι 𝕜 : Type*} [Fintype ι] [IsROrC 𝕜]
+theorem MeasureTheory.integrable_pi_prod_mul {ι 𝕜 : Type*} [Fintype ι] [IsROrC 𝕜]
     {α : ι → Type*} {m : ∀ i, MeasurableSpace (α i)} (μ : ∀ i, Measure (α i))
     [∀ i, SigmaFinite (μ i)] {f : ∀ i, (α i) → 𝕜} (hf : ∀ i, Integrable (f i) (μ i)) :
     Integrable (fun x => ∏ i, (f i) (x i)) (Measure.pi μ) := by
@@ -90,7 +90,7 @@ theorem MeasureTheory.integrable_pi_mul {ι 𝕜 : Type*} [Fintype ι] [IsROrC �
       Equiv.apply_symm_apply, eq_rec_constant]
     convert integrable_fin_prod_mul (card ι) (fun i' => μ ((equivFin ι).symm i'))
       (fun i => hf (e.symm i))
-
+    
     sorry
 
   sorry
