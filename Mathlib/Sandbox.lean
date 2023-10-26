@@ -79,18 +79,48 @@ theorem MeasureTheory.integrable_pi_prod_mul {ι 𝕜 : Type*} [Fintype ι] [IsR
     [∀ i, SigmaFinite (μ i)] {f : ∀ i, (α i) → 𝕜} (hf : ∀ i, Integrable (f i) (μ i)) :
     Integrable (fun x => ∏ i, (f i) (x i)) (Measure.pi μ) := by
   let e := (equivFin ι)
+  have := @Equiv.piCongrLeft_apply_apply ι (Fin (card ι)) (fun i => (α i) → 𝕜) e.symm
+    (fun i => f (e.symm i))
+
+
+#exit
+
+  have := integrable_fin_prod_mul (card ι) (fun j => μ ((equivFin ι).symm j))
+      (fun i => hf (e.symm i))
+
+  let s := @MeasurableEquiv.piCongrLeft (Fin (card ι)) ι α _ e.symm
+  have t := integrable_map_equiv (β := 𝕜) (μ := Measure.pi fun j => μ ((equivFin ι).symm j))
+    s
+
+  let t := Equiv.piCongrLeft α e.symm
+
+  have := integrable_map_equiv (β := 𝕜) s (μ := Measure.pi (fun j => μ (e.symm j)))
+    (fun x => ∏ i, f i (x i))
+  have : Integrable ((fun x ↦ ∏ i : ι, f i (x i)) ∘ s)
+      (μ := Measure.pi (fun j => μ (e.symm j))) := by
+    simp
+
+
+#exit
+
   let t := Equiv.piCongrLeft α e.symm
   rw [← (measurePreserving_piCongrLeft μ e.symm).integrable_comp_emb]
   · simp_rw [Function.comp, MeasurableEquiv.piCongrLeft, Equiv.toFun_as_coe, Equiv.invFun_as_coe,
       MeasurableEquiv.coe_mk, Equiv.coe_fn_mk, Equiv.piCongrLeft_apply, Equiv.symm_symm_apply]
     have := fun x : (i : Fin (card ι)) → (α (e.symm i)) => Fintype.prod_equiv (equivFin ι)
-      (fun i : ι => f i ((@Equiv.apply_symm_apply (Fin (card ι)) ι (equivFin ι).symm i) ▸ x (e i))) (fun j => f (e.symm j) (t x (e.symm j))) (fun _ => sorry)
+      (fun i : ι => f i ((@Equiv.apply_symm_apply (Fin (card ι)) ι e.symm i) ▸ x (e i)))
+      (fun j => f (e.symm j) (x j)) ?_ -- (fun _ => ?_)
+
     simp_rw [this]
-    simp only [Equiv.piCongrLeft_apply, Equiv.symm_symm_apply, Equiv.symm_symm,
-      Equiv.apply_symm_apply, eq_rec_constant]
+    --simp only [Equiv.piCongrLeft_apply, Equiv.symm_symm_apply, Equiv.symm_symm,
+    --  Equiv.apply_symm_apply, eq_rec_constant]
     convert integrable_fin_prod_mul (card ι) (fun i' => μ ((equivFin ι).symm i'))
       (fun i => hf (e.symm i))
-    
+    intro i
+    simp only [Equiv.symm_symm_apply]
+    have : (equivFin ι).symm ((equivFin ι) i) = i := Equiv.symm_apply_apply (equivFin ι) i
+
+
     sorry
 
   sorry
