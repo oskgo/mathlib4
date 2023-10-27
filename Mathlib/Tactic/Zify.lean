@@ -98,3 +98,6 @@ def zifyProof (simpArgs : Option (Syntax.TSepArray `Lean.Parser.Tactic.simpStar 
 @[zify_simps] lemma nat_cast_dvd (a b : ℕ) : a ∣ b ↔ (a : ℤ) ∣ (b : ℤ) := Int.ofNat_dvd.symm
 -- TODO: is it worth adding lemmas for Prime and Coprime as well?
 -- Doing so in this file would require adding imports.
+
+@[norm_cast] theorem Nat.cast_sub' {R : Type*} [AddGroupWithOne R] {m n} (h : m < n) :
+    ((n - m : ℕ) : R) = n - m := Nat.cast_sub h.le
