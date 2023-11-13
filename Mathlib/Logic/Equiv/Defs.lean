@@ -83,7 +83,7 @@ def EquivLike.toEquiv {F} [EquivLike F α β] (f : F) : α ≃ β where
   right_inv := EquivLike.right_inv f
 
 /-- Any type satisfying `EquivLike` can be cast into `Equiv` via `EquivLike.toEquiv`. -/
-instance {F} [EquivLike F α β] : CoeTC F (α ≃ β) :=
+instance {F} [NDFunLike F α β] [EquivLike F α β] : CoeTC F (α ≃ β) :=
   ⟨EquivLike.toEquiv⟩
 
 /-- `Perm α` is the type of bijections from `α` to itself. -/
@@ -100,11 +100,6 @@ instance : EquivLike (α ≃ β) α β where
   left_inv := Equiv.left_inv
   right_inv := Equiv.right_inv
   coe_injective' e₁ e₂ h₁ h₂ := by cases e₁; cases e₂; congr
-
-/-- Helper instance when inference gets stuck on following the normal chain
-`EquivLike → EmbeddingLike → FunLike → CoeFun`. -/
-instance : FunLike (α ≃ β) α (fun _ => β) :=
-  EmbeddingLike.toFunLike
 
 @[simp] theorem coe_fn_mk (f : α → β) (g l r) : (Equiv.mk f g l r : α → β) = f :=
   rfl
