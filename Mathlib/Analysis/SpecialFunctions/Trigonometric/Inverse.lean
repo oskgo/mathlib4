@@ -316,7 +316,7 @@ theorem cos_arcsin (x : ℝ) : cos (arcsin x) = sqrt (1 - x ^ 2) := by
 #align real.cos_arcsin Real.cos_arcsin
 
 -- The junk values for `arcsin` and `sqrt` make this true even outside `[-1, 1]`.
-theorem tan_arcsin (x : ℝ) : tan (arcsin x) = x / sqrt (1 - x ^ 2) := by
+theorem tan_arcsin (x : ℝ) : Real.Tan (arcsin x) = x / sqrt (1 - x ^ 2) := by
   rw [tan_eq_sin_div_cos, cos_arcsin]
   by_cases hx₁ : -1 ≤ x; swap
   · have h : sqrt (1 - x ^ 2) = 0 := sqrt_eq_zero_of_nonpos (by nlinarith)
@@ -448,7 +448,7 @@ theorem continuous_arccos : Continuous arccos :=
 #align real.continuous_arccos Real.continuous_arccos
 
 -- The junk values for `arccos` and `sqrt` make this true even outside `[-1, 1]`.
-theorem tan_arccos (x : ℝ) : tan (arccos x) = sqrt (1 - x ^ 2) / x := by
+theorem tan_arccos (x : ℝ) : Real.Tan (arccos x) = sqrt (1 - x ^ 2) / x := by
   rw [arccos, tan_pi_div_two_sub, tan_arcsin, inv_div]
 #align real.tan_arccos Real.tan_arccos
 

@@ -74,7 +74,7 @@ theorem sin_gt_sub_cube {x : ℝ} (h : 0 < x) (h' : x ≤ 1) : x - x ^ 3 / 4 < s
 
 /-- The derivative of `tan x - x` is `1/(cos x)^2 - 1` away from the zeroes of cos. -/
 theorem deriv_tan_sub_id (x : ℝ) (h : cos x ≠ 0) :
-    deriv (fun y : ℝ => tan y - y) x = 1 / cos x ^ 2 - 1 :=
+    deriv (fun y : ℝ => Real.Tan y - y) x = 1 / cos x ^ 2 - 1 :=
   HasDerivAt.deriv <| by simpa using (hasDerivAt_tan h).add (hasDerivAt_id x).neg
 #align real.deriv_tan_sub_id Real.deriv_tan_sub_id
 
@@ -82,7 +82,7 @@ theorem deriv_tan_sub_id (x : ℝ) (h : cos x ≠ 0) :
 
 This is proved by checking that the function `tan x - x` vanishes
 at zero and has non-negative derivative. -/
-theorem lt_tan {x : ℝ} (h1 : 0 < x) (h2 : x < π / 2) : x < tan x := by
+theorem lt_tan {x : ℝ} (h1 : 0 < x) (h2 : x < π / 2) : x < Real.Tan x := by
   let U := Ico 0 (π / 2)
   have intU : interior U = Ioo 0 (π / 2) := interior_Ico
   have half_pi_pos : 0 < π / 2 := div_pos pi_pos two_pos
@@ -93,13 +93,13 @@ theorem lt_tan {x : ℝ} (h1 : 0 < x) (h2 : x < π / 2) : x < tan x := by
     intro y hy
     rw [intU] at hy
     exact sin_pos_of_mem_Ioo (Ioo_subset_Ioo_right (div_le_self pi_pos.le one_le_two) hy)
-  have tan_cts_U : ContinuousOn tan U := by
+  have tan_cts_U : ContinuousOn Real.Tan U := by
     apply ContinuousOn.mono continuousOn_tan
     intro z hz
     simp only [mem_setOf_eq]
     exact (cos_pos hz).ne'
-  have tan_minus_id_cts : ContinuousOn (fun y : ℝ => tan y - y) U := tan_cts_U.sub continuousOn_id
-  have deriv_pos : ∀ y : ℝ, y ∈ interior U → 0 < deriv (fun y' : ℝ => tan y' - y') y := by
+  have tan_minus_id_cts : ContinuousOn (fun y : ℝ => Real.Tan y - y) U := tan_cts_U.sub continuousOn_id
+  have deriv_pos : ∀ y : ℝ, y ∈ interior U → 0 < deriv (fun y' : ℝ => Real.Tan y' - y') y := by
     intro y hy
     have := cos_pos (interior_subset hy)
     simp only [deriv_tan_sub_id y this.ne', one_div, gt_iff_lt, sub_pos]
@@ -117,7 +117,7 @@ theorem lt_tan {x : ℝ} (h1 : 0 < x) (h2 : x < π / 2) : x < tan x := by
   simpa only [tan_zero, sub_zero, sub_pos] using mono zero_in_U x_in_U h1
 #align real.lt_tan Real.lt_tan
 
-theorem le_tan {x : ℝ} (h1 : 0 ≤ x) (h2 : x < π / 2) : x ≤ tan x := by
+theorem le_tan {x : ℝ} (h1 : 0 ≤ x) (h2 : x < π / 2) : x ≤ Real.Tan x := by
   rcases eq_or_lt_of_le h1 with (rfl | h1')
   · rw [tan_zero]
   · exact le_of_lt (lt_tan h1' h2)

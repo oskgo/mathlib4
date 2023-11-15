@@ -25,16 +25,16 @@ open Set Filter
 
 open scoped Topology Real
 
-theorem hasStrictDerivAt_tan {x : ℝ} (h : cos x ≠ 0) : HasStrictDerivAt tan (1 / cos x ^ 2) x := by
+theorem hasStrictDerivAt_tan {x : ℝ} (h : cos x ≠ 0) : HasStrictDerivAt Real.Tan (1 / cos x ^ 2) x := by
   exact_mod_cast (Complex.hasStrictDerivAt_tan (by exact_mod_cast h)).real_of_complex
 #align real.has_strict_deriv_at_tan Real.hasStrictDerivAt_tan
 
-theorem hasDerivAt_tan {x : ℝ} (h : cos x ≠ 0) : HasDerivAt tan (1 / cos x ^ 2) x := by
+theorem hasDerivAt_tan {x : ℝ} (h : cos x ≠ 0) : HasDerivAt Real.Tan (1 / cos x ^ 2) x := by
   exact_mod_cast (Complex.hasDerivAt_tan (by exact_mod_cast h)).real_of_complex
 #align real.has_deriv_at_tan Real.hasDerivAt_tan
 
 theorem tendsto_abs_tan_of_cos_eq_zero {x : ℝ} (hx : cos x = 0) :
-    Tendsto (fun x => abs (tan x)) (𝓝[≠] x) atTop := by
+    Tendsto (fun x => abs (Real.Tan x)) (𝓝[≠] x) atTop := by
   have hx : Complex.cos x = 0 := by exact_mod_cast hx
   simp only [← Complex.abs_ofReal, Complex.ofReal_tan]
   refine' (Complex.tendsto_abs_tan_of_cos_eq_zero hx).comp _
@@ -43,41 +43,41 @@ theorem tendsto_abs_tan_of_cos_eq_zero {x : ℝ} (hx : cos x = 0) :
 #align real.tendsto_abs_tan_of_cos_eq_zero Real.tendsto_abs_tan_of_cos_eq_zero
 
 theorem tendsto_abs_tan_atTop (k : ℤ) :
-    Tendsto (fun x => abs (tan x)) (𝓝[≠] ((2 * k + 1) * π / 2)) atTop :=
+    Tendsto (fun x => abs (Real.Tan x)) (𝓝[≠] ((2 * k + 1) * π / 2)) atTop :=
   tendsto_abs_tan_of_cos_eq_zero <| cos_eq_zero_iff.2 ⟨k, rfl⟩
 #align real.tendsto_abs_tan_at_top Real.tendsto_abs_tan_atTop
 
-theorem continuousAt_tan {x : ℝ} : ContinuousAt tan x ↔ cos x ≠ 0 := by
+theorem continuousAt_tan {x : ℝ} : ContinuousAt Real.Tan x ↔ cos x ≠ 0 := by
   refine' ⟨fun hc h₀ => _, fun h => (hasDerivAt_tan h).continuousAt⟩
   exact not_tendsto_nhds_of_tendsto_atTop (tendsto_abs_tan_of_cos_eq_zero h₀) _
     (hc.norm.tendsto.mono_left inf_le_left)
 #align real.continuous_at_tan Real.continuousAt_tan
 
-theorem differentiableAt_tan {x : ℝ} : DifferentiableAt ℝ tan x ↔ cos x ≠ 0 :=
+theorem differentiableAt_tan {x : ℝ} : DifferentiableAt ℝ Real.Tan x ↔ cos x ≠ 0 :=
   ⟨fun h => continuousAt_tan.1 h.continuousAt, fun h => (hasDerivAt_tan h).differentiableAt⟩
 #align real.differentiable_at_tan Real.differentiableAt_tan
 
 @[simp]
-theorem deriv_tan (x : ℝ) : deriv tan x = 1 / cos x ^ 2 :=
+theorem deriv_tan (x : ℝ) : deriv Real.Tan x = 1 / cos x ^ 2 :=
   if h : cos x = 0 then by
-    have : ¬DifferentiableAt ℝ tan x := mt differentiableAt_tan.1 (Classical.not_not.2 h)
+    have : ¬DifferentiableAt ℝ Real.Tan x := mt differentiableAt_tan.1 (Classical.not_not.2 h)
     simp [deriv_zero_of_not_differentiableAt this, h, sq]
   else (hasDerivAt_tan h).deriv
 #align real.deriv_tan Real.deriv_tan
 
 @[simp]
-theorem contDiffAt_tan {n x} : ContDiffAt ℝ n tan x ↔ cos x ≠ 0 :=
+theorem contDiffAt_tan {n x} : ContDiffAt ℝ n Real.Tan x ↔ cos x ≠ 0 :=
   ⟨fun h => continuousAt_tan.1 h.continuousAt, fun h =>
     (Complex.contDiffAt_tan.2 <| by exact_mod_cast h).real_of_complex⟩
 #align real.cont_diff_at_tan Real.contDiffAt_tan
 
 theorem hasDerivAt_tan_of_mem_Ioo {x : ℝ} (h : x ∈ Ioo (-(π / 2) : ℝ) (π / 2)) :
-    HasDerivAt tan (1 / cos x ^ 2) x :=
+    HasDerivAt Real.Tan (1 / cos x ^ 2) x :=
   hasDerivAt_tan (cos_pos_of_mem_Ioo h).ne'
 #align real.has_deriv_at_tan_of_mem_Ioo Real.hasDerivAt_tan_of_mem_Ioo
 
 theorem differentiableAt_tan_of_mem_Ioo {x : ℝ} (h : x ∈ Ioo (-(π / 2) : ℝ) (π / 2)) :
-    DifferentiableAt ℝ tan x :=
+    DifferentiableAt ℝ Real.Tan x :=
   (hasDerivAt_tan_of_mem_Ioo h).differentiableAt
 #align real.differentiable_at_tan_of_mem_Ioo Real.differentiableAt_tan_of_mem_Ioo
 

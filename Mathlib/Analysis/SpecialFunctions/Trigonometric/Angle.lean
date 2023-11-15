@@ -778,7 +778,7 @@ theorem tan_eq_sin_div_cos (θ : Angle) : tan θ = sin θ / cos θ :=
 #align real.angle.tan_eq_sin_div_cos Real.Angle.tan_eq_sin_div_cos
 
 @[simp]
-theorem tan_coe (x : ℝ) : tan (x : Angle) = Real.tan x := by
+theorem tan_coe (x : ℝ) : tan (x : Angle) = Real.Tan x := by
   rw [tan, sin_coe, cos_coe, Real.tan_eq_sin_div_cos]
 #align real.angle.tan_coe Real.Angle.tan_coe
 
@@ -808,7 +808,7 @@ theorem tan_sub_pi (θ : Angle) : tan (θ - π) = tan θ :=
 #align real.angle.tan_sub_pi Real.Angle.tan_sub_pi
 
 @[simp]
-theorem tan_toReal (θ : Angle) : Real.tan θ.toReal = tan θ := by
+theorem tan_toReal (θ : Angle) : Real.Tan θ.toReal = tan θ := by
   conv_rhs => rw [← coe_toReal θ, tan_coe]
 #align real.angle.tan_to_real Real.Angle.tan_toReal
 

@@ -28,7 +28,7 @@ open scoped Topology Real
 theorem tan_add {x y : ℝ}
     (h : ((∀ k : ℤ, x ≠ (2 * k + 1) * π / 2) ∧ ∀ l : ℤ, y ≠ (2 * l + 1) * π / 2) ∨
       (∃ k : ℤ, x = (2 * k + 1) * π / 2) ∧ ∃ l : ℤ, y = (2 * l + 1) * π / 2) :
-    tan (x + y) = (tan x + tan y) / (1 - tan x * tan y) := by
+    Real.Tan (x + y) = (Real.Tan x + Real.Tan y) / (1 - Real.Tan x * Real.Tan    1
   simpa only [← Complex.ofReal_inj, Complex.ofReal_sub, Complex.ofReal_add, Complex.ofReal_div,
     Complex.ofReal_mul, Complex.ofReal_tan] using
     @Complex.tan_add (x : ℂ) (y : ℂ) (by convert h <;> norm_cast)
@@ -36,40 +36,40 @@ theorem tan_add {x y : ℝ}
 
 theorem tan_add' {x y : ℝ}
     (h : (∀ k : ℤ, x ≠ (2 * k + 1) * π / 2) ∧ ∀ l : ℤ, y ≠ (2 * l + 1) * π / 2) :
-    tan (x + y) = (tan x + tan y) / (1 - tan x * tan y) :=
+    Real.Tan (x + y) = (Real.Tan x + Real.Tan y) / (1 - Real.Tan x * Real.Tan    1
   tan_add (Or.inl h)
 #align real.tan_add' Real.tan_add'
 
-theorem tan_two_mul {x : ℝ} : tan (2 * x) = 2 * tan x / (1 - tan x ^ 2) := by
+theorem tan_two_mul {x : ℝ} : Real.Tan (2 * x) = 2 * Real.Tan x / (1 - Real.Tan x ^ 2) := by
   have := @Complex.tan_two_mul x
   norm_cast at *
 #align real.tan_two_mul Real.tan_two_mul
 
-theorem tan_ne_zero_iff {θ : ℝ} : tan θ ≠ 0 ↔ ∀ k : ℤ, θ ≠ k * π / 2 := by
+theorem tan_ne_zero_iff {θ : ℝ} : Real.Tan θ ≠ 0 ↔ ∀ k : ℤ, θ ≠ k * π / 2 := by
   rw [← Complex.ofReal_ne_zero, Complex.ofReal_tan, Complex.tan_ne_zero_iff]; norm_cast
 #align real.tan_ne_zero_iff Real.tan_ne_zero_iff
 
-theorem tan_eq_zero_iff {θ : ℝ} : tan θ = 0 ↔ ∃ k : ℤ, θ = k * π / 2 := by
+theorem tan_eq_zero_iff {θ : ℝ} : Real.Tan θ = 0 ↔ ∃ k : ℤ, θ = k * π / 2 := by
   rw [← not_iff_not, not_exists, ← Ne, tan_ne_zero_iff]
 #align real.tan_eq_zero_iff Real.tan_eq_zero_iff
 
-theorem tan_int_mul_pi_div_two (n : ℤ) : tan (n * π / 2) = 0 :=
+theorem tan_int_mul_pi_div_two (n : ℤ) : Real.Tan (n * π / 2) = 0 :=
   tan_eq_zero_iff.mpr (by use n)
 #align real.tan_int_mul_pi_div_two Real.tan_int_mul_pi_div_two
 
-theorem continuousOn_tan : ContinuousOn tan {x | cos x ≠ 0} := by
+theorem continuousOn_tan : ContinuousOn Real.Tan {x | cos x ≠ 0} := by
   suffices ContinuousOn (fun x => sin x / cos x) {x | cos x ≠ 0} by
-    have h_eq : (fun x => sin x / cos x) = tan := by ext1 x; rw [tan_eq_sin_div_cos]
+    have h_eq : (fun x => sin x / cos x) = Real.Tan := by ext1 x; rw [tan_eq_sin_div_cos]
     rwa [h_eq] at this
   exact continuousOn_sin.div continuousOn_cos fun x => id
 #align real.continuous_on_tan Real.continuousOn_tan
 
 @[continuity]
-theorem continuous_tan : Continuous fun x : {x | cos x ≠ 0} => tan x :=
+theorem continuous_tan : Continuous fun x : {x | cos x ≠ 0} => Real.Tan x :=
   continuousOn_iff_continuous_restrict.1 continuousOn_tan
 #align real.continuous_tan Real.continuous_tan
 
-theorem continuousOn_tan_Ioo : ContinuousOn tan (Ioo (-(π / 2)) (π / 2)) := by
+theorem continuousOn_tan_Ioo : ContinuousOn Real.Tan (Ioo (-(π / 2)) (π / 2)) := by
   refine' ContinuousOn.mono continuousOn_tan fun x => _
   simp only [and_imp, mem_Ioo, mem_setOf_eq, Ne.def]
   rw [cos_eq_zero_iff]
@@ -89,17 +89,17 @@ theorem continuousOn_tan_Ioo : ContinuousOn tan (Ioo (-(π / 2)) (π / 2)) := by
     · exact zero_lt_two
 #align real.continuous_on_tan_Ioo Real.continuousOn_tan_Ioo
 
-theorem surjOn_tan : SurjOn tan (Ioo (-(π / 2)) (π / 2)) univ :=
+theorem surjOn_tan : SurjOn Real.Tan (Ioo (-(π / 2)) (π / 2)) univ :=
   have := neg_lt_self pi_div_two_pos
   continuousOn_tan_Ioo.surjOn_of_tendsto (nonempty_Ioo.2 this)
     (by rw [tendsto_comp_coe_Ioo_atBot this]; exact tendsto_tan_neg_pi_div_two)
     (by rw [tendsto_comp_coe_Ioo_atTop this]; exact tendsto_tan_pi_div_two)
 #align real.surj_on_tan Real.surjOn_tan
 
-theorem tan_surjective : Function.Surjective tan := fun _ => surjOn_tan.subset_range trivial
+theorem tan_surjective : Function.Surjective Real.Tan := fun _ => surjOn_tan.subset_range trivial
 #align real.tan_surjective Real.tan_surjective
 
-theorem image_tan_Ioo : tan '' Ioo (-(π / 2)) (π / 2) = univ :=
+theorem image_tan_Ioo : Real.Tan '' Ioo (-(π / 2)) (π / 2) = univ :=
   univ_subset_iff.1 surjOn_tan
 #align real.image_tan_Ioo Real.image_tan_Ioo
 
@@ -117,7 +117,7 @@ noncomputable def arctan (x : ℝ) : ℝ :=
 #align real.arctan Real.arctan
 
 @[simp]
-theorem tan_arctan (x : ℝ) : tan (arctan x) = x :=
+theorem tan_arctan (x : ℝ) : Real.Tan (arctan x) = x :=
   tanOrderIso.apply_symm_apply x
 #align real.tan_arctan Real.tan_arctan
 
@@ -130,7 +130,7 @@ theorem range_arctan : range arctan = Ioo (-(π / 2)) (π / 2) :=
   ((EquivLike.surjective _).range_comp _).trans Subtype.range_coe
 #align real.range_arctan Real.range_arctan
 
-theorem arctan_tan {x : ℝ} (hx₁ : -(π / 2) < x) (hx₂ : x < π / 2) : arctan (tan x) = x :=
+theorem arctan_tan {x : ℝ} (hx₁ : -(π / 2) < x) (hx₂ : x < π / 2) : arctan (Real.Tan x) = x :=
   Subtype.ext_iff.1 <| tanOrderIso.symm_apply_apply ⟨x, hx₁, hx₂⟩
 #align real.arctan_tan Real.arctan_tan
 
@@ -172,7 +172,7 @@ theorem arcsin_eq_arctan {x : ℝ} (h : x ∈ Ioo (-(1 : ℝ)) 1) :
 theorem arctan_zero : arctan 0 = 0 := by simp [arctan_eq_arcsin]
 #align real.arctan_zero Real.arctan_zero
 
-theorem arctan_eq_of_tan_eq {x y : ℝ} (h : tan x = y) (hx : x ∈ Ioo (-(π / 2)) (π / 2)) :
+theorem arctan_eq_of_tan_eq {x y : ℝ} (h : Real.Tan x = y) (hx : x ∈ Ioo (-(π / 2)) (π / 2)) :
     arctan y = x :=
   injOn_tan (arctan_mem_Ioo _) hx (by rw [tan_arctan, h])
 #align real.arctan_eq_of_tan_eq Real.arctan_eq_of_tan_eq
@@ -213,7 +213,7 @@ theorem continuousAt_arctan {x : ℝ} : ContinuousAt arctan x :=
 
 /-- `Real.tan` as a `LocalHomeomorph` between `(-(π / 2), π / 2)` and the whole line. -/
 def tanLocalHomeomorph : LocalHomeomorph ℝ ℝ where
-  toFun := tan
+  toFun := Real.Tan
   invFun := arctan
   source := Ioo (-(π / 2)) (π / 2)
   target := univ
@@ -228,7 +228,7 @@ def tanLocalHomeomorph : LocalHomeomorph ℝ ℝ where
 #align real.tan_local_homeomorph Real.tanLocalHomeomorph
 
 @[simp]
-theorem coe_tanLocalHomeomorph : ⇑tanLocalHomeomorph = tan :=
+theorem coe_tanLocalHomeomorph : ⇑tanLocalHomeomorph = Real.Tan :=
   rfl
 #align real.coe_tan_local_homeomorph Real.coe_tanLocalHomeomorph
 

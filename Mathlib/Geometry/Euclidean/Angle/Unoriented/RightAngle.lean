@@ -156,7 +156,7 @@ theorem sin_angle_add_of_inner_eq_zero {x y : V} (h : ⟪x, y⟫ = 0) (h0 : x �
 
 /-- The tangent of an angle in a right-angled triangle as a ratio of sides. -/
 theorem tan_angle_add_of_inner_eq_zero {x y : V} (h : ⟪x, y⟫ = 0) :
-    Real.tan (angle x (x + y)) = ‖y‖ / ‖x‖ := by
+    Real.Tan (angle x (x + y)) = ‖y‖ / ‖x‖ := by
   by_cases h0 : x = 0; · simp [h0]
   rw [angle_add_eq_arctan_of_inner_eq_zero h h0, Real.tan_arctan]
 #align inner_product_geometry.tan_angle_add_of_inner_eq_zero InnerProductGeometry.tan_angle_add_of_inner_eq_zero
@@ -191,7 +191,7 @@ theorem sin_angle_add_mul_norm_of_inner_eq_zero {x y : V} (h : ⟪x, y⟫ = 0) :
 /-- The tangent of an angle in a right-angled triangle multiplied by the adjacent side equals
 the opposite side. -/
 theorem tan_angle_add_mul_norm_of_inner_eq_zero {x y : V} (h : ⟪x, y⟫ = 0) (h0 : x ≠ 0 ∨ y = 0) :
-    Real.tan (angle x (x + y)) * ‖x‖ = ‖y‖ := by
+    Real.Tan (angle x (x + y)) * ‖x‖ = ‖y‖ := by
   rw [tan_angle_add_of_inner_eq_zero h]
   rcases h0 with (h0 | h0) <;> simp [h0]
 #align inner_product_geometry.tan_angle_add_mul_norm_of_inner_eq_zero InnerProductGeometry.tan_angle_add_mul_norm_of_inner_eq_zero
@@ -218,7 +218,7 @@ theorem norm_div_sin_angle_add_of_inner_eq_zero {x y : V} (h : ⟪x, y⟫ = 0) (
 /-- A side of a right-angled triangle divided by the tangent of the opposite angle equals the
 adjacent side. -/
 theorem norm_div_tan_angle_add_of_inner_eq_zero {x y : V} (h : ⟪x, y⟫ = 0) (h0 : x = 0 ∨ y ≠ 0) :
-    ‖y‖ / Real.tan (angle x (x + y)) = ‖x‖ := by
+    ‖y‖ / Real.Tan (angle x (x + y)) = ‖x‖ := by
   rw [tan_angle_add_of_inner_eq_zero h]
   rcases h0 with (h0 | h0)
   · simp [h0]
@@ -294,7 +294,7 @@ theorem sin_angle_sub_of_inner_eq_zero {x y : V} (h : ⟪x, y⟫ = 0) (h0 : x �
 /-- The tangent of an angle in a right-angled triangle as a ratio of sides, version subtracting
 vectors. -/
 theorem tan_angle_sub_of_inner_eq_zero {x y : V} (h : ⟪x, y⟫ = 0) :
-    Real.tan (angle x (x - y)) = ‖y‖ / ‖x‖ := by
+    Real.Tan (angle x (x - y)) = ‖y‖ / ‖x‖ := by
   rw [← neg_eq_zero, ← inner_neg_right] at h
   rw [sub_eq_add_neg, tan_angle_add_of_inner_eq_zero h, norm_neg]
 #align inner_product_geometry.tan_angle_sub_of_inner_eq_zero InnerProductGeometry.tan_angle_sub_of_inner_eq_zero
@@ -318,7 +318,7 @@ theorem sin_angle_sub_mul_norm_of_inner_eq_zero {x y : V} (h : ⟪x, y⟫ = 0) :
 /-- The tangent of an angle in a right-angled triangle multiplied by the adjacent side equals
 the opposite side, version subtracting vectors. -/
 theorem tan_angle_sub_mul_norm_of_inner_eq_zero {x y : V} (h : ⟪x, y⟫ = 0) (h0 : x ≠ 0 ∨ y = 0) :
-    Real.tan (angle x (x - y)) * ‖x‖ = ‖y‖ := by
+    Real.Tan (angle x (x - y)) * ‖x‖ = ‖y‖ := by
   rw [← neg_eq_zero, ← inner_neg_right] at h
   rw [← neg_eq_zero] at h0
   rw [sub_eq_add_neg, tan_angle_add_mul_norm_of_inner_eq_zero h h0, norm_neg]
@@ -345,7 +345,7 @@ theorem norm_div_sin_angle_sub_of_inner_eq_zero {x y : V} (h : ⟪x, y⟫ = 0) (
 /-- A side of a right-angled triangle divided by the tangent of the opposite angle equals the
 adjacent side, version subtracting vectors. -/
 theorem norm_div_tan_angle_sub_of_inner_eq_zero {x y : V} (h : ⟪x, y⟫ = 0) (h0 : x = 0 ∨ y ≠ 0) :
-    ‖y‖ / Real.tan (angle x (x - y)) = ‖x‖ := by
+    ‖y‖ / Real.Tan (angle x (x - y)) = ‖x‖ := by
   rw [← neg_eq_zero, ← inner_neg_right] at h
   rw [← neg_ne_zero] at h0
   rw [sub_eq_add_neg, ← norm_neg, norm_div_tan_angle_add_of_inner_eq_zero h h0]
@@ -448,7 +448,7 @@ theorem sin_angle_of_angle_eq_pi_div_two {p₁ p₂ p₃ : P} (h : ∠ p₁ p₂
 
 /-- The tangent of an angle in a right-angled triangle as a ratio of sides. -/
 theorem tan_angle_of_angle_eq_pi_div_two {p₁ p₂ p₃ : P} (h : ∠ p₁ p₂ p₃ = π / 2) :
-    Real.tan (∠ p₂ p₃ p₁) = dist p₁ p₂ / dist p₃ p₂ := by
+    Real.Tan (∠ p₂ p₃ p₁) = dist p₁ p₂ / dist p₃ p₂ := by
   rw [angle, ← inner_eq_zero_iff_angle_eq_pi_div_two, real_inner_comm, ← neg_eq_zero, ←
     inner_neg_left, neg_vsub_eq_vsub_rev] at h
   rw [angle, dist_eq_norm_vsub V p₁ p₂, dist_eq_norm_vsub' V p₃ p₂, ← vsub_add_vsub_cancel p₁ p₂ p₃,
@@ -478,7 +478,7 @@ theorem sin_angle_mul_dist_of_angle_eq_pi_div_two {p₁ p₂ p₃ : P} (h : ∠ 
 /-- The tangent of an angle in a right-angled triangle multiplied by the adjacent side equals
 the opposite side. -/
 theorem tan_angle_mul_dist_of_angle_eq_pi_div_two {p₁ p₂ p₃ : P} (h : ∠ p₁ p₂ p₃ = π / 2)
-    (h0 : p₁ = p₂ ∨ p₃ ≠ p₂) : Real.tan (∠ p₂ p₃ p₁) * dist p₃ p₂ = dist p₁ p₂ := by
+    (h0 : p₁ = p₂ ∨ p₃ ≠ p₂) : Real.Tan (∠ p₂ p₃ p₁) * dist p₃ p₂ = dist p₁ p₂ := by
   rw [angle, ← inner_eq_zero_iff_angle_eq_pi_div_two, real_inner_comm, ← neg_eq_zero, ←
     inner_neg_left, neg_vsub_eq_vsub_rev] at h
   rw [ne_comm, ← @vsub_ne_zero V, ← @vsub_eq_zero_iff_eq V, or_comm] at h0
@@ -511,7 +511,7 @@ theorem dist_div_sin_angle_of_angle_eq_pi_div_two {p₁ p₂ p₃ : P} (h : ∠ 
 /-- A side of a right-angled triangle divided by the tangent of the opposite angle equals the
 adjacent side. -/
 theorem dist_div_tan_angle_of_angle_eq_pi_div_two {p₁ p₂ p₃ : P} (h : ∠ p₁ p₂ p₃ = π / 2)
-    (h0 : p₁ ≠ p₂ ∨ p₃ = p₂) : dist p₁ p₂ / Real.tan (∠ p₂ p₃ p₁) = dist p₃ p₂ := by
+    (h0 : p₁ ≠ p₂ ∨ p₃ = p₂) : dist p₁ p₂ / Real.Tan (∠ p₂ p₃ p₁) = dist p₃ p₂ := by
   rw [angle, ← inner_eq_zero_iff_angle_eq_pi_div_two, real_inner_comm, ← neg_eq_zero, ←
     inner_neg_left, neg_vsub_eq_vsub_rev] at h
   rw [eq_comm, ← @vsub_ne_zero V, ← @vsub_eq_zero_iff_eq V, or_comm] at h0

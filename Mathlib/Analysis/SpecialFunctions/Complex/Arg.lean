@@ -216,7 +216,7 @@ set_option linter.uppercaseLean3 false in
 #align complex.arg_neg_I Complex.arg_neg_I
 
 @[simp]
-theorem tan_arg (x : ℂ) : Real.tan (arg x) = x.im / x.re := by
+theorem tan_arg (x : ℂ) : Real.Tan (arg x) = x.im / x.re := by
   by_cases h : x = 0
   · simp only [h, zero_div, Complex.zero_im, Complex.arg_zero, Real.tan_zero, Complex.zero_re]
   rw [Real.tan_eq_sin_div_cos, sin_arg, cos_arg h, div_div_div_cancel_right _ (abs.ne_zero h)]

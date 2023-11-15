@@ -450,9 +450,9 @@ nonrec def cos (x : ℝ) : ℝ :=
 
 /-- The real tangent function, defined as the real part of the complex tangent -/
 --@[pp_nodot] Porting note: removed
-nonrec def tan (x : ℝ) : ℝ :=
+nonrec def Tan (x : ℝ) : ℝ :=
   (tan x).re
-#align real.tan Real.tan
+#align real.tan Real.Tan
 
 /-- The real hypebolic sine function, defined as the real part of the complex hyperbolic sine -/
 --@[pp_nodot] Porting note: removed
@@ -997,7 +997,7 @@ theorem ofReal_tan_ofReal_re (x : ℝ) : ((tan x).re : ℂ) = tan x :=
 #align complex.of_real_tan_of_real_re Complex.ofReal_tan_ofReal_re
 
 @[simp, norm_cast]
-theorem ofReal_tan (x : ℝ) : (Real.tan x : ℂ) = tan x :=
+theorem ofReal_tan (x : ℝ) : (Real.Tan x : ℂ) = tan x :=
   ofReal_tan_ofReal_re _
 #align complex.of_real_tan Complex.ofReal_tan
 
@@ -1005,7 +1005,7 @@ theorem ofReal_tan (x : ℝ) : (Real.tan x : ℂ) = tan x :=
 theorem tan_ofReal_im (x : ℝ) : (tan x).im = 0 := by rw [← ofReal_tan_ofReal_re, ofReal_im]
 #align complex.tan_of_real_im Complex.tan_ofReal_im
 
-theorem tan_ofReal_re (x : ℝ) : (tan x).re = Real.tan x :=
+theorem tan_ofReal_re (x : ℝ) : (tan x).re = Real.Tan x :=
   rfl
 #align complex.tan_of_real_re Complex.tan_ofReal_re
 
@@ -1224,20 +1224,20 @@ nonrec theorem cos_add_cos : cos x + cos y = 2 * cos ((x + y) / 2) * cos ((x - y
   ofReal_injective <| by simp [cos_add_cos]
 #align real.cos_add_cos Real.cos_add_cos
 
-nonrec theorem tan_eq_sin_div_cos : tan x = sin x / cos x :=
+nonrec theorem tan_eq_sin_div_cos : Real.Tan x = sin x / cos x :=
   ofReal_injective <| by simp [tan_eq_sin_div_cos]
 #align real.tan_eq_sin_div_cos Real.tan_eq_sin_div_cos
 
-theorem tan_mul_cos {x : ℝ} (hx : cos x ≠ 0) : tan x * cos x = sin x := by
+theorem tan_mul_cos {x : ℝ} (hx : cos x ≠ 0) : Real.Tan x * cos x = sin x := by
   rw [tan_eq_sin_div_cos, div_mul_cancel _ hx]
 #align real.tan_mul_cos Real.tan_mul_cos
 
 @[simp]
-theorem tan_zero : tan 0 = 0 := by simp [tan]
+theorem tan_zero : Real.Tan 0 = 0 := by simp [Real.Tan]
 #align real.tan_zero Real.tan_zero
 
 @[simp]
-theorem tan_neg : tan (-x) = -tan x := by simp [tan, neg_div]
+theorem tan_neg : Real.Tan (-x) = -Real.Tan x := by simp [Real.Tan, neg_div]
 #align real.tan_neg Real.tan_neg
 
 @[simp]
@@ -1315,22 +1315,22 @@ theorem abs_cos_eq_sqrt_one_sub_sin_sq (x : ℝ) : |cos x| = sqrt (1 - sin x ^ 2
   rw [← cos_sq', sqrt_sq_eq_abs]
 #align real.abs_cos_eq_sqrt_one_sub_sin_sq Real.abs_cos_eq_sqrt_one_sub_sin_sq
 
-theorem inv_one_add_tan_sq {x : ℝ} (hx : cos x ≠ 0) : (1 + tan x ^ 2)⁻¹ = cos x ^ 2 :=
+theorem inv_one_add_tan_sq {x : ℝ} (hx : cos x ≠ 0) : (1 + Real.Tan x ^ 2)⁻¹ = cos x ^ 2 :=
   have : Complex.cos x ≠ 0 := mt (congr_arg re) hx
   ofReal_inj.1 <| by simpa using Complex.inv_one_add_tan_sq this
 #align real.inv_one_add_tan_sq Real.inv_one_add_tan_sq
 
 theorem tan_sq_div_one_add_tan_sq {x : ℝ} (hx : cos x ≠ 0) :
-    tan x ^ 2 / (1 + tan x ^ 2) = sin x ^ 2 := by
+    Real.Tan x ^ 2 / (1 + Real.Tan x ^ 2) = sin x ^ 2 := by
   simp only [← tan_mul_cos hx, mul_pow, ← inv_one_add_tan_sq hx, div_eq_mul_inv, one_mul]
 #align real.tan_sq_div_one_add_tan_sq Real.tan_sq_div_one_add_tan_sq
 
-theorem inv_sqrt_one_add_tan_sq {x : ℝ} (hx : 0 < cos x) : (sqrt (1 + tan x ^ 2))⁻¹ = cos x := by
+theorem inv_sqrt_one_add_tan_sq {x : ℝ} (hx : 0 < cos x) : (sqrt (1 + Real.Tan x ^ 2))⁻¹ = cos x := by
   rw [← sqrt_sq hx.le, ← sqrt_inv, inv_one_add_tan_sq hx.ne']
 #align real.inv_sqrt_one_add_tan_sq Real.inv_sqrt_one_add_tan_sq
 
 theorem tan_div_sqrt_one_add_tan_sq {x : ℝ} (hx : 0 < cos x) :
-    tan x / sqrt (1 + tan x ^ 2) = sin x := by
+    Real.Tan x / sqrt (1 + Real.Tan x ^ 2) = sin x := by
   rw [← tan_mul_cos hx.ne', ← inv_sqrt_one_add_tan_sq hx, div_eq_mul_inv]
 #align real.tan_div_sqrt_one_add_tan_sq Real.tan_div_sqrt_one_add_tan_sq
 

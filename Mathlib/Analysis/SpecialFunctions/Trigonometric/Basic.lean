@@ -918,39 +918,39 @@ theorem sinOrderIso_apply (x : Icc (-(π / 2)) (π / 2)) : sinOrderIso x = ⟨si
 #align real.sin_order_iso_apply Real.sinOrderIso_apply
 
 @[simp]
-theorem tan_pi_div_four : tan (π / 4) = 1 := by
+theorem tan_pi_div_four : Real.Tan (π / 4) = 1 := by
   rw [tan_eq_sin_div_cos, cos_pi_div_four, sin_pi_div_four]
   have h : sqrt 2 / 2 > 0 := by cancel_denoms
   exact div_self (ne_of_gt h)
 #align real.tan_pi_div_four Real.tan_pi_div_four
 
 @[simp]
-theorem tan_pi_div_two : tan (π / 2) = 0 := by simp [tan_eq_sin_div_cos]
+theorem tan_pi_div_two : Real.Tan (π / 2) = 0 := by simp [tan_eq_sin_div_cos]
 #align real.tan_pi_div_two Real.tan_pi_div_two
 
-theorem tan_pos_of_pos_of_lt_pi_div_two {x : ℝ} (h0x : 0 < x) (hxp : x < π / 2) : 0 < tan x := by
+theorem tan_pos_of_pos_of_lt_pi_div_two {x : ℝ} (h0x : 0 < x) (hxp : x < π / 2) : 0 < Real.Tan x := by
   rw [tan_eq_sin_div_cos]
   exact div_pos (sin_pos_of_pos_of_lt_pi h0x (by linarith)) (cos_pos_of_mem_Ioo ⟨by linarith, hxp⟩)
 #align real.tan_pos_of_pos_of_lt_pi_div_two Real.tan_pos_of_pos_of_lt_pi_div_two
 
-theorem tan_nonneg_of_nonneg_of_le_pi_div_two {x : ℝ} (h0x : 0 ≤ x) (hxp : x ≤ π / 2) : 0 ≤ tan x :=
+theorem tan_nonneg_of_nonneg_of_le_pi_div_two {x : ℝ} (h0x : 0 ≤ x) (hxp : x ≤ π / 2) : 0 ≤ Real.Tan x :=
   match lt_or_eq_of_le h0x, lt_or_eq_of_le hxp with
   | Or.inl hx0, Or.inl hxp => le_of_lt (tan_pos_of_pos_of_lt_pi_div_two hx0 hxp)
   | Or.inl _, Or.inr hxp => by simp [hxp, tan_eq_sin_div_cos]
   | Or.inr hx0, _ => by simp [hx0.symm]
 #align real.tan_nonneg_of_nonneg_of_le_pi_div_two Real.tan_nonneg_of_nonneg_of_le_pi_div_two
 
-theorem tan_neg_of_neg_of_pi_div_two_lt {x : ℝ} (hx0 : x < 0) (hpx : -(π / 2) < x) : tan x < 0 :=
+theorem tan_neg_of_neg_of_pi_div_two_lt {x : ℝ} (hx0 : x < 0) (hpx : -(π / 2) < x) : Real.Tan x < 0 :=
   neg_pos.1 (tan_neg x ▸ tan_pos_of_pos_of_lt_pi_div_two (by linarith) (by linarith [pi_pos]))
 #align real.tan_neg_of_neg_of_pi_div_two_lt Real.tan_neg_of_neg_of_pi_div_two_lt
 
 theorem tan_nonpos_of_nonpos_of_neg_pi_div_two_le {x : ℝ} (hx0 : x ≤ 0) (hpx : -(π / 2) ≤ x) :
-    tan x ≤ 0 :=
+    Real.Tan x ≤ 0 :=
   neg_nonneg.1 (tan_neg x ▸ tan_nonneg_of_nonneg_of_le_pi_div_two (by linarith) (by linarith))
 #align real.tan_nonpos_of_nonpos_of_neg_pi_div_two_le Real.tan_nonpos_of_nonpos_of_neg_pi_div_two_le
 
 theorem tan_lt_tan_of_nonneg_of_lt_pi_div_two {x y : ℝ} (hx₁ : 0 ≤ x) (hy₂ : y < π / 2)
-    (hxy : x < y) : tan x < tan y := by
+    (hxy : x < y) : Real.Tan x < Real.Tan y := by
   rw [tan_eq_sin_div_cos, tan_eq_sin_div_cos]
   exact
     div_lt_div (sin_lt_sin_of_lt_of_le_pi_div_two (by linarith) (le_of_lt hy₂) hxy)
@@ -960,7 +960,7 @@ theorem tan_lt_tan_of_nonneg_of_lt_pi_div_two {x y : ℝ} (hx₁ : 0 ≤ x) (hy�
 #align real.tan_lt_tan_of_nonneg_of_lt_pi_div_two Real.tan_lt_tan_of_nonneg_of_lt_pi_div_two
 
 theorem tan_lt_tan_of_lt_of_lt_pi_div_two {x y : ℝ} (hx₁ : -(π / 2) < x) (hy₂ : y < π / 2)
-    (hxy : x < y) : tan x < tan y :=
+    (hxy : x < y) : Real.Tan x < Real.Tan y :=
   match le_total x 0, le_total y 0 with
   | Or.inl hx0, Or.inl hy0 =>
     neg_lt_neg_iff.1 <| by
@@ -970,80 +970,80 @@ theorem tan_lt_tan_of_lt_of_lt_pi_div_two {x y : ℝ} (hx₁ : -(π / 2) < x) (h
     (lt_or_eq_of_le hy0).elim
       (fun hy0 =>
         calc
-          tan x ≤ 0 := tan_nonpos_of_nonpos_of_neg_pi_div_two_le hx0 (le_of_lt hx₁)
-          _ < tan y := tan_pos_of_pos_of_lt_pi_div_two hy0 hy₂)
+          Real.Tan x ≤ 0 := tan_nonpos_of_nonpos_of_neg_pi_div_two_le hx0 (le_of_lt hx₁)
+          _ < Real.Tan y := tan_pos_of_pos_of_lt_pi_div_two hy0 hy₂)
       fun hy0 => by
       rw [← hy0, tan_zero]; exact tan_neg_of_neg_of_pi_div_two_lt (hy0.symm ▸ hxy) hx₁
   | Or.inr hx0, Or.inl hy0 => by linarith
   | Or.inr hx0, Or.inr _ => tan_lt_tan_of_nonneg_of_lt_pi_div_two hx0 hy₂ hxy
 #align real.tan_lt_tan_of_lt_of_lt_pi_div_two Real.tan_lt_tan_of_lt_of_lt_pi_div_two
 
-theorem strictMonoOn_tan : StrictMonoOn tan (Ioo (-(π / 2)) (π / 2)) := fun _ hx _ hy =>
+theorem strictMonoOn_tan : StrictMonoOn Real.Tan (Ioo (-(π / 2)) (π / 2)) := fun _ hx _ hy =>
   tan_lt_tan_of_lt_of_lt_pi_div_two hx.1 hy.2
 #align real.strict_mono_on_tan Real.strictMonoOn_tan
 
-theorem injOn_tan : InjOn tan (Ioo (-(π / 2)) (π / 2)) :=
+theorem injOn_tan : InjOn Real.Tan (Ioo (-(π / 2)) (π / 2)) :=
   strictMonoOn_tan.injOn
 #align real.inj_on_tan Real.injOn_tan
 
 theorem tan_inj_of_lt_of_lt_pi_div_two {x y : ℝ} (hx₁ : -(π / 2) < x) (hx₂ : x < π / 2)
-    (hy₁ : -(π / 2) < y) (hy₂ : y < π / 2) (hxy : tan x = tan y) : x = y :=
+    (hy₁ : -(π / 2) < y) (hy₂ : y < π / 2) (hxy : Real.Tan x = Real.Tan y) : x = y :=
   injOn_tan ⟨hx₁, hx₂⟩ ⟨hy₁, hy₂⟩ hxy
 #align real.tan_inj_of_lt_of_lt_pi_div_two Real.tan_inj_of_lt_of_lt_pi_div_two
 
-theorem tan_periodic : Function.Periodic tan π := by
+theorem tan_periodic : Function.Periodic Real.Tan π := by
   simpa only [Function.Periodic, tan_eq_sin_div_cos] using sin_antiperiodic.div cos_antiperiodic
 #align real.tan_periodic Real.tan_periodic
 
 -- Porting note: added
 @[simp]
-theorem tan_pi : tan π = 0 := by rw [tan_periodic.eq, tan_zero]
+theorem tan_pi : Real.Tan π = 0 := by rw [tan_periodic.eq, tan_zero]
 
-theorem tan_add_pi (x : ℝ) : tan (x + π) = tan x :=
+theorem tan_add_pi (x : ℝ) : Real.Tan (x + π) = Real.Tan x :=
   tan_periodic x
 #align real.tan_add_pi Real.tan_add_pi
 
-theorem tan_sub_pi (x : ℝ) : tan (x - π) = tan x :=
+theorem tan_sub_pi (x : ℝ) : Real.Tan (x - π) = Real.Tan x :=
   tan_periodic.sub_eq x
 #align real.tan_sub_pi Real.tan_sub_pi
 
-theorem tan_pi_sub (x : ℝ) : tan (π - x) = -tan x :=
+theorem tan_pi_sub (x : ℝ) : Real.Tan (π - x) = -Real.Tan x :=
   tan_neg x ▸ tan_periodic.sub_eq'
 #align real.tan_pi_sub Real.tan_pi_sub
 
-theorem tan_pi_div_two_sub (x : ℝ) : tan (π / 2 - x) = (tan x)⁻¹ := by
+theorem tan_pi_div_two_sub (x : ℝ) : Real.Tan (π / 2 - x) = (Real.Tan x)⁻¹ := by
   rw [tan_eq_sin_div_cos, tan_eq_sin_div_cos, inv_div, sin_pi_div_two_sub, cos_pi_div_two_sub]
 #align real.tan_pi_div_two_sub Real.tan_pi_div_two_sub
 
-theorem tan_nat_mul_pi (n : ℕ) : tan (n * π) = 0 :=
+theorem tan_nat_mul_pi (n : ℕ) : Real.Tan (n * π) = 0 :=
   tan_zero ▸ tan_periodic.nat_mul_eq n
 #align real.tan_nat_mul_pi Real.tan_nat_mul_pi
 
-theorem tan_int_mul_pi (n : ℤ) : tan (n * π) = 0 :=
+theorem tan_int_mul_pi (n : ℤ) : Real.Tan (n * π) = 0 :=
   tan_zero ▸ tan_periodic.int_mul_eq n
 #align real.tan_int_mul_pi Real.tan_int_mul_pi
 
-theorem tan_add_nat_mul_pi (x : ℝ) (n : ℕ) : tan (x + n * π) = tan x :=
+theorem tan_add_nat_mul_pi (x : ℝ) (n : ℕ) : Real.Tan (x + n * π) = Real.Tan x :=
   tan_periodic.nat_mul n x
 #align real.tan_add_nat_mul_pi Real.tan_add_nat_mul_pi
 
-theorem tan_add_int_mul_pi (x : ℝ) (n : ℤ) : tan (x + n * π) = tan x :=
+theorem tan_add_int_mul_pi (x : ℝ) (n : ℤ) : Real.Tan (x + n * π) = Real.Tan x :=
   tan_periodic.int_mul n x
 #align real.tan_add_int_mul_pi Real.tan_add_int_mul_pi
 
-theorem tan_sub_nat_mul_pi (x : ℝ) (n : ℕ) : tan (x - n * π) = tan x :=
+theorem tan_sub_nat_mul_pi (x : ℝ) (n : ℕ) : Real.Tan (x - n * π) = Real.Tan x :=
   tan_periodic.sub_nat_mul_eq n
 #align real.tan_sub_nat_mul_pi Real.tan_sub_nat_mul_pi
 
-theorem tan_sub_int_mul_pi (x : ℝ) (n : ℤ) : tan (x - n * π) = tan x :=
+theorem tan_sub_int_mul_pi (x : ℝ) (n : ℤ) : Real.Tan (x - n * π) = Real.Tan x :=
   tan_periodic.sub_int_mul_eq n
 #align real.tan_sub_int_mul_pi Real.tan_sub_int_mul_pi
 
-theorem tan_nat_mul_pi_sub (x : ℝ) (n : ℕ) : tan (n * π - x) = -tan x :=
+theorem tan_nat_mul_pi_sub (x : ℝ) (n : ℕ) : Real.Tan (n * π - x) = -Real.Tan x :=
   tan_neg x ▸ tan_periodic.nat_mul_sub_eq n
 #align real.tan_nat_mul_pi_sub Real.tan_nat_mul_pi_sub
 
-theorem tan_int_mul_pi_sub (x : ℝ) (n : ℤ) : tan (n * π - x) = -tan x :=
+theorem tan_int_mul_pi_sub (x : ℝ) (n : ℤ) : Real.Tan (n * π - x) = -Real.Tan x :=
   tan_neg x ▸ tan_periodic.int_mul_sub_eq n
 #align real.tan_int_mul_pi_sub Real.tan_int_mul_pi_sub
 
@@ -1060,7 +1060,7 @@ theorem tendsto_cos_pi_div_two : Tendsto cos (𝓝[<] (π / 2)) (𝓝[>] 0) := b
         (right_mem_Ioc.mpr (neg_lt_self pi_div_two_pos))] with x hx using cos_pos_of_mem_Ioo hx
 #align real.tendsto_cos_pi_div_two Real.tendsto_cos_pi_div_two
 
-theorem tendsto_tan_pi_div_two : Tendsto tan (𝓝[<] (π / 2)) atTop := by
+theorem tendsto_tan_pi_div_two : Tendsto Real.Tan (𝓝[<] (π / 2)) atTop := by
   convert tendsto_cos_pi_div_two.inv_tendsto_zero.atTop_mul zero_lt_one tendsto_sin_pi_div_two
     using 1
   simp only [Pi.inv_apply, ← div_eq_inv_mul, ← tan_eq_sin_div_cos]
@@ -1079,7 +1079,7 @@ theorem tendsto_cos_neg_pi_div_two : Tendsto cos (𝓝[>] (-(π / 2))) (𝓝[>] 
         (left_mem_Ico.mpr (neg_lt_self pi_div_two_pos))] with x hx using cos_pos_of_mem_Ioo hx
 #align real.tendsto_cos_neg_pi_div_two Real.tendsto_cos_neg_pi_div_two
 
-theorem tendsto_tan_neg_pi_div_two : Tendsto tan (𝓝[>] (-(π / 2))) atBot := by
+theorem tendsto_tan_neg_pi_div_two : Tendsto Real.Tan (𝓝[>] (-(π / 2))) atBot := by
   convert tendsto_cos_neg_pi_div_two.inv_tendsto_zero.atTop_mul_neg (by norm_num)
       tendsto_sin_neg_pi_div_two using 1
   simp only [Pi.inv_apply, ← div_eq_inv_mul, ← tan_eq_sin_div_cos]
