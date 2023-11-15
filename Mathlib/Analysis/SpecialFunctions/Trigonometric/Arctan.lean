@@ -28,7 +28,7 @@ open scoped Topology Real
 theorem tan_add {x y : ℝ}
     (h : ((∀ k : ℤ, x ≠ (2 * k + 1) * π / 2) ∧ ∀ l : ℤ, y ≠ (2 * l + 1) * π / 2) ∨
       (∃ k : ℤ, x = (2 * k + 1) * π / 2) ∧ ∃ l : ℤ, y = (2 * l + 1) * π / 2) :
-    Real.Tan (x + y) = (Real.Tan x + Real.Tan y) / (1 - Real.Tan x * Real.Tan    1
+    Real.Tan (x + y) = (Real.Tan x + Real.Tan y) / (1 - Real.Tan x * Real.Tan y) := by
   simpa only [← Complex.ofReal_inj, Complex.ofReal_sub, Complex.ofReal_add, Complex.ofReal_div,
     Complex.ofReal_mul, Complex.ofReal_tan] using
     @Complex.tan_add (x : ℂ) (y : ℂ) (by convert h <;> norm_cast)
@@ -36,7 +36,7 @@ theorem tan_add {x y : ℝ}
 
 theorem tan_add' {x y : ℝ}
     (h : (∀ k : ℤ, x ≠ (2 * k + 1) * π / 2) ∧ ∀ l : ℤ, y ≠ (2 * l + 1) * π / 2) :
-    Real.Tan (x + y) = (Real.Tan x + Real.Tan y) / (1 - Real.Tan x * Real.Tan    1
+    Real.Tan (x + y) = (Real.Tan x + Real.Tan y) / (1 - Real.Tan x * Real.Tan y) :=
   tan_add (Or.inl h)
 #align real.tan_add' Real.tan_add'
 
