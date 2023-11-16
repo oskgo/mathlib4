@@ -242,7 +242,7 @@ theorem uniformGroup_inf {u₁ u₂ : UniformSpace β} (h₁ : @UniformGroup β 
 
 @[to_additive]
 theorem uniformGroup_comap {γ : Type*} [Group γ] {u : UniformSpace γ} [UniformGroup γ] {F : Type*}
-    [MonoidHomClass F β γ] (f : F) : @UniformGroup β (u.comap f) _ :=
+    [NDFunLike F β γ] [MonoidHomClass F β γ] (f : F) : @UniformGroup β (u.comap f) _ :=
   letI : UniformSpace β := u.comap f
   ⟨uniformContinuous_comap' <| by
     simp_rw [Function.comp, map_div]
@@ -376,7 +376,8 @@ theorem group_separationRel (x y : α) : (x, y) ∈ separationRel α ↔ x / y �
 
 @[to_additive]
 theorem uniformContinuous_of_tendsto_one {hom : Type*} [UniformSpace β] [Group β] [UniformGroup β]
-    [MonoidHomClass hom α β] {f : hom} (h : Tendsto f (𝓝 1) (𝓝 1)) : UniformContinuous f := by
+    [NDFunLike hom α β] [MonoidHomClass hom α β] {f : hom} (h : Tendsto f (𝓝 1) (𝓝 1)) :
+    UniformContinuous f := by
   have :
     ((fun x : β × β => x.2 / x.1) ∘ fun x : α × α => (f x.1, f x.2)) = fun x : α × α =>
       f (x.2 / x.1) := by ext; simp only [Function.comp_apply, map_div]
@@ -393,7 +394,8 @@ two uniform groups is uniformly continuous provided that it is continuous at one
 `AddMonoidHomClass`) between two uniform additive groups is uniformly continuous provided that it
 is continuous at zero. See also `continuous_of_continuousAt_zero`."]
 theorem uniformContinuous_of_continuousAt_one {hom : Type*} [UniformSpace β] [Group β]
-    [UniformGroup β] [MonoidHomClass hom α β] (f : hom) (hf : ContinuousAt f 1) :
+    [UniformGroup β] [NDFunLike hom α β] [MonoidHomClass hom α β]
+    (f : hom) (hf : ContinuousAt f 1) :
     UniformContinuous f :=
   uniformContinuous_of_tendsto_one (by simpa using hf.tendsto)
 #align uniform_continuous_of_continuous_at_one uniformContinuous_of_continuousAt_one
@@ -411,7 +413,8 @@ its kernel is open. -/
 @[to_additive "A homomorphism from a uniform additive group to a discrete uniform additive group is
 continuous if and only if its kernel is open."]
 theorem UniformGroup.uniformContinuous_iff_open_ker {hom : Type*} [UniformSpace β]
-    [DiscreteTopology β] [Group β] [UniformGroup β] [MonoidHomClass hom α β] {f : hom} :
+    [DiscreteTopology β] [Group β] [UniformGroup β] [NDFunLike hom α β] [MonoidHomClass hom α β]
+    {f : hom} :
     UniformContinuous f ↔ IsOpen ((f : α →* β).ker : Set α) := by
   refine' ⟨fun hf => _, fun hf => _⟩
   · apply (isOpen_discrete ({1} : Set β)).preimage hf.continuous
@@ -423,7 +426,8 @@ theorem UniformGroup.uniformContinuous_iff_open_ker {hom : Type*} [UniformSpace 
 
 @[to_additive]
 theorem uniformContinuous_monoidHom_of_continuous {hom : Type*} [UniformSpace β] [Group β]
-    [UniformGroup β] [MonoidHomClass hom α β] {f : hom} (h : Continuous f) : UniformContinuous f :=
+    [UniformGroup β] [NDFunLike hom α β] [MonoidHomClass hom α β] {f : hom} (h : Continuous f) :
+    UniformContinuous f :=
   uniformContinuous_of_tendsto_one <|
     suffices Tendsto f (𝓝 1) (𝓝 (f 1)) by rwa [map_one] at this
     h.tendsto 1
@@ -717,7 +721,7 @@ variable [TopologicalSpace α] [Group α] [TopologicalGroup α]
 -- β is a dense subgroup of α, inclusion is denoted by e
 variable [TopologicalSpace β] [Group β]
 
-variable [MonoidHomClass hom β α] {e : hom} (de : DenseInducing e)
+variable [NDFunLike hom β α] [MonoidHomClass hom β α] {e : hom} (de : DenseInducing e)
 
 @[to_additive]
 theorem tendsto_div_comap_self (x₀ : α) :
