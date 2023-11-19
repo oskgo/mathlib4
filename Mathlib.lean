@@ -1664,6 +1664,7 @@ import Mathlib.Data.Multiset.Range
 import Mathlib.Data.Multiset.Sections
 import Mathlib.Data.Multiset.Sort
 import Mathlib.Data.Multiset.Sum
+import Mathlib.Data.Multiset.Sym
 import Mathlib.Data.MvPolynomial.Basic
 import Mathlib.Data.MvPolynomial.Cardinal
 import Mathlib.Data.MvPolynomial.Comap
