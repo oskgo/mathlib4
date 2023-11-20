@@ -275,12 +275,12 @@ theorem FinrankQuotientMap.linearIndependent_of_nontrivial [IsDomain R] [IsDedek
     exact hgI _ (hg' j hjs)
   refine ⟨fun i => algebraMap R S (g' i), ?_, j, hjs, hgI⟩
   have eq : f (∑ i in s, g' i • b i) = 0 := by
-    rw [LinearMap.map_sum, ← smul_zero a, ← eq, Finset.smul_sum]
+    rw [map_sum, ← smul_zero a, ← eq, Finset.smul_sum]
     refine Finset.sum_congr rfl ?_
     intro i hi
     rw [LinearMap.map_smul, ← IsScalarTower.algebraMap_smul K, hg' i hi, ← smul_assoc,
       smul_eq_mul, Function.comp_apply]
-  simp only [IsScalarTower.algebraMap_smul, ← LinearMap.map_smul, ← LinearMap.map_sum,
+  simp only [IsScalarTower.algebraMap_smul, ← map_smul, ← map_sum,
     (f.map_eq_zero_iff hf).mp eq, LinearMap.map_zero, (· ∘ ·)]
 #align ideal.finrank_quotient_map.linear_independent_of_nontrivial Ideal.FinrankQuotientMap.linearIndependent_of_nontrivial
 
@@ -391,7 +391,7 @@ theorem FinrankQuotientMap.span_eq_top [IsDomain R] [IsDomain S] [Algebra K L] [
     haveI : NoZeroSMulDivisors R L := NoZeroSMulDivisors.of_algebraMap_injective hRL
     rw [← IsFractionRing.isAlgebraic_iff' R S]
     intro x
-    exact IsIntegral.isAlgebraic _ (isIntegral_of_noetherian inferInstance _)
+    exact (isIntegral_of_noetherian inferInstance _).isAlgebraic
 #align ideal.finrank_quotient_map.span_eq_top Ideal.FinrankQuotientMap.span_eq_top
 
 variable (K L)

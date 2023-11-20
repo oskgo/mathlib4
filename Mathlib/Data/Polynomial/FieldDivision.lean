@@ -176,7 +176,7 @@ theorem isUnit_iff_degree_eq_zero : IsUnit p ↔ degree p = 0 :=
   ⟨degree_eq_zero_of_isUnit, fun h =>
     have : degree p ≤ 0 := by simp [*, le_refl]
     have hc : coeff p 0 ≠ 0 := fun hc => by
-      rw [eq_C_of_degree_le_zero this, hc] at h; simp at h
+      rw [eq_C_of_degree_le_zero this, hc] at h; simp only [map_zero] at h; contradiction
     isUnit_iff_dvd_one.2
       ⟨C (coeff p 0)⁻¹, by
         conv in p => rw [eq_C_of_degree_le_zero this]
@@ -333,7 +333,7 @@ theorem eval₂_gcd_eq_zero [CommSemiring k] [DecidableEq R]
 #align polynomial.eval₂_gcd_eq_zero Polynomial.eval₂_gcd_eq_zero
 
 theorem eval_gcd_eq_zero [DecidableEq R] {f g : R[X]} {α : R}
-  (hf : f.eval α = 0) (hg : g.eval α = 0) : (EuclideanDomain.gcd f g).eval α = 0 :=
+    (hf : f.eval α = 0) (hg : g.eval α = 0) : (EuclideanDomain.gcd f g).eval α = 0 :=
   eval₂_gcd_eq_zero hf hg
 #align polynomial.eval_gcd_eq_zero Polynomial.eval_gcd_eq_zero
 
@@ -403,7 +403,7 @@ theorem exists_root_of_degree_eq_one (h : degree p = 1) : ∃ x, IsRoot p x :=
     have : p.coeff 1 ≠ 0 := by
       have h' := natDegree_eq_of_degree_eq_some h
       change natDegree p = 1 at h'; rw [←h']
-      exact mt leadingCoeff_eq_zero.1 fun h0 => by simp [h0] at h
+      exact mt leadingCoeff_eq_zero.1 fun h0 => by simp [h0] at h; contradiction
     conv in p => rw [eq_X_add_C_of_degree_le_one (show degree p ≤ 1 by rw [h])]
     simp [IsRoot, mul_div_cancel' _ this]⟩
 #align polynomial.exists_root_of_degree_eq_one Polynomial.exists_root_of_degree_eq_one
@@ -461,7 +461,7 @@ set_option linter.uppercaseLean3 false in
 #align polynomial.dvd_C_mul Polynomial.dvd_C_mul
 
 theorem coe_normUnit_of_ne_zero [DecidableEq R] (hp : p ≠ 0) :
-  (normUnit p : R[X]) = C p.leadingCoeff⁻¹ := by
+    (normUnit p : R[X]) = C p.leadingCoeff⁻¹ := by
   have : p.leadingCoeff ≠ 0 := mt leadingCoeff_eq_zero.mp hp
   simp [CommGroupWithZero.coe_normUnit _ this]
 #align polynomial.coe_norm_unit_of_ne_zero Polynomial.coe_normUnit_of_ne_zero
@@ -486,7 +486,7 @@ theorem prime_of_degree_eq_one (hp1 : degree p = 1) : Prime p := by
   classical
   have : Prime (normalize p) :=
     Monic.prime_of_degree_eq_one (hp1 ▸ degree_normalize)
-      (monic_normalize fun hp0 => absurd hp1 (hp0.symm ▸ by simp))
+      (monic_normalize fun hp0 => absurd hp1 (hp0.symm ▸ by simp only [degree_zero]; decide))
   exact (normalize_associated _).prime this
 #align polynomial.prime_of_degree_eq_one Polynomial.prime_of_degree_eq_one
 
