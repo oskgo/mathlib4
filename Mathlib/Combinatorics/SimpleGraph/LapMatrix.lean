@@ -36,7 +36,7 @@ two main concepts in the theory of xyzzyology.
 
 open BigOperators Finset Matrix SimpleGraph
 
-variable {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj] [DecidableEq G.ConnectedComponent]
+variable {V : Type*} [Fintype V] [DecidableEq V] (G : SimpleGraph V) [DecidableRel G.Adj]
 
 def SimpleGraph.degMatrix (R : Type*) [Ring R] : Matrix V V R := Matrix.diagonal (G.degree ·)
 
@@ -62,12 +62,12 @@ theorem lapMatrix_mulVec_const_eq_zero : mulVec (G.lapMatrix ℤ) (Function.cons
   simp only [of_apply, sum_ite_eq, mem_univ, ite_true, sub_self]
 
 lemma vec_adjMatrix_vec (x : V → ℝ) :
-  x ⬝ᵥ mulVec (G.adjMatrix ℝ) x = ∑ i : V, ∑ j : V, if G.Adj i j then x i * x j else 0 := by
+    x ⬝ᵥ mulVec (G.adjMatrix ℝ) x = ∑ i : V, ∑ j : V, if G.Adj i j then x i * x j else 0 := by
   unfold dotProduct mulVec dotProduct
   simp [mul_sum]
 
 lemma vec_degMatrix_vec (x : V → ℝ) :
-  x ⬝ᵥ mulVec (G.degMatrix ℝ) x = ∑ i : V, G.degree i * x i * x i := by
+    x ⬝ᵥ mulVec (G.degMatrix ℝ) x = ∑ i : V, G.degree i * x i * x i := by
   unfold dotProduct mulVec degMatrix diagonal dotProduct
   simp only [of_apply, mul_comm, mul_ite, mul_zero, sum_ite_eq, mem_univ, ite_true]
 
@@ -79,19 +79,19 @@ lemma sum_adj_eq_degree (i : V) : (G.degree i : ℝ) = ∑ j : V, if G.Adj i j t
   simp [degree]
 
 lemma ite_sub_distr {α : Type u_1} [NonAssocRing α] (P : Prop) [Decidable P] (a b : α) :
-  ((if P then a else 0) - if P then b else 0) = if P then a - b else 0 := by
+    ((if P then a else 0) - if P then b else 0) = if P then a - b else 0 := by
   split
   · rfl
   · rw [sub_self]
 
 lemma ite_add_distr {α : Type u_1} [NonAssocRing α](P : Prop) [Decidable P] (a b : α) :
-  ((if P then a else 0) + if P then b else 0) = if P then a + b else 0 := by
+    ((if P then a else 0) + if P then b else 0) = if P then a + b else 0 := by
   split
   · rfl
   · rw [add_zero]
 
-theorem vec_lapMatrix_vec (x : V → ℝ) :
-  toLinearMap₂' (G.lapMatrix ℝ) x x = (∑ i : V, ∑ j : V, if G.Adj i j then (x i - x j)^2 else 0) / 2 := by
+theorem vec_lapMatrix_vec (x : V → ℝ) : toLinearMap₂' (G.lapMatrix ℝ) x x =
+    (∑ i : V, ∑ j : V, if G.Adj i j then (x i - x j)^2 else 0) / 2 := by
   rw [toLinearMap₂'_apply']
   unfold lapMatrix
   rw [sub_mulVec]
@@ -140,10 +140,10 @@ theorem isPosSemidef_lapMatrix : (G.lapMatrix ℝ).PosSemidef := by
     · rw [zero_div]
 
 noncomputable def sqrt_diag_matrix (A : Matrix V V ℝ) : Matrix V V ℝ :=
-  Matrix.diagonal (λ i ↦ Real.sqrt (Matrix.diag A i))
+    Matrix.diagonal (λ i ↦ Real.sqrt (Matrix.diag A i))
 
 lemma sqrt_diag_matrix_square (A : Matrix V V ℝ) (h : IsDiag A) (h' : ∀ i : V, 0 ≤ A i i) :
-  (sqrt_diag_matrix A).transpose * sqrt_diag_matrix A = A := by
+    (sqrt_diag_matrix A).transpose * sqrt_diag_matrix A = A := by
   ext i j
   simp only [sqrt_diag_matrix, diag_apply, diagonal_transpose, mul_apply, ne_eq, diagonal_apply,
     mul_ite, ite_mul, zero_mul, mul_zero, sum_ite_eq', mem_univ, ite_true]
@@ -154,7 +154,7 @@ lemma sqrt_diag_matrix_square (A : Matrix V V ℝ) (h : IsDiag A) (h' : ∀ i : 
     exact hij
 
 theorem spd_matrix_zero (A : Matrix V V ℝ) (h_psd : PosSemidef A) (x : V → ℝ) :
-  Matrix.toLinearMap₂' A x x = 0 ↔ Matrix.toLinearMap₂' A x = 0 := by
+    Matrix.toLinearMap₂' A x x = 0 ↔ Matrix.toLinearMap₂' A x = 0 := by
   apply Iff.intro
   · simp only [LinearMap.ext_iff, toLinearMap₂'_apply']
     conv => rhs; intro y; rw [← h_psd.1, conjTranspose_eq_transpose_of_trivial,
@@ -176,7 +176,7 @@ theorem spd_matrix_zero (A : Matrix V V ℝ) (h_psd : PosSemidef A) (x : V → �
   · intro h0; rw [h0, LinearMap.zero_apply]
 
 lemma ker_adj_eq2 (x : V → ℝ) :
-  Matrix.toLinearMap₂' (G.lapMatrix ℝ) x x = 0 ↔ ∀ i j : V, G.Adj i j → x i = x j := by
+    Matrix.toLinearMap₂' (G.lapMatrix ℝ) x x = 0 ↔ ∀ i j : V, G.Adj i j → x i = x j := by
   apply Iff.intro
   · intro h i j
     by_contra hn
@@ -234,7 +234,7 @@ lemma ker_adj_eq2 (x : V → ℝ) :
     exact h
 
 theorem ker_adj_eq (x : V → ℝ) :
-  Matrix.toLinearMap₂' (G.lapMatrix ℝ) x = 0 ↔ ∀ i j : V, G.Adj i j → x i = x j := by
+    Matrix.toLinearMap₂' (G.lapMatrix ℝ) x = 0 ↔ ∀ i j : V, G.Adj i j → x i = x j := by
   rw [← spd_matrix_zero (G.lapMatrix ℝ) (isPosSemidef_lapMatrix G), ker_adj_eq2]
 
 lemma ker_reachable_eq2 (x : V → ℝ) : Matrix.toLinearMap₂' (G.lapMatrix ℝ) x x = 0 ↔
@@ -259,11 +259,13 @@ lemma ker_reachable_eq2 (x : V → ℝ) : Matrix.toLinearMap₂' (G.lapMatrix �
     exact h
 
 theorem ker_reachable_eq (x : V → ℝ) : Matrix.toLinearMap₂' (G.lapMatrix ℝ) x = 0 ↔
-  ∀ i j : V, G.Reachable i j → x i = x j := by
+    ∀ i j : V, G.Reachable i j → x i = x j := by
   rw [← spd_matrix_zero (G.lapMatrix ℝ) (isPosSemidef_lapMatrix G), ker_reachable_eq2]
 
+variable [DecidableEq G.ConnectedComponent]
+
 def lapMatrix_ker_basis_aux (c : G.ConnectedComponent) :
-  LinearMap.ker (Matrix.toLinearMap₂' (G.lapMatrix ℝ)) :=
+    LinearMap.ker (Matrix.toLinearMap₂' (G.lapMatrix ℝ)) :=
   ⟨fun i ↦ if G.connectedComponentMk i = c then 1 else 0, by
   rw [LinearMap.mem_ker, ker_reachable_eq]
   intro i j h
@@ -281,7 +283,7 @@ def lapMatrix_ker_basis_aux (c : G.ConnectedComponent) :
   ⟩
 
 lemma lapMatrix_ker_basis_aux_linearIndependent :
-  LinearIndependent ℝ (lapMatrix_ker_basis_aux G) := by
+    LinearIndependent ℝ (lapMatrix_ker_basis_aux G) := by
   rw [Fintype.linearIndependent_iff]
   intro g h0
   rw [Subtype.ext_iff] at h0
@@ -289,7 +291,8 @@ lemma lapMatrix_ker_basis_aux_linearIndependent :
   · unfold lapMatrix_ker_basis_aux
     simp
     conv => lhs; simp;
-    have hs : ∀ c,  g c • (fun i ↦ if connectedComponentMk G i = c then (1 : ℝ) else 0) = fun i ↦ if connectedComponentMk G i = c then g c else 0
+    have hs : ∀ c,  g c • (fun i ↦ if connectedComponentMk G i = c then (1 : ℝ) else 0) =
+                           fun i ↦ if connectedComponentMk G i = c then g c else 0
     · intro c
       ext j
       simp only [Pi.smul_apply, smul_eq_mul, mul_ite, mul_one, mul_zero]
@@ -305,7 +308,7 @@ lemma lapMatrix_ker_basis_aux_linearIndependent :
   apply congrFun h0
 
 lemma lapMatrix_ker_basis_aux_spanning :
-  ⊤ ≤ Submodule.span ℝ (Set.range (lapMatrix_ker_basis_aux G)) := by
+    ⊤ ≤ Submodule.span ℝ (Set.range (lapMatrix_ker_basis_aux G)) := by
   intro x _
   rw [mem_span_range_iff_exists_fun]
   have h : ∀ (i j : V) (w : SimpleGraph.Walk G i j), SimpleGraph.Walk.IsPath w → x.val i = x.val j
@@ -325,92 +328,8 @@ lemma lapMatrix_ker_basis_aux_spanning :
   simp only [mul_ite, mul_one, mul_zero, sum_ite_eq, mem_univ, ConnectedComponent.lift_mk, ite_true]
 
 noncomputable def lapMatrix_ker_basis :=
-  Basis.mk (lapMatrix_ker_basis_aux_linearIndependent G) (lapMatrix_ker_basis_aux_spanning G)
+    Basis.mk (lapMatrix_ker_basis_aux_linearIndependent G) (lapMatrix_ker_basis_aux_spanning G)
 
 theorem rank_ker_lapMatrix_eq_card_ConnectedComponent : Fintype.card G.ConnectedComponent =
-  FiniteDimensional.finrank ℝ (LinearMap.ker (Matrix.toLinearMap₂' (G.lapMatrix ℝ))) := by
+    FiniteDimensional.finrank ℝ (LinearMap.ker (Matrix.toLinearMap₂' (G.lapMatrix ℝ))) := by
   rw [FiniteDimensional.finrank_eq_card_basis (lapMatrix_ker_basis G)]
-
-
-
-
-
-
-
-
-
-
-
-
--- This stuff down here probably won't ne needed anymore
-/-
--- The numbers of edges that are "cut" by removing a subset s of vertices
-def cut : Finset V → ℕ :=
-  fun s => ∑ i in s, ∑ j in sᶜ, (if G.Adj i j then 1 else 0)
-
-variable (s : Finset V)
-
-def cutIndicator : V → ℤ := fun i => if i ∈ s then 1 else -1
-
-lemma cutIndicator_mul_cutIndicator (i j : V) :
-  (cutIndicator s i) * (cutIndicator s j) =
-  if ((i ∈ s ∧ j ∈ s) ∨ (i ∈ sᶜ ∧ j ∈ sᶜ)) then 1 else - 1 := by
-  unfold cutIndicator
-  split
-  case inl h
-  · simp [h]
-  case inr h'
-  · simp [h']
-
-lemma cutIndicator_square (i : V) :
-  (cutIndicator s i) * (cutIndicator s i) = 1 := by
-  unfold cutIndicator
-  split
-  repeat simp
-
--- xᵀDx = ∑ᵢ dᵢ
-lemma cutIndicator_degMatrix_cutIndicator :
-  cutIndicator s ⬝ᵥ mulVec (G.degMatrix ℤ) (cutIndicator s) = ∑ i : V, G.degree i := by
-  unfold mulVec dotProduct
-  simp [Finset.mul_sum]
-  unfold degMatrix
-  simp [mul_comm, ← mul_assoc, cutIndicator_square]
-
--- xᵀDx = ∑₍ᵢⱼ₎ xᵢxⱼ
-lemma cutIndicator_adjMatrix_cutIndicator :
-  cutIndicator s ⬝ᵥ mulVec (G.adjMatrix ℤ) (cutIndicator s) =
-  ∑ i : V, (∑ j : V, if G.Adj i j then (cutIndicator s i * cutIndicator s j) else 0) := by
-  unfold mulVec dotProduct
-  simp only [Finset.mul_sum]
-  simp only [mul_comm, ← mul_assoc, cutIndicator_mul_cutIndicator]
-  unfold adjMatrix
-  simp
-
--- xᵀLx = 4*cut(S)
-theorem cutIndicator_lapMatrix_cutIndicator_equals_four_cut :
-  Matrix.toBilin' (G.lapMatrix ℤ) (cutIndicator s) (cutIndicator s) = 4*cut G s := by
-  rw [Matrix.toBilin'_apply']
-  unfold lapMatrix
-  rw [sub_mulVec]
-  simp only [dotProduct_sub]
-  rw [cutIndicator_degMatrix_cutIndicator]
-  rw [cutIndicator_adjMatrix_cutIndicator]
-  sorry
-
--- If there is a vector in the kernel of L other than 1, we can construct a set with cut = 0
-theorem vvkjre2 (y : V → ℤ) (h0 : y ≠ 0) (h_ker : mulVec (G.lapMatrix ℤ) y = 0)
-  (h_ort : y ⬝ᵥ Function.const V 1 = 0) :
-  ∃t : Finset V, Nonempty t ∧ cut G t = 0 := by
-  use {i : V | y i > 0}.toFinset
-  apply And.intro
-  · simp
-    sorry
-  · sorry
-
-
-
-/-
-How to get all elements in the Fintype V, V.elems does not work
-https://leanprover-community.github.io/mathlib4_docs/Mathlib/Data/Fintype/Basic.html#Fintype.elems
--/
--/
