@@ -74,7 +74,8 @@ lemma vec_degMatrix_vec (x : V → ℝ) :
 lemma sum_adj_eq_degree (i : V) : (G.degree i : ℝ) = ∑ j : V, if G.Adj i j then 1 else 0 := by
   have h : (∑ j : V, if G.Adj i j then 1 else 0) = (G.adjMatrix ℝ).mulVec (Function.const V 1) i
   · unfold mulVec dotProduct
-    simp only [sum_boole, mem_univ, forall_true_left, adjMatrix_apply, Function.const_apply, mul_one]
+    simp only [sum_boole, mem_univ, forall_true_left, adjMatrix_apply,
+               Function.const_apply, mul_one]
   rw [h]
   simp [degree]
 
@@ -97,8 +98,9 @@ theorem vec_lapMatrix_vec (x : V → ℝ) : toLinearMap₂' (G.lapMatrix ℝ) x 
   rw [sub_mulVec]
   simp only [dotProduct_sub]
   rw [vec_degMatrix_vec, vec_adjMatrix_vec, ← sum_sub_distrib]
-  simp only [sum_adj_eq_degree, sum_mul, ← sum_sub_distrib, ite_mul, one_mul, zero_mul, ite_sub_distr]
-  rw [← half_add_self (∑ x_1 : V, ∑ x_2 : V, if Adj G x_1 x_2 then x x_1 * x x_1 - x x_1 * x x_2 else 0)]
+  simp only [sum_adj_eq_degree, sum_mul, ← sum_sub_distrib, ite_mul, one_mul,
+             zero_mul, ite_sub_distr]
+  rw [←half_add_self (∑ x_1 : V, ∑ x_2 : V, _)]
   have h : (∑ i : V, ∑ j : V, if Adj G i j then x i * x i - x i * x j else 0) =
            (∑ i : V, ∑ j : V, if Adj G i j then x j * x j - x j * x i else 0)
   · have h' (i j : V) : (if Adj G i j then x j * x j - x j * x i else 0) =
@@ -124,7 +126,7 @@ theorem isPosSemidef_lapMatrix : (G.lapMatrix ℝ).PosSemidef := by
   unfold PosSemidef
   constructor
   · unfold IsHermitian; rw [conjTranspose_eq_transpose_of_trivial, isSymm_lapMatrix]
-  . intro x
+  · intro x
     rw [star_trivial, ← toLinearMap₂'_apply', vec_lapMatrix_vec, sum_div]
     apply sum_nonneg'
     intro i
@@ -159,10 +161,12 @@ theorem spd_matrix_zero (A : Matrix V V ℝ) (h_psd : PosSemidef A) (x : V → �
   · simp only [LinearMap.ext_iff, toLinearMap₂'_apply']
     conv => rhs; intro y; rw [← h_psd.1, conjTranspose_eq_transpose_of_trivial,
                               mulVec_transpose, dotProduct_comm, ←dotProduct_mulVec];
-    simp only [Matrix.IsHermitian.spectral_theorem' h_psd.1, IsROrC.ofReal_real_eq_id, Function.comp.left_id]
+    simp only [Matrix.IsHermitian.spectral_theorem' h_psd.1, IsROrC.ofReal_real_eq_id,
+               Function.comp.left_id]
     rw [← sqrt_diag_matrix_square (diagonal (IsHermitian.eigenvalues h_psd.1)),
         ← Matrix.IsHermitian.conjTranspose_eigenvectorMatrix h_psd.1,
-        conjTranspose_eq_transpose_of_trivial, mul_assoc, mul_assoc, ←mul_assoc, ← Matrix.mulVec_mulVec]
+        conjTranspose_eq_transpose_of_trivial, mul_assoc, mul_assoc, ←mul_assoc,
+        ← Matrix.mulVec_mulVec]
     · intro h0 y
       rw [dotProduct_mulVec, ← mulVec_transpose] at h0
       simp only [transpose_mul, transpose_transpose, dotProduct_self_eq_zero] at h0
@@ -230,7 +234,7 @@ lemma ker_adj_eq2 (x : V → ℝ) :
     intro j
     specialize h i j
     simp only [mem_univ, Real.rpow_two, ite_eq_right_iff, zero_lt_two, pow_eq_zero_iff, sub_eq_zero,
-      forall_true_left]
+               forall_true_left]
     exact h
 
 theorem ker_adj_eq (x : V → ℝ) :
@@ -238,7 +242,7 @@ theorem ker_adj_eq (x : V → ℝ) :
   rw [← spd_matrix_zero (G.lapMatrix ℝ) (isPosSemidef_lapMatrix G), ker_adj_eq2]
 
 lemma ker_reachable_eq2 (x : V → ℝ) : Matrix.toLinearMap₂' (G.lapMatrix ℝ) x x = 0 ↔
-  ∀ i j : V, G.Reachable i j → x i = x j := by
+    ∀ i j : V, G.Reachable i j → x i = x j := by
   rw [ker_adj_eq2]
   apply Iff.intro
   · intro h i j
@@ -287,7 +291,8 @@ lemma lapMatrix_ker_basis_aux_linearIndependent :
   rw [Fintype.linearIndependent_iff]
   intro g h0
   rw [Subtype.ext_iff] at h0
-  have h : ∑ c : ConnectedComponent G, g c • lapMatrix_ker_basis_aux G c = fun i ↦ g (connectedComponentMk G i)
+  have h : ∑ c : ConnectedComponent G,
+      g c • lapMatrix_ker_basis_aux G c = fun i ↦ g (connectedComponentMk G i)
   · unfold lapMatrix_ker_basis_aux
     simp
     conv => lhs; simp;
